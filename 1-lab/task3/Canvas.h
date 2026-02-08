@@ -15,11 +15,8 @@ class Canvas
     sf::RenderTexture m_renderTexture;
     sf::Sprite m_sprite;
 
-    void DrawPixel(float fx, float fy, Color color, float alpha = 1.0f)
+    void DrawPixel(int x, int y, Color color, float alpha = 1.0f)
     {
-        int x = static_cast<int>(fx);
-        int y = static_cast<int>(fy);
-
         if (x >= 0 && x < static_cast<int>(m_window.getSize().x) &&
             y >= 0 && y < static_cast<int>(m_window.getSize().y))
         {
@@ -107,31 +104,26 @@ class Canvas
             DrawPixel(xc + x, yc + y, color, intensity1);
             DrawPixel(xc + x, yc + y + 1, color, intensity2);
 
-            // Второй октант: (y, x)
+            // (y, x)
             DrawPixel(xc + y, yc + x, color, intensity1);
             DrawPixel(xc + y + 1, yc + x, color, intensity2);
 
-            // Третий октант: (-x, y)
+            // (-x, y)
             DrawPixel(xc - x, yc + y, color, intensity1);
             DrawPixel(xc - x, yc + y + 1, color, intensity2);
 
-            // Четвертый октант: (-y, x)
             DrawPixel(xc - y, yc + x, color, intensity1);
             DrawPixel(xc - y - 1, yc + x, color, intensity2);
 
-            // Пятый октант: (x, -y)
             DrawPixel(xc + x, yc - y, color, intensity1);
             DrawPixel(xc + x, yc - y - 1, color, intensity2);
 
-            // Шестой октант: (y, -x)
             DrawPixel(xc + y, yc - x, color, intensity1);
             DrawPixel(xc + y + 1, yc - x, color, intensity2);
 
-            // Седьмой октант: (-x, -y)
             DrawPixel(xc - x, yc - y, color, intensity1);
             DrawPixel(xc - x, yc - y - 1, color, intensity2);
 
-            // Восьмой октант: (-y, -x)
             DrawPixel(xc - y, yc - x, color, intensity1);
             DrawPixel(xc - y - 1, yc - x, color, intensity2);
 
