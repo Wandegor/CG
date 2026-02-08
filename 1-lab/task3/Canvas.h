@@ -87,10 +87,9 @@ class Canvas
                     int x_in_left = xc - dxInner;
                     int x_in_right = xc + dxInner;
 
-                    if (fillColor.r != 0 || fillColor.g != 0 || fillColor.b != 0)
-                    {
-                        DrawHorizontalLine(y, x_in_left, x_in_right, fillColor);
-                    }
+                    // Внутренность круга
+                    DrawHorizontalLine(y, x_in_left, x_in_right, fillColor);
+
                     // Слева и справа от внутренней окружности
                     DrawHorizontalLine(y, x_out_left, x_in_left - 1, outlineColor);
                     DrawHorizontalLine(y, x_in_right + 1, x_out_right, outlineColor);
@@ -101,7 +100,7 @@ class Canvas
                 }
             }
 
-            // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(0));
             // m_window.display();
         }
     }
@@ -126,9 +125,6 @@ class Canvas
         int inR = std::max(0, radius - halfThickness);
 
         FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
-
-        // DrawCircleBresenham(xc, yc, outR, circle.GetOutlineColor());
-        // DrawCircleBresenham(xc, yc, inR, circle.GetOutlineColor());
     }
 
 public:
