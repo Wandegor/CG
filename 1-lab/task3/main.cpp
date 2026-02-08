@@ -12,7 +12,8 @@ int main()
     Circle circle(200,
                   Position(500, 500),
                   Color(1, 1, 1),
-                  Color(234, 12, 21));
+                  Color(234, 12, 21),
+                  30);
 
     while (window.isOpen())
     {
