@@ -23,7 +23,7 @@ int main()
                 window.close();
         }
 
-        window.clear(sf::Color::Black);
+        // window.clear(sf::Color::Black);
 
         canvas.Draw(circle);
 

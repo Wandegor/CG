@@ -2,14 +2,18 @@
 
 #include <complex>
 #include <thread>
+#include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+
 #include "Circle.h"
 
 
 class Canvas
 {
     sf::RenderWindow &m_window;
-    sf::Color m_backgroundColor = sf::Color::Black;
+    sf::RenderTexture m_renderTexture;
+    sf::Sprite m_sprite;
 
     void DrawPixel(float fx, float fy, Color color, float alpha = 1.0f)
     {
@@ -19,14 +23,24 @@ class Canvas
         if (x >= 0 && x < static_cast<int>(m_window.getSize().x) &&
             y >= 0 && y < static_cast<int>(m_window.getSize().y))
         {
-            sf::Color blended(
-                (color.r * alpha + m_backgroundColor.r * (1 - alpha)),
-                (color.g * alpha + m_backgroundColor.g * (1 - alpha)),
-                (color.b * alpha + m_backgroundColor.b * (1 - alpha))
+            sf::Color sfColor(
+                color.r,
+                color.g,
+                color.b,
+                alpha * 255
             );
 
-            sf::Vertex point(sf::Vector2f(x, y), blended);
-            m_window.draw(&point, 1, sf::PrimitiveType::Points);
+            sf::Vertex point(sf::Vector2f(x, y), sfColor);
+            m_renderTexture.draw(&point, 1, sf::PrimitiveType::Points);
+        }
+    }
+
+    void DrawHorizontalLine(int y, int x1, int x2, const Color &color)
+    {
+        if (x1 > x2) std::swap(x1, x2);
+        for (int x = x1; x <= x2; x++)
+        {
+            DrawPixel(x, y, color);
         }
     }
 
@@ -45,15 +59,16 @@ class Canvas
             {
                 // x = xc ± √ (R² - (y - yc)²)
                 // Горизонтальное расстояние от центра до внешней окружности
-
-                int dxOuter = static_cast<int>(std::sqrt(outR * outR - dy * dy));
+                float dxOuterExact = std::sqrt(outR * outR - dy * dy);
+                int dxOuter = static_cast<int>(dxOuterExact);
                 int x_out_left = xc - dxOuter;
                 int x_out_right = xc + dxOuter;
 
                 // Для внутренней окружности (если существует) также
                 if (inR > 0 && dy * dy <= inR * inR)
                 {
-                    int dxInner = static_cast<int>(std::sqrt(inR * inR - dy * dy));
+                    float dxInnerExact = std::sqrt(inR * inR - dy * dy);
+                    int dxInner = static_cast<int>(dxInnerExact);
                     int x_in_left = xc - dxInner;
                     int x_in_right = xc + dxInner;
 
@@ -63,7 +78,8 @@ class Canvas
                     // Слева и справа от внутренней окружности
                     DrawHorizontalLine(y, x_out_left, x_in_left - 1, outlineColor);
                     DrawHorizontalLine(y, x_in_right + 1, x_out_right, outlineColor);
-                } else
+                }
+                else
                 {
                     // Если нет внутренней окружности -> вся линия
                     DrawHorizontalLine(y, x_out_left, x_out_right, outlineColor);
@@ -75,20 +91,13 @@ class Canvas
         }
     }
 
-    void DrawHorizontalLine(int y, int x1, int x2, const Color &color)
+    void DrawCircleWu(int xc, int yc, int R, const Color &color)
     {
-        if (x1 > x2) std::swap(x1, x2);
-        for (int x = x1; x <= x2; x++)
-        {
-            DrawPixel(x, y, color);
-        }
-    }
+        if (R <= 0) return;
 
-    void DrawOuterCircleWu(int xc, int yc, int outR, const Color& color)
-    {
-        for (int x = 0; x <= outR * 707 / 1000; x++) // x > R/√2 координаты начинают повторяться
+        for (int x = 0; x <= R * 707 / 1000; x++) // x > R/√2 координаты начинают повторяться
         {
-            float y_exact = std::sqrt(outR * outR - x * x);
+            float y_exact = std::sqrt(R * R - x * x);
             int y = static_cast<int>(y_exact);
             float fraction = y_exact - y;
 
@@ -142,17 +151,35 @@ class Canvas
         int inR = std::max(0, radius - halfThickness);
 
 
-        DrawOuterCircleWu(xc, yc, outR, circle.GetOutlineColor());
+        DrawCircleWu(xc, yc, outR, circle.GetOutlineColor());
 
         FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
+
+        if (inR > 0)
+        {
+            DrawCircleWu(xc, yc, inR, circle.GetOutlineColor());
+        }
     }
 
 public:
     Canvas(sf::RenderWindow &window)
-        : m_window(window) {}
+       : m_window(window),
+         m_renderTexture(sf::Vector2u(window.getSize().x, window.getSize().y)),
+         m_sprite(m_renderTexture.getTexture())
+    {
+        m_renderTexture.clear(sf::Color::Transparent);
+        m_renderTexture.display();
+    }
+
 
     void Draw(Circle circle)
     {
+        m_renderTexture.clear(sf::Color::Transparent);
+
         DrawThickCircle(circle);
+
+        m_renderTexture.display();
+
+        m_window.draw(m_sprite);
     }
 };
