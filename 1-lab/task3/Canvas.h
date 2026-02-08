@@ -60,7 +60,7 @@ class Canvas
         }
     }
 
-    void FillBetweenCircles(int xc, int yc, int inR, int outR, Color color)
+    void FillBetweenCircles(int xc, int yc, int inR, int outR, Color outlineColor, Color fillColor)
     {
         // (x - xc)² + (y - yc)² = R²
 
@@ -87,13 +87,17 @@ class Canvas
                     int x_in_left = xc - dxInner;
                     int x_in_right = xc + dxInner;
 
+                    if (fillColor.r != 0 || fillColor.g != 0 || fillColor.b != 0)
+                    {
+                        DrawHorizontalLine(y, x_in_left, x_in_right, fillColor);
+                    }
                     // Слева и справа от внутренней окружности
-                    DrawHorizontalLine(y, x_out_left, x_in_left - 1, color);
-                    DrawHorizontalLine(y, x_in_right + 1, x_out_right, color);
+                    DrawHorizontalLine(y, x_out_left, x_in_left - 1, outlineColor);
+                    DrawHorizontalLine(y, x_in_right + 1, x_out_right, outlineColor);
                 } else
                 {
                     // Если нет внутренней окружности -> вся линия
-                    DrawHorizontalLine(y, x_out_left, x_out_right, color);
+                    DrawHorizontalLine(y, x_out_left, x_out_right, outlineColor);
                 }
             }
 
@@ -121,7 +125,7 @@ class Canvas
         int outR = radius + halfThickness;
         int inR = std::max(0, radius - halfThickness);
 
-        FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor());
+        FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
 
         // DrawCircleBresenham(xc, yc, outR, circle.GetOutlineColor());
         // DrawCircleBresenham(xc, yc, inR, circle.GetOutlineColor());
