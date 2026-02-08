@@ -9,54 +9,24 @@
 class Canvas
 {
     sf::RenderWindow &m_window;
+    sf::Color m_backgroundColor = sf::Color::Black;
 
-
-    void DrawPixel(int x, int y, Color color)
+    void DrawPixel(float fx, float fy, Color color, float alpha = 1.0f)
     {
+        int x = static_cast<int>(fx);
+        int y = static_cast<int>(fy);
+
         if (x >= 0 && x < static_cast<int>(m_window.getSize().x) &&
             y >= 0 && y < static_cast<int>(m_window.getSize().y))
         {
-            sf::Vertex point(
-                sf::Vector2f(x, y),
-                sf::Color(color.r, color.g, color.b));
+            sf::Color blended(
+                (color.r * alpha + m_backgroundColor.r * (1 - alpha)),
+                (color.g * alpha + m_backgroundColor.g * (1 - alpha)),
+                (color.b * alpha + m_backgroundColor.b * (1 - alpha))
+            );
+
+            sf::Vertex point(sf::Vector2f(x, y), blended);
             m_window.draw(&point, 1, sf::PrimitiveType::Points);
-        }
-    }
-
-    void Add8Points(int xc, int yc, int x, int y, Color color)
-    {
-        DrawPixel(xc + x, yc + y, color);
-        DrawPixel(xc - x, yc + y, color);
-        DrawPixel(xc + x, yc - y, color);
-        DrawPixel(xc - x, yc - y, color);
-        DrawPixel(xc + y, yc + x, color);
-        DrawPixel(xc - y, yc + x, color);
-        DrawPixel(xc + y, yc - x, color);
-        DrawPixel(xc - y, yc - x, color);
-    }
-
-    void DrawCircleBresenham(int xc, int yc, int r, Color color)
-    {
-        int x = 0;
-        int y = r;
-        int d = 3 - 2 * r;
-
-        Add8Points(xc, yc, x, y, color);
-        while (y >= x)
-        {
-            if (d > 0)
-            {
-                y--;
-                d = d + 4 * (x - y) + 10;
-            } else
-                d = d + 4 * x + 6;
-
-            x++;
-
-            Add8Points(xc, yc, x, y, color);
-
-            // std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            // m_window.display();
         }
     }
 
@@ -114,6 +84,53 @@ class Canvas
         }
     }
 
+    void DrawOuterCircleWu(int xc, int yc, int outR, const Color& color)
+    {
+        for (int x = 0; x <= outR * 707 / 1000; x++) // x > R/√2 координаты начинают повторяться
+        {
+            float y_exact = std::sqrt(outR * outR - x * x);
+            int y = static_cast<int>(y_exact);
+            float fraction = y_exact - y;
+
+            float intensity1 = 1.0f - fraction; // основной
+            float intensity2 = fraction; // дополнительный
+
+            DrawPixel(xc + x, yc + y, color, intensity1);
+            DrawPixel(xc + x, yc + y + 1, color, intensity2);
+
+            // Второй октант: (y, x)
+            DrawPixel(xc + y, yc + x, color, intensity1);
+            DrawPixel(xc + y + 1, yc + x, color, intensity2);
+
+            // Третий октант: (-x, y)
+            DrawPixel(xc - x, yc + y, color, intensity1);
+            DrawPixel(xc - x, yc + y + 1, color, intensity2);
+
+            // Четвертый октант: (-y, x)
+            DrawPixel(xc - y, yc + x, color, intensity1);
+            DrawPixel(xc - y - 1, yc + x, color, intensity2);
+
+            // Пятый октант: (x, -y)
+            DrawPixel(xc + x, yc - y, color, intensity1);
+            DrawPixel(xc + x, yc - y - 1, color, intensity2);
+
+            // Шестой октант: (y, -x)
+            DrawPixel(xc + y, yc - x, color, intensity1);
+            DrawPixel(xc + y + 1, yc - x, color, intensity2);
+
+            // Седьмой октант: (-x, -y)
+            DrawPixel(xc - x, yc - y, color, intensity1);
+            DrawPixel(xc - x, yc - y - 1, color, intensity2);
+
+            // Восьмой октант: (-y, -x)
+            DrawPixel(xc - y, yc - x, color, intensity1);
+            DrawPixel(xc - y - 1, yc - x, color, intensity2);
+
+            // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            // m_window.display();
+        }
+    }
+
     void DrawThickCircle(Circle circle)
     {
         int xc = circle.GetPosition().m_x;
@@ -123,6 +140,9 @@ class Canvas
         int halfThickness = circle.GetOutThickness() / 2;
         int outR = radius + halfThickness;
         int inR = std::max(0, radius - halfThickness);
+
+
+        DrawOuterCircleWu(xc, yc, outR, circle.GetOutlineColor());
 
         FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
     }
