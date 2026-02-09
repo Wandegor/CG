@@ -90,7 +90,6 @@ class Canvas
 
     void DrawCircleWu(int xc, int yc, int R, const Color &color)
     {
-        if (R <= 0) return;
 
         for (int x = 0; x <= R * 707 / 1000; x++) // x > R/√2 координаты начинают повторяться
         {

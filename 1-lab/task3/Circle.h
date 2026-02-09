@@ -13,11 +13,19 @@ class Circle
 
 public:
     Circle(float radius, Position position, Color fillColor, Color outlineColor, int outThickness)
-        : m_radius(radius),
+        :
           m_position(position),
           m_fillColor(fillColor),
           m_outlineColor(outlineColor),
-          m_outThickness(outThickness) {}
+          m_outThickness(outThickness)
+    {
+        if (radius <= 0)
+        {
+            std::cout << "radius must be greater than 0" << std::endl;
+            exit(1);
+        }
+        m_radius = radius;
+    }
 
     int GetRadius() { return m_radius; }
     Position GetPosition() { return m_position; }
