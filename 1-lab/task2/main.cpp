@@ -13,8 +13,8 @@ class RocketScene
 {
 private:
     std::vector<std::unique_ptr<IShape> > m_shapes;
-    sf::Vector2f offset; // Смещение для перетаскивания
-    bool isDragging; // Флаг перетаскивания
+    sf::Vector2f offset; // Смещение
+    bool isDragging;
     sf::Vector2f dragStartPosition;
 
 public:
@@ -121,7 +121,7 @@ public:
             Position{396.0f, 123.0f}
         ));
 
-        createFlames();
+        CreateFlames();
     }
 
     void CreateStars()
@@ -144,7 +144,7 @@ public:
         }
     }
 
-    void createFlames()
+    void CreateFlames()
     {
         // Центральное пламя
         m_shapes.push_back(std::make_unique<ConvexAdapter>(
@@ -176,17 +176,17 @@ public:
 
     void HandleEvent(const sf::Event &event)
     {
-        if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonPressed>())
+        if (const auto *mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>())
         {
-            if (mouseButton->button == sf::Mouse::Button::Left)
+            if (mouseButtonPressed->button == sf::Mouse::Button::Left)
             {
                 isDragging = true;
-                dragStartPosition.x = static_cast<float>(mouseButton->position.x);
-                dragStartPosition.y = static_cast<float>(mouseButton->position.y);
+                dragStartPosition.x = static_cast<float>(mouseButtonPressed->position.x);
+                dragStartPosition.y = static_cast<float>(mouseButtonPressed->position.y);
             }
-        } else if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonReleased>())
+        } else if (const auto *mouseButtonReleased = event.getIf<sf::Event::MouseButtonReleased>())
         {
-            if (mouseButton->button == sf::Mouse::Button::Left)
+            if (mouseButtonReleased->button == sf::Mouse::Button::Left)
             {
                 isDragging = false;
             }
@@ -219,7 +219,7 @@ public:
             shape->Draw(window);
         }
 
-        // Восстанавливаем вид
+        // Восстанавливает вид
         view.move(-offset);
         window.setView(view);
     }
