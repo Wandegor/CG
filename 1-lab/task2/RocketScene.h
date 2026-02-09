@@ -1,0 +1,174 @@
+#pragma once
+#include <vector>
+#include <memory>
+#include <random>
+
+#include "IShape.h"
+#include "PrimitiveShapes/CircleAdapter.h"
+#include "PrimitiveShapes/RectangleAdapter.h"
+#include "PrimitiveShapes/ConvexAdapter.h"
+
+class RocketScene
+{
+private:
+    std::vector<std::unique_ptr<IShape> > m_shapes;
+
+public:
+    RocketScene()
+    {
+        CreateScene();
+    }
+
+    const std::vector<std::unique_ptr<IShape>>& GetShapes() const { return m_shapes; }
+
+    void CreateScene()
+    {
+        CreateStars();
+
+        // Луна
+        m_shapes.push_back(std::make_unique<CircleAdapter>(40.0f,
+                                                           Color{169, 169, 169},
+                                                           Position{100.0f, 500.0f}));
+
+        // Основной корпус
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{50.0f, 200.0f},
+            Color{105, 105, 105},
+            Position{375.0f, 200.0f}
+        ));
+
+        // Нос
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{400.0f, 150.0f},
+            Position{375.0f, 200.0f},
+            Position{425.0f, 200.0f},
+            Color{220, 220, 220},
+            Color{0, 0, 0}
+        ));
+
+        // Полосы РОССИЯ
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{50.0f, 15.0f},
+
+            Color{255, 255, 255},
+            Position{375.0f, 270.0f}
+        ));
+
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{50.0f, 15.0f},
+
+            Color{0, 0, 255},
+            Position{375.0f, 285.0f}
+        ));
+
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{50.0f, 15.0f},
+            Color{255, 0, 0},
+            Position{375.0f, 300.0f}
+        ));
+
+        // Иллюминатор
+        m_shapes.push_back(std::make_unique<CircleAdapter>(15.0f,
+                                                           Color{30, 144, 255},
+                                                           Position{390.0f, 230.0f}));
+        m_shapes.push_back(std::make_unique<CircleAdapter>(8.0f,
+                                                           Color{240, 248, 255},
+                                                           Position{393.0f, 235.0f}));
+
+        // Хвост
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{60.0f, 30.0f},
+            Color{192, 192, 192},
+            Position{370.0f, 390.0f}
+        ));
+
+        // Двигатель
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{70.0f, 40.0f},
+            Color{105, 105, 105},
+            Position{365.0f, 420.0f}
+        ));
+
+        // Левое крыло
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{360.0f, 380.0f},
+            Position{372.0f, 380.0f},
+            Position{340.0f, 430.0f},
+            Color{169, 169, 169},
+            Color{0, 0, 0}
+        ));
+
+        // Правое крыло
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{440.0f, 380.0f},
+            Position{428.0f, 380.0f},
+            Position{460.0f, 430.0f},
+            Color{169, 169, 169},
+            Color{0, 0, 0}
+        ));
+
+        // Антенна
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
+            Position{2.0f, 30.0f},
+            Color{192, 192, 192},
+            Position{399.0f, 123.0f}
+        ));
+        m_shapes.push_back(std::make_unique<CircleAdapter>(
+            4.0f,
+            Color{255, 215, 0},
+            Position{396.0f, 123.0f}
+        ));
+
+        CreateFlames();
+    }
+
+    void CreateStars()
+    {
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_real_distribution<float> distX(0, 800);
+        std::uniform_real_distribution<float> distY(0, 800);
+
+        for (int i = 0; i < 30; ++i)
+        {
+            float x = distX(rng);
+            float y = distY(rng);
+
+            m_shapes.push_back(std::make_unique<CircleAdapter>(
+                2.0f,
+                Color{255, 255, 255},
+                Position{x, y}
+            ));
+        }
+    }
+
+    void CreateFlames()
+    {
+        // Центральное пламя
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{400.0f, 460.0f},
+            Position{390.0f, 510.0f},
+            Position{410.0f, 510.0f},
+            Color{255, 140, 0},
+            Color{0, 0, 0}
+        ));
+
+        // Левый
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{380.0f, 460.0f},
+            Position{375.0f, 500.0f},
+            Position{385.0f, 500.0f},
+            Color{255, 69, 0},
+            Color{0, 0, 0}
+        ));
+
+        // Правый
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{420.0f, 460.0f},
+            Position{415.0f, 500.0f},
+            Position{425.0f, 500.0f},
+            Color{255, 69, 0},
+            Color{0, 0, 0}
+        ));
+    }
+};

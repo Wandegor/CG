@@ -11,6 +11,9 @@ add_executable(task2 main.cpp
         PrimitiveShapes/CircleAdapter.h
         PrimitiveShapes/ConvexAdapter.h
         IShape.h
+        RocketScene.h
+        SceneRenderer.h
+        DragController.h
 )
 
 add_custom_command(TARGET task2 POST_BUILD
