@@ -27,7 +27,7 @@ public:
     m_jumpStrategy(std::move(jumpStrategy))
     {
         if (m_jumpStrategy) {
-            m_jumpStrategy->StartJumping(*this);
+            m_jumpStrategy->StartJumping(this->m_position.m_y);
         }
     }
 
@@ -50,6 +50,6 @@ public:
 
     void Update(float deltaTime)
     {
-        m_jumpStrategy->Update(deltaTime, *this);
+        m_jumpStrategy->Update(deltaTime, this->m_position.m_y);
     }
 };

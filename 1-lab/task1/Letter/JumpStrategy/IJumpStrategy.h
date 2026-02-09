@@ -6,6 +6,6 @@ class IJumpStrategy
 public:
     virtual ~IJumpStrategy() = default;
 
-    virtual void StartJumping(Letter& letter) = 0;
-    virtual void Update(float deltaTime, Letter& letter) = 0;
+    virtual void StartJumping(float &y) = 0;
+    virtual void Update(float deltaTime, float &y) = 0;
 };

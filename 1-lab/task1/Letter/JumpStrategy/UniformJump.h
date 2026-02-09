@@ -19,22 +19,20 @@ public:
        jumpForce(jumpForce),
        groundLevel(0) {}
 
-    void StartJumping(Letter &letter) override
+    void StartJumping(float &y) override
     {
         velocityY = -jumpForce;
-        groundLevel = letter.GetPositionY();
+        groundLevel = y;
     }
 
-    void Update(float deltaTime, Letter &letter) override
+    void Update(float deltaTime, float& y) override
     {
-        float &positionY = letter.GetPositionY();
-
         velocityY += gravity * deltaTime; // v = v0 + a*t
-        positionY += velocityY * deltaTime; // S = S0 + v*t
+        y += velocityY * deltaTime; // S = S0 + v*t
 
-        if (positionY >= groundLevel)
+        if (y >= groundLevel)
         {
-            positionY = groundLevel;
+            y = groundLevel;
 
             velocityY = -velocityY;
         }
