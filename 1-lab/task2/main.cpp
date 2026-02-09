@@ -9,7 +9,6 @@
 #include "PrimitiveShapes/RectangleAdapter.h"
 #include "PrimitiveShapes/ConvexAdapter.h"
 
-// Класс для сцены космической ракеты
 class RocketScene
 {
 private:
@@ -78,7 +77,7 @@ public:
                                                            Color{240, 248, 255},
                                                            Position{393.0f, 235.0f}));
 
-        // Хвостовой отсек ракеты (основание)
+        // Хвост
         m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{60.0f, 30.0f},
             Color{192, 192, 192},
@@ -199,8 +198,8 @@ public:
                                              static_cast<float>(mouseMove->position.y));
                 sf::Vector2f delta = currentPosition - dragStartPosition;
 
-                // Обновляем смещение
-                offset += delta;
+                // Новое смещение
+                offset -= delta;
                 dragStartPosition = currentPosition;
             }
         }
