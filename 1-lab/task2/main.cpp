@@ -13,10 +13,13 @@
 class RocketScene
 {
 private:
-    std::vector<std::unique_ptr<IShape> > shapes;
+    std::vector<std::unique_ptr<IShape> > m_shapes;
+    sf::Vector2f offset; // Смещение для перетаскивания
+    bool isDragging; // Флаг перетаскивания
+    sf::Vector2f dragStartPosition;
 
 public:
-    RocketScene()
+    RocketScene() : offset(0, 0), isDragging(false), dragStartPosition(0, 0)
     {
         CreateScene();
     }
@@ -26,71 +29,71 @@ public:
         CreateStars();
 
         // Луна
-        shapes.push_back(std::make_unique<CircleAdapter>(40.0f,
-                                                         Color{169, 169, 169},
-                                                         Position{100.0f, 500.0f}));
+        m_shapes.push_back(std::make_unique<CircleAdapter>(40.0f,
+                                                           Color{169, 169, 169},
+                                                           Position{100.0f, 500.0f}));
 
         // Основной корпус
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{50.0f, 200.0f},
             Color{105, 105, 105},
             Position{375.0f, 200.0f}
         ));
 
         // Нос
-        shapes.push_back(std::make_unique<ConvexAdapter>(
-            Position{400.0f, 150.0f}, // p1: Верхний центр
-            Position{375.0f, 200.0f}, // p2: Левый нижний
-            Position{425.0f, 200.0f}, // p3: Правый нижний
-            Color{220, 220, 220}, // fillColor
-            Color{0, 0, 0} // outlineColor
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
+            Position{400.0f, 150.0f},
+            Position{375.0f, 200.0f},
+            Position{425.0f, 200.0f},
+            Color{220, 220, 220},
+            Color{0, 0, 0}
         ));
 
         // Полосы РОССИЯ
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{50.0f, 15.0f},
 
             Color{255, 255, 255},
             Position{375.0f, 270.0f}
         ));
 
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{50.0f, 15.0f},
 
             Color{0, 0, 255},
             Position{375.0f, 285.0f}
         ));
 
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{50.0f, 15.0f},
             Color{255, 0, 0},
             Position{375.0f, 300.0f}
         ));
 
         // Иллюминатор
-        shapes.push_back(std::make_unique<CircleAdapter>(15.0f,
-                                                         Color{30, 144, 255},
-                                                         Position{390.0f, 230.0f}));
-        shapes.push_back(std::make_unique<CircleAdapter>(8.0f,
-                                                         Color{240, 248, 255},
-                                                         Position{393.0f, 235.0f}));
+        m_shapes.push_back(std::make_unique<CircleAdapter>(15.0f,
+                                                           Color{30, 144, 255},
+                                                           Position{390.0f, 230.0f}));
+        m_shapes.push_back(std::make_unique<CircleAdapter>(8.0f,
+                                                           Color{240, 248, 255},
+                                                           Position{393.0f, 235.0f}));
 
         // Хвостовой отсек ракеты (основание)
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{60.0f, 30.0f},
             Color{192, 192, 192},
             Position{370.0f, 390.0f}
         ));
 
         // Двигатель
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{70.0f, 40.0f},
             Color{105, 105, 105},
             Position{365.0f, 420.0f}
         ));
 
         // Левое крыло
-        shapes.push_back(std::make_unique<ConvexAdapter>(
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
             Position{360.0f, 380.0f},
             Position{372.0f, 380.0f},
             Position{340.0f, 430.0f},
@@ -99,7 +102,7 @@ public:
         ));
 
         // Правое крыло
-        shapes.push_back(std::make_unique<ConvexAdapter>(
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
             Position{440.0f, 380.0f},
             Position{428.0f, 380.0f},
             Position{460.0f, 430.0f},
@@ -108,12 +111,12 @@ public:
         ));
 
         // Антенна
-        shapes.push_back(std::make_unique<RectangleAdapter>(
+        m_shapes.push_back(std::make_unique<RectangleAdapter>(
             Position{2.0f, 30.0f},
             Color{192, 192, 192},
             Position{399.0f, 123.0f}
         ));
-        shapes.push_back(std::make_unique<CircleAdapter>(
+        m_shapes.push_back(std::make_unique<CircleAdapter>(
             4.0f,
             Color{255, 215, 0},
             Position{396.0f, 123.0f}
@@ -127,14 +130,14 @@ public:
         std::random_device rd;
         std::mt19937 rng(rd());
         std::uniform_real_distribution<float> distX(0, 800);
-        std::uniform_real_distribution<float> distY(0, 600);
+        std::uniform_real_distribution<float> distY(0, 800);
 
         for (int i = 0; i < 30; ++i)
         {
             float x = distX(rng);
             float y = distY(rng);
 
-            shapes.push_back(std::make_unique<CircleAdapter>(
+            m_shapes.push_back(std::make_unique<CircleAdapter>(
                 2.0f,
                 Color{255, 255, 255},
                 Position{x, y}
@@ -145,7 +148,7 @@ public:
     void createFlames()
     {
         // Центральное пламя
-        shapes.push_back(std::make_unique<ConvexAdapter>(
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
             Position{400.0f, 460.0f},
             Position{390.0f, 510.0f},
             Position{410.0f, 510.0f},
@@ -154,7 +157,7 @@ public:
         ));
 
         // Левый
-        shapes.push_back(std::make_unique<ConvexAdapter>(
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
             Position{380.0f, 460.0f},
             Position{375.0f, 500.0f},
             Position{385.0f, 500.0f},
@@ -163,7 +166,7 @@ public:
         ));
 
         // Правый
-        shapes.push_back(std::make_unique<ConvexAdapter>(
+        m_shapes.push_back(std::make_unique<ConvexAdapter>(
             Position{420.0f, 460.0f},
             Position{415.0f, 500.0f},
             Position{425.0f, 500.0f},
@@ -172,20 +175,60 @@ public:
         ));
     }
 
+    void HandleEvent(const sf::Event &event)
+    {
+        if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (mouseButton->button == sf::Mouse::Button::Left)
+            {
+                isDragging = true;
+                dragStartPosition.x = static_cast<float>(mouseButton->position.x);
+                dragStartPosition.y = static_cast<float>(mouseButton->position.y);
+            }
+        } else if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonReleased>())
+        {
+            if (mouseButton->button == sf::Mouse::Button::Left)
+            {
+                isDragging = false;
+            }
+        } else if (const auto *mouseMove = event.getIf<sf::Event::MouseMoved>())
+        {
+            if (isDragging)
+            {
+                sf::Vector2f currentPosition(static_cast<float>(mouseMove->position.x),
+                                             static_cast<float>(mouseMove->position.y));
+                sf::Vector2f delta = currentPosition - dragStartPosition;
+
+                // Обновляем смещение
+                offset += delta;
+                dragStartPosition = currentPosition;
+            }
+        }
+    }
+
     void Draw(sf::RenderWindow &window)
     {
         window.clear(sf::Color(10, 10, 40));
 
-        for (const auto &shape: shapes)
+        sf::View view = window.getView();
+
+        view.move(offset);
+        window.setView(view);
+
+        for (const auto &shape: m_shapes)
         {
             shape->Draw(window);
         }
+
+        // Восстанавливаем вид
+        view.move(-offset);
+        window.setView(view);
     }
 };
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "Starship rocket ");
+    sf::RenderWindow window(sf::VideoMode({800, 800}), "Starship rocket ");
 
     RocketScene scene;
 
@@ -201,6 +244,8 @@ int main()
                 if (keyEvent->code == sf::Keyboard::Key::Escape)
                     window.close();
             }
+
+            scene.HandleEvent(*event);
         }
 
         scene.Draw(window);
