@@ -26,13 +26,13 @@ public:
                 m_dragStartPosition.m_x = static_cast<float>(mouseButtonPressed->position.x);
                 m_dragStartPosition.m_y = static_cast<float>(mouseButtonPressed->position.y);
             }
-        } else if (const auto *mouseButtonReleased = event.getIf<sf::Event::MouseButtonReleased>())
+        } else if (const auto mouseButtonReleased = event.getIf<sf::Event::MouseButtonReleased>())
         {
             if (mouseButtonReleased->button == sf::Mouse::Button::Left)
             {
                 m_isDragging = false;
             }
-        } else if (const auto *mouseMove = event.getIf<sf::Event::MouseMoved>())
+        } else if (const auto mouseMove = event.getIf<sf::Event::MouseMoved>())
         {
             if (m_isDragging)
             {

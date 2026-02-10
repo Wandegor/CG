@@ -41,8 +41,6 @@ public:
         m_position = position;
     }
 
-    float& GetPositionY() { return m_position.m_y; }
-
     void Draw(sf::RenderWindow &window)
     {
         m_drawStrategy->Draw(window, m_color, m_position);
