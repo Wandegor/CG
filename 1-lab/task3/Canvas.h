@@ -8,17 +8,16 @@
 
 #include "Circle.h"
 
-
 class Canvas
 {
-    sf::RenderWindow &m_window;
+    sf::RenderTarget &m_window;
     sf::RenderTexture m_renderTexture;
     sf::Sprite m_sprite;
 
     void DrawPixel(int x, int y, Color color, float alpha = 1.0f)
     {
-        if (x >= 0 && x < static_cast<int>(m_window.getSize().x) &&
-            y >= 0 && y < static_cast<int>(m_window.getSize().y))
+        if (x >= 0 && x < static_cast<int>(m_renderTexture.getSize().x) &&
+            y >= 0 && y < static_cast<int>(m_renderTexture.getSize().y))
         {
             sf::Color sfColor(
                 color.r,
@@ -70,7 +69,7 @@ class Canvas
                     int x_in_right = xc + dxInner;
 
                     // Внутренность круга
-                    DrawHorizontalLine(y, x_in_left, x_in_right, fillColor);
+//                    DrawHorizontalLine(y, x_in_left, x_in_right, fillColor);
 
                     // Слева и справа от внутренней окружности
                     DrawHorizontalLine(y, x_out_left, x_in_left - 1, outlineColor);
@@ -133,8 +132,8 @@ class Canvas
 
     void DrawThickCircle(Circle circle)
     {
-        int xc = circle.GetPosition().m_x;
-        int yc = circle.GetPosition().m_y;
+        int xc = circle.GetPosition().x;
+        int yc = circle.GetPosition().y;
         int radius = circle.GetRadius();
 
         int halfThickness = circle.GetOutThickness() / 2;
@@ -153,12 +152,14 @@ class Canvas
     }
 
 public:
-    Canvas(sf::RenderWindow &window)
+    Canvas(sf::RenderTarget &window)
        : m_window(window),
          m_renderTexture(sf::Vector2u(window.getSize().x, window.getSize().y)),
          m_sprite(m_renderTexture.getTexture())
     {
         m_renderTexture.clear(sf::Color::Transparent);
+        m_renderTexture.setSmooth(false);
+
         m_renderTexture.display();
     }
 

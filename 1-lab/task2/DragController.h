@@ -23,8 +23,8 @@ public:
             if (mouseButtonPressed->button == sf::Mouse::Button::Left)
             {
                 m_isDragging = true;
-                m_dragStartPosition.m_x = static_cast<float>(mouseButtonPressed->position.x);
-                m_dragStartPosition.m_y = static_cast<float>(mouseButtonPressed->position.y);
+                m_dragStartPosition.x = static_cast<float>(mouseButtonPressed->position.x);
+                m_dragStartPosition.y = static_cast<float>(mouseButtonPressed->position.y);
             }
         } else if (const auto mouseButtonReleased = event.getIf<sf::Event::MouseButtonReleased>())
         {
@@ -42,13 +42,13 @@ public:
                 };
 
                 Position delta{
-                    currentPosition.m_x - m_dragStartPosition.m_x,
-                    currentPosition.m_y - m_dragStartPosition.m_y
+                        currentPosition.x - m_dragStartPosition.x,
+                        currentPosition.y - m_dragStartPosition.y
                 };
 
                 // Новое смещение
-                m_offset.m_x -= delta.m_x;
-                m_offset.m_y -= delta.m_y;
+                m_offset.x -= delta.x;
+                m_offset.y -= delta.y;
                 m_dragStartPosition = currentPosition;
             }
         }

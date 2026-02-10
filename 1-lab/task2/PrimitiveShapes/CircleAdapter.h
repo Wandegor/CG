@@ -14,10 +14,10 @@ public:
     {
         m_shape.setRadius(radius);
         m_shape.setFillColor(sf::Color(fillColor.r, fillColor.g, fillColor.b));
-        m_shape.setPosition({position.m_x, position.m_y});
+        m_shape.setPosition({position.x, position.y});
     }
 
-    void Draw(sf::RenderWindow &window) const override
+    void Draw(sf::RenderTarget &window) const override
     {
         window.draw(m_shape);
     }

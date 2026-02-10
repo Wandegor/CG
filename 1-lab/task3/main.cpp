@@ -13,7 +13,7 @@ int main()
                   Position(500, 500),
                   Color(200, 200, 1),
                   Color(234, 12, 21),
-                  30);
+                  1);
 
     while (window.isOpen())
     {

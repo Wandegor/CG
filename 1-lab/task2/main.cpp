@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "DragController.h"
 #include "IShape.h"
 #include "RocketScene.h"

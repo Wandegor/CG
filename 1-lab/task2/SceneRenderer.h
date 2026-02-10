@@ -4,7 +4,7 @@
 class SceneRenderer
 {
 public:
-    static void Draw(sf::RenderWindow& window,
+    static void Draw(sf::RenderTarget& window,
                      const std::vector<std::unique_ptr<IShape>>& shapes,
                      const Position& offset)
     {
@@ -12,7 +12,7 @@ public:
 
         sf::View view = window.getView();
 
-        view.move({offset.m_x, offset.m_y});
+        view.move({offset.x, offset.y});
         window.setView(view);
 
         for (const auto& shape : shapes)
@@ -20,7 +20,7 @@ public:
             shape->Draw(window);
         }
         // Восстановление вида (иначе арифметическая прогрессия смещения)
-        view.move({-offset.m_x, -offset.m_y});
+        view.move({-offset.x, -offset.y});
         window.setView(view);
     }
 };

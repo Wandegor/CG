@@ -2,6 +2,6 @@
 
 struct Position
 {
-    float m_x;
-    float m_y;
+    float x;
+    float y;
 };

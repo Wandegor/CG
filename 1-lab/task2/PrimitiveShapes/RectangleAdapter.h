@@ -13,12 +13,12 @@ class RectangleAdapter : public IShape
 public:
     RectangleAdapter(const Position &size, const Color fillColor, const Position &position)
     {
-        m_shape.setSize(sf::Vector2f(size.m_x, size.m_y));
+        m_shape.setSize(sf::Vector2f(size.x, size.y));
         m_shape.setFillColor(sf::Color(fillColor.r, fillColor.g, fillColor.b));
-        m_shape.setPosition({position.m_x, position.m_y});
+        m_shape.setPosition({position.x, position.y});
     }
 
-    void Draw(sf::RenderWindow &window) const override
+    void Draw(sf::RenderTarget &window) const override
     {
         window.draw(m_shape);
     }

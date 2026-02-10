@@ -15,15 +15,15 @@ public:
     {
         m_shape.setPointCount(3);
 
-        m_shape.setPoint(0, sf::Vector2f(p1.m_x, p1.m_y));
-        m_shape.setPoint(1, sf::Vector2f(p2.m_x, p2.m_y));
-        m_shape.setPoint(2, sf::Vector2f(p3.m_x, p3.m_y));
+        m_shape.setPoint(0, sf::Vector2f(p1.x, p1.y));
+        m_shape.setPoint(1, sf::Vector2f(p2.x, p2.y));
+        m_shape.setPoint(2, sf::Vector2f(p3.x, p3.y));
 
         m_shape.setFillColor(sf::Color(fillColor.r, fillColor.g, fillColor.b));
         m_shape.setOutlineColor(sf::Color(outlineColor.r, outlineColor.g, outlineColor.b));
     }
 
-    void Draw(sf::RenderWindow &window) const override
+    void Draw(sf::RenderTarget &window) const override
     {
         window.draw(m_shape);
     }

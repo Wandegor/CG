@@ -27,9 +27,10 @@ public:
         m_radius = radius;
     }
 
-    int GetRadius() { return m_radius; }
-    Position GetPosition() { return m_position; }
-    Color GetFillColor() { return m_fillColor; }
-    Color GetOutlineColor() { return m_outlineColor; }
-    int GetOutThickness() { return m_outThickness; }
+    // методы, которые не изменяют состояние объекта должны быть константными
+    const int GetRadius() { return m_radius; }
+    const Position GetPosition() { return m_position; }
+    const Color GetFillColor() { return m_fillColor; }
+    const Color GetOutlineColor() { return m_outlineColor; }
+    const int GetOutThickness() { return m_outThickness; }
 };
