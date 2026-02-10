@@ -1,6 +1,7 @@
 #pragma once
 #include "IJumpStrategy.h"
 
+// задать начальную скорость в конструкторе
 
 class UniformJump : public IJumpStrategy
 {
@@ -14,14 +15,14 @@ public:
     explicit UniformJump(
         float jumpForce,
         float gravity = 980.0f
-    ): velocityY(0),
+    ): velocityY(-jumpForce),
        gravity(gravity),
        jumpForce(jumpForce),
        groundLevel(0) {}
 
     void StartJumping(float &y) override
     {
-        velocityY = -jumpForce;
+        // velocityY = -jumpForce;
         groundLevel = y;
     }
 

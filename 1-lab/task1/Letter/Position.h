@@ -2,6 +2,7 @@
 
 struct Position
 {
-    float m_x;
-    float m_y;
+    // у структур не делаем префикс m
+    float x;
+    float y;
 };

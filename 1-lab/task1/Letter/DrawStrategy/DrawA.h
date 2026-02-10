@@ -8,7 +8,7 @@
 class DrawA : public IDrawStrategy
 {
 public:
-    void Draw(sf::RenderWindow &window, Color color, Position position) override
+    void Draw(sf::RenderTarget &window, Color color, Position position) override
     {
         auto shapeColor = sf::Color(color.r, color.g, color.b);
 
@@ -21,7 +21,7 @@ public:
         outerTriangle.setPoint(1, sf::Vector2f(width / 2 + 50, 0));
         outerTriangle.setPoint(2, sf::Vector2f(width + 50, height));
         outerTriangle.setFillColor(shapeColor);
-        outerTriangle.setPosition({position.m_x, position.m_y});
+        outerTriangle.setPosition({position.x, position.y});
 
         sf::ConvexShape innerTriangle;
         innerTriangle.setPointCount(3);
@@ -30,12 +30,12 @@ public:
         innerTriangle.setPoint(2, sf::Vector2f(width, height));
 
         innerTriangle.setFillColor(sf::Color::Black);
-        innerTriangle.setPosition({position.m_x, position.m_y});
+        innerTriangle.setPosition({position.x, position.y});
 
         sf::RectangleShape crossbar(sf::Vector2f(50, 100));
         crossbar.setFillColor(shapeColor);
         crossbar.setRotation(sf::degrees(90));
-        crossbar.setPosition({position.m_x + width, position.m_y+ height*0.65f});
+        crossbar.setPosition({position.x + width, position.y + height * 0.65f});
 
 
         window.draw(outerTriangle);

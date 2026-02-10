@@ -27,7 +27,7 @@ public:
     m_jumpStrategy(std::move(jumpStrategy))
     {
         if (m_jumpStrategy) {
-            m_jumpStrategy->StartJumping(this->m_position.m_y);
+            m_jumpStrategy->StartJumping(this->m_position.y);
         }
     }
 
@@ -41,13 +41,14 @@ public:
         m_position = position;
     }
 
-    void Draw(sf::RenderWindow &window)
+    // использовать RenderTarget это класс наследуемый RenderWidow
+    void Draw(sf::RenderTarget &window)
     {
         m_drawStrategy->Draw(window, m_color, m_position);
     }
 
     void Update(float deltaTime)
     {
-        m_jumpStrategy->Update(deltaTime, this->m_position.m_y);
+        m_jumpStrategy->Update(deltaTime, this->m_position.y);
     }
 };
