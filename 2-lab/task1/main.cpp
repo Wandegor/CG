@@ -5,7 +5,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({800, 800}), "2.1");
+    sf::RenderWindow window(sf::VideoMode({1600, 1200}), "2.1");
 
     sf::Font arial;
 
@@ -17,10 +17,8 @@ int main()
     Button myButton = Button(
         arial,
         std::string("my but"),
-        sf::Color::Green,
         sf::Vector2f(100, 100),
-        sf::Vector2f(200, 60),
-        sf::Color::Red);
+        sf::Vector2f(200, 60));
 
     while (window.isOpen())
     {
@@ -35,7 +33,7 @@ int main()
                     window.close();
             }
         }
-        window.clear();
+        window.clear(sf::Color(192, 192, 192));
 
         myButton.DrawTo(window);
         window.display();
