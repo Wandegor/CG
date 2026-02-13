@@ -4,19 +4,27 @@ project(task1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(task1
+add_executable(${PROJECT_NAME}
         main.cpp
         Button.h)
 
-add_custom_command(TARGET task1 POST_BUILD
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "D:/SFML-3.0.0/bin/"
-        $<TARGET_FILE_DIR:task1>
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
         COMMENT "Copying ALL DLLs from SFML"
 )
 
-target_link_libraries(task1
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/ArialRegular.ttf
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMENT "Copying font to executable directory"
+)
+
+target_link_libraries(${PROJECT_NAME}
         SFML::Graphics
         SFML::Window
         SFML::System
 )
+

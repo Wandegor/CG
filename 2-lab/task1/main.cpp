@@ -1,8 +1,26 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
+
+#include "Button.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({800, 800}), "2.1");
+
+    sf::Font arial;
+
+    if (arial.openFromFile("ArialRegular.ttf"))
+    {
+        std::cout << "OK" << std::endl;
+    }
+
+    Button myButton = Button(
+        arial,
+        std::string("my but"),
+        sf::Color::Green,
+        sf::Vector2f(100, 100),
+        sf::Vector2f(200, 60),
+        sf::Color::Red);
 
     while (window.isOpen())
     {
@@ -18,6 +36,8 @@ int main()
             }
         }
         window.clear();
+
+        myButton.DrawTo(window);
         window.display();
     }
 
