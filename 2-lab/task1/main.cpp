@@ -2,23 +2,13 @@
 #include <SFML/Graphics.hpp>
 
 #include "Button.h"
+#include "ImageViewer.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({1600, 1200}), "2.1");
 
-    sf::Font arial;
-
-    if (arial.openFromFile("ArialRegular.ttf"))
-    {
-        std::cout << "OK" << std::endl;
-    }
-
-    Button myButton = Button(
-        arial,
-        std::string("my but"),
-        sf::Vector2f(100, 100),
-        sf::Vector2f(200, 60));
+    ImageViewer viewer(window);
 
     while (window.isOpen())
     {
@@ -32,10 +22,14 @@ int main()
                 if (keyEvent->code == sf::Keyboard::Key::Escape)
                     window.close();
             }
+            else
+            {
+                viewer.HandleEvent(*event);
+            }
         }
         window.clear(sf::Color(192, 192, 192));
 
-        myButton.DrawTo(window);
+        viewer.Draw();
         window.display();
     }
 
