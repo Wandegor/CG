@@ -1,10 +1,12 @@
 #pragma once
 #include <iostream>
 #include <SFML/Graphics.hpp>
+
+#include "IView.h"
 #include "../Button.h"
 #include "../Listeners/Document.h"
 
-class ImageViewer
+class ImageViewer :public IView
 {
 private:
     sf::RenderWindow &m_window;
@@ -69,15 +71,9 @@ public:
         }
     }
 
-    void UpdateImage(sf::Texture& texture, const sf::IntRect rect)
+    void SetImage(sf::Texture& texture, sf::IntRect& rect) override
     {
         m_texture = texture;
-        // m_sprite.setTexture(m_texture);
-
-        sf::IntRect example = sf::IntRect(
-            {300, 300},
-            {300, 300}
-            );
 
         m_sprite.setTextureRect(rect);
     }

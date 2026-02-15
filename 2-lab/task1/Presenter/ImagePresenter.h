@@ -7,7 +7,7 @@
 class ImagePresenter : public IDocumentListener
 {
 private:
-    ImageViewer &m_view;
+    IView &m_view;
     ImageModel &m_model;
     Document &m_document;
 
@@ -17,7 +17,7 @@ private:
 
 public:
 
-    ImagePresenter(ImageViewer &view, ImageModel &model, Document &document)
+    ImagePresenter(IView &view, ImageModel &model, Document &document)
         : m_view(view), m_model(model), m_document(document), m_isDragging(false)
     {
         m_document.Subscribe("openFile", *this);
@@ -46,7 +46,7 @@ private:
             std::string filename = selection.result()[0];
             if (m_model.LoadFromFile(filename))
             {
-                m_view.UpdateImage(m_model.GetTexture(), m_model.GetRect());
+                m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
             }
         }
     }
