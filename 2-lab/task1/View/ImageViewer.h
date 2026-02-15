@@ -8,15 +8,18 @@ class ImageViewer
 {
 private:
     sf::RenderWindow &m_window;
+    Document &m_document;
+
     sf::Font m_font;
 
     std::unique_ptr<Button> m_openButton;
 
-    Document& m_document;
+    sf::Texture m_texture;
+    sf::Sprite m_sprite;
 
 public:
-    ImageViewer(sf::RenderWindow &window, Document& document)
-        : m_window(window), m_document(document)
+    ImageViewer(sf::RenderWindow &window, Document &document)
+        : m_window(window), m_document(document), m_sprite(m_texture)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -30,16 +33,10 @@ public:
             sf::Vector2f(200, 60)
         );
 
-        // m_openButton->SetOnClick([this]()
-        // {
-        //     OpenFileDialog();
-        // });
-    }
-
-    void Draw()
-    {
-        // m_window.draw(m_sprite);
-        m_openButton->DrawTo(m_window);
+        m_openButton->SetOnClick([this]()
+        {
+            m_document.NotifyListeners("openFile");
+        });
     }
 
     void ProcessEvents()
@@ -49,35 +46,46 @@ public:
             if (event->is<sf::Event::Closed>())
             {
                 m_window.close();
-            } else if (auto key = event->getIf<sf::Event::KeyPressed>())
+            }
+            else if (auto key = event->getIf<sf::Event::KeyPressed>())
             {
                 if (key->code == sf::Keyboard::Key::Escape)
                 {
                     m_window.close();
                 }
             }
-
-            // DAD ивенты
             else if (auto mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                MouseData data{sf::Mouse::getPosition(m_window), mousePressed->button};
-                m_document.NotifyListeners("mousePressed", &data);
+                if (mousePressed->button == sf::Mouse::Button::Left)
+                {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(m_window);
+                    if (m_openButton->Contains(mousePos))
+                    {
+                        m_openButton->OnClick();
+                    }
+                }
             }
-            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
-            {
-                sf::Vector2i pos = sf::Mouse::getPosition(m_window);
-                m_document.NotifyListeners("mouseMoved", &pos);
-            }
-            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
-            {
-                m_document.NotifyListeners("mouseReleased", const_cast<sf::Mouse::Button *>(&mouseReleased->button));
-            }
+
         }
     }
 
-    void UpdateImage(sf::Sprite sprite)
+    void UpdateImage(sf::Texture& texture, const sf::IntRect rect)
     {
+        m_texture = texture;
+        // m_sprite.setTexture(m_texture);
 
+        sf::IntRect example = sf::IntRect(
+            {300, 300},
+            {300, 300}
+            );
+
+        m_sprite.setTextureRect(rect);
+    }
+
+    void Draw()
+    {
+        m_window.draw(m_sprite);
+        m_openButton->DrawTo(m_window);
     }
 
     void Run()
@@ -89,10 +97,4 @@ public:
             m_window.display();
         }
     }
-
-    struct MouseData
-    {
-        sf::Vector2i pos;
-        sf::Mouse::Button button;
-    };
 };

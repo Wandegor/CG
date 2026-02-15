@@ -11,7 +11,8 @@ add_executable(${PROJECT_NAME}
         Model/ImageModel.h
         Presenter/ImagePresenter.h
         Listeners/Document.h
-        Listeners/IDocumentListener.h)
+        Listeners/IDocumentListener.h
+        MouseData.h)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

@@ -7,11 +7,15 @@ class ImageModel
 {
 private:
     sf::Texture m_texture;
-    sf::Sprite m_sprite;
+    sf::Rect<int> m_rect;
 
 public:
-    ImageModel(): m_sprite(m_texture)
-    {}
+    ImageModel()
+        : m_rect(sf::Vector2i(300, 300),
+                 {
+                     static_cast<int>(m_texture.getSize().x),
+                     static_cast<int>(m_texture.getSize().y)
+                 }) {}
 
     bool LoadFromFile(const std::string &filename)
     {
@@ -28,33 +32,22 @@ public:
             return false;
         }
 
-        sf::Rect rect(sf::Vector2i(300, 300),
-                               {
-                                   static_cast<int>(m_texture.getSize().x),
-                                   static_cast<int>(m_texture.getSize().y)
-                               });
-
-        m_sprite.setTextureRect(rect);
+        sf::IntRect rect({0, 0},
+                         {
+                             static_cast<int>(m_texture.getSize().x),
+                             static_cast<int>(m_texture.getSize().y)
+                         });
+        m_rect = rect;
         return true;
     }
 
-    void SetPosition(float x, float y)
+    sf::Rect<int> &GetRect()
     {
-        m_sprite.setPosition({x, y});
+        return m_rect;
     }
 
-    void Move(const sf::Vector2f delta)
+    sf::Texture &GetTexture()
     {
-        m_sprite.move(delta);
-    }
-
-    sf::Vector2f GetPosition() const
-    {
-        return m_sprite.getPosition();
-    }
-
-    sf::Sprite GetSprite()
-    {
-        return m_sprite;
+        return m_texture;
     }
 };
