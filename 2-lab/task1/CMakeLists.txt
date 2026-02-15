@@ -7,7 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
         main.cpp
         Button.h
-        ImageViewer.h)
+        View/ImageViewer.h
+        Model/ImageModel.h
+        Presenter/ImagePresenter.h
+        Listeners/Document.h
+        Listeners/IDocumentListener.h)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
