@@ -4,13 +4,13 @@
 
 #include "IView.h"
 #include "../Button.h"
-#include "../Listeners/Document.h"
+#include "../Listeners/EventManager.h"
 
 class ImageViewer :public IView
 {
 private:
     sf::RenderWindow &m_window;
-    Document &m_document;
+    EventManager &m_manager;
 
     sf::Font m_font;
 
@@ -20,8 +20,8 @@ private:
     sf::Sprite m_sprite;
 
 public:
-    ImageViewer(sf::RenderWindow &window, Document &document)
-        : m_window(window), m_document(document), m_sprite(m_texture)
+    ImageViewer(sf::RenderWindow &window, EventManager &document)
+        : m_window(window), m_manager(document), m_sprite(m_texture)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -37,7 +37,7 @@ public:
 
         m_openButton->SetOnClick([this]()
         {
-            m_document.NotifyListeners("openFile");
+            m_manager.NotifyListeners("openFile");
         });
     }
 

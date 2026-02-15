@@ -1,15 +1,15 @@
 #pragma once
-#include "../Listeners/Document.h"
+#include "../Listeners/IEventListener.h"
 #include "../Model/ImageModel.h"
 #include "../../portable-file-dialogs.h"
 #include "../View/ImageViewer.h"
 
-class ImagePresenter : public IDocumentListener
+class ImagePresenter : public IEventListener
 {
 private:
     IView &m_view;
     ImageModel &m_model;
-    Document &m_document;
+    EventManager &m_document;
 
     bool m_isDragging;
     sf::Vector2f m_dragStartPosition;
@@ -17,7 +17,7 @@ private:
 
 public:
 
-    ImagePresenter(IView &view, ImageModel &model, Document &document)
+    ImagePresenter(IView &view, ImageModel &model, EventManager &document)
         : m_view(view), m_model(model), m_document(document), m_isDragging(false)
     {
         m_document.Subscribe("openFile", *this);

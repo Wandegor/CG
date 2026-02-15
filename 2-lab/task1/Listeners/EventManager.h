@@ -2,19 +2,19 @@
 #include <string>
 #include <unordered_set>
 
-#include "IDocumentListener.h"
+#include "IEventListener.h"
 
-class Document
+class EventManager
 {
-    std::unordered_map<std::string, std::unordered_set<IDocumentListener*>> m_listeners;
+    std::unordered_map<std::string, std::unordered_set<IEventListener*>> m_listeners;
 
 public:
-    void Subscribe(const std::string &eventType, IDocumentListener& listener)
+    void Subscribe(const std::string &eventType, IEventListener& listener)
     {
         m_listeners[eventType].insert(&listener);
     }
 
-    void Unsubscribe(const std::string &eventType, IDocumentListener& listener)
+    void Unsubscribe(const std::string &eventType, IEventListener& listener)
     {
         auto it = m_listeners.find(eventType);
         if (it != m_listeners.end())

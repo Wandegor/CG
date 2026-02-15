@@ -10,8 +10,8 @@ add_executable(${PROJECT_NAME}
         View/ImageViewer.h
         Model/ImageModel.h
         Presenter/ImagePresenter.h
-        Listeners/Document.h
-        Listeners/IDocumentListener.h
+        Listeners/EventManager.h
+        Listeners/IEventListener.h
         MouseData.h
         View/IView.h)
 
