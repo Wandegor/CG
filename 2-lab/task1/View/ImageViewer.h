@@ -5,6 +5,7 @@
 #include "IView.h"
 #include "../ViewComponents/Button.h"
 #include "../Listeners/EventManager.h"
+#include "../Listeners/EventType.h"
 #include "../ViewComponents/Menu.h"
 
 class ImageViewer :public IView
@@ -32,7 +33,7 @@ public:
         m_fileMenu = std::make_unique<Menu>(m_font, "File",sf::Vector2f(100, 100), sf::Vector2f(100, 40));
         m_fileMenu->AddItem("Open", [this]() {
             sf::Event::MouseButtonPressed event;
-            m_manager.NotifyListeners("openFile", event);
+            m_manager.NotifyListeners(EventType::OpenFile, event);
         });
     }
 
@@ -69,16 +70,16 @@ public:
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
-                    m_manager.NotifyListeners("mousePressed", *event);
+                    m_manager.NotifyListeners(EventType::MousePressed, *event);
                 }
             }
             else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
-                m_manager.NotifyListeners("mouseMoved", *event);
+                m_manager.NotifyListeners(EventType::MouseMoved, *event);
             }
             else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                m_manager.NotifyListeners("mouseReleased", *event);
+                m_manager.NotifyListeners(EventType::MouseReleased, *event);
             }
 
             m_fileMenu->HandleEvent(*event, m_window);

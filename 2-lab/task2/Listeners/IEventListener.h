@@ -1,10 +1,10 @@
 #pragma once
-#include <string>
+
+enum class EventType;
 
 class IEventListener {
 public:
-    virtual void Update(const std::string& eventType, const sf::Event& event) = 0;
-    // virtual void Update(const std::string& eventType) = 0;
+    virtual void Update(EventType eventType, const sf::Event& event) = 0;
 
 protected:
     ~IEventListener() = default;

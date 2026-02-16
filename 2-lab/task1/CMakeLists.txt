@@ -13,7 +13,8 @@ add_executable(${PROJECT_NAME}
         Listeners/EventManager.h
         Listeners/IEventListener.h
         View/IView.h
-        ViewComponents/Menu.h)
+        ViewComponents/Menu.h
+        Listeners/EventType.h)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

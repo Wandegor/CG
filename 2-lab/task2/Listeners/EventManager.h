@@ -4,17 +4,19 @@
 
 #include "IEventListener.h"
 
+enum class EventType;
+
 class EventManager
 {
-    std::unordered_map<std::string, std::unordered_set<IEventListener *> > m_listeners;
+    std::unordered_map<EventType, std::unordered_set<IEventListener *> > m_listeners;
 
 public:
-    void Subscribe(const std::string &eventType, IEventListener &listener)
+    void Subscribe(EventType eventType, IEventListener &listener)
     {
         m_listeners[eventType].insert(&listener);
     }
 
-    void Unsubscribe(const std::string &eventType, IEventListener &listener)
+    void Unsubscribe(EventType eventType, IEventListener &listener)
     {
         auto it = m_listeners.find(eventType);
         if (it != m_listeners.end())
@@ -27,7 +29,7 @@ public:
         }
     }
 
-    void NotifyListeners(const std::string &eventType, const sf::Event &event)
+    void NotifyListeners(EventType eventType, const sf::Event &event)
     {
         if (const auto it = m_listeners.find(eventType); it != m_listeners.end())
         {

@@ -21,35 +21,37 @@ public:
     ImagePresenter(IView &view, ImageModel &model, EventManager &document)
             : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
     {
-        m_manager.Subscribe("openFile", *this);
-        m_manager.Subscribe("mousePressed", *this);
-        m_manager.Subscribe("mouseMoved", *this);
-        m_manager.Subscribe("mouseReleased", *this);
-
+        m_manager.Subscribe(EventType::OpenFile, *this);
+        m_manager.Subscribe(EventType::MousePressed, *this);
+        m_manager.Subscribe(EventType::MouseMoved, *this);
+        m_manager.Subscribe(EventType::MouseReleased, *this);
     }
 
     virtual ~ImagePresenter()
     {
-        m_manager.Unsubscribe("openFile", *this);
-        m_manager.Unsubscribe("mousePressed", *this);
-        m_manager.Unsubscribe("mouseMoved", *this);
-        m_manager.Unsubscribe("mouseReleased", *this);
+        m_manager.Unsubscribe(EventType::OpenFile, *this);
+        m_manager.Unsubscribe(EventType::MousePressed, *this);
+        m_manager.Unsubscribe(EventType::MouseMoved, *this);
+        m_manager.Unsubscribe(EventType::MouseReleased, *this);
     }
 
-    void Update(const std::string &eventType, const sf::Event& event) override
+    void Update(EventType eventType, const sf::Event& event) override
     {
-        if (eventType == "openFile")
+        switch (eventType)
         {
-            OnOpenFile();
-        } else if (eventType == "mousePressed")
-        {
-            OnMousePressed(event);
-        } else if (eventType == "mouseMoved")
-        {
-            OnMouseMoved(event);
-        } else if (eventType == "mouseReleased")
-        {
-            OnMouseReleased(event);
+            case EventType::OpenFile:
+                OnOpenFile();
+            break;
+            case EventType::MousePressed:
+                OnMousePressed(event);
+            break;
+            case EventType::MouseMoved:
+                OnMouseMoved(event);
+            break;
+            case EventType::MouseReleased:
+                OnMouseReleased(event);
+            break;
+            default: ;
         }
     }
 
