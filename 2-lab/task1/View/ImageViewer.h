@@ -5,6 +5,7 @@
 #include "IView.h"
 #include "../Button.h"
 #include "../Listeners/EventManager.h"
+#include "../MouseData.h"
 
 class ImageViewer :public IView
 {
@@ -41,6 +42,17 @@ public:
         });
     }
 
+    void SetImage(sf::Texture& texture, sf::IntRect& rect) override
+    {
+        m_texture = texture;
+        m_sprite.setTextureRect(rect);
+    }
+
+    void MoveImage(sf::Vector2f delta) override
+    {
+        m_sprite.move(delta);
+    }
+
     void ProcessEvents()
     {
         while (const auto event = m_window.pollEvent())
@@ -65,21 +77,29 @@ public:
                     {
                         m_openButton->OnClick();
                     }
+                    else
+                    {
+                        MouseData data{sf::Mouse::getPosition(m_window), mousePressed->button};
+                        m_manager.NotifyListeners("mousePressed", &data);
+                    }
                 }
             }
 
+            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            {
+                sf::Vector2i pos = sf::Mouse::getPosition(m_window);
+                m_manager.NotifyListeners("mouseMoved", &pos);
+            }
+            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            {
+                m_manager.NotifyListeners("mouseReleased", const_cast<sf::Mouse::Button *>(&mouseReleased->button));
+            }
         }
-    }
-
-    void SetImage(sf::Texture& texture, sf::IntRect& rect) override
-    {
-        m_texture = texture;
-
-        m_sprite.setTextureRect(rect);
     }
 
     void Draw()
     {
+        m_window.clear(sf::Color::Cyan);
         m_window.draw(m_sprite);
         m_openButton->DrawTo(m_window);
     }

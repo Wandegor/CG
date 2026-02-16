@@ -41,6 +41,12 @@ public:
         return true;
     }
 
+    void Move(sf::Vector2f delta)
+    {
+        m_rect.position.x += static_cast<int>(delta.x);
+        m_rect.position.y += static_cast<int>(delta.y);
+    }
+
     sf::Rect<int> &GetRect()
     {
         return m_rect;

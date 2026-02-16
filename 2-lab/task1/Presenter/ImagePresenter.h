@@ -1,31 +1,40 @@
 #pragma once
+
 #include "../Listeners/IEventListener.h"
 #include "../Model/ImageModel.h"
 #include "../../portable-file-dialogs.h"
 #include "../View/ImageViewer.h"
+#include "../MouseData.h"
 
 class ImagePresenter : public IEventListener
 {
 private:
     IView &m_view;
     ImageModel &m_model;
-    EventManager &m_document;
+    EventManager &m_manager;
 
     bool m_isDragging;
     sf::Vector2f m_dragStartPosition;
-    sf::Vector2f m_modelStartPos;
+    sf::Vector2i m_modelStartPos;
 
 public:
 
     ImagePresenter(IView &view, ImageModel &model, EventManager &document)
-        : m_view(view), m_model(model), m_document(document), m_isDragging(false)
+            : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
     {
-        m_document.Subscribe("openFile", *this);
+        m_manager.Subscribe("openFile", *this);
+        m_manager.Subscribe("mousePressed", *this);
+        m_manager.Subscribe("mouseMoved", *this);
+        m_manager.Subscribe("mouseReleased", *this);
+
     }
 
     virtual ~ImagePresenter()
     {
-        m_document.Unsubscribe("openFile", *this);
+        m_manager.Unsubscribe("openFile", *this);
+        m_manager.Unsubscribe("mousePressed", *this);
+        m_manager.Unsubscribe("mouseMoved", *this);
+        m_manager.Unsubscribe("mouseReleased", *this);
     }
 
     void Update(const std::string &eventType, void *data) override
@@ -33,6 +42,15 @@ public:
         if (eventType == "openFile")
         {
             OnOpenFile();
+        } else if (eventType == "mousePressed")
+        {
+            OnMousePressed(static_cast<MouseData *>(data));
+        } else if (eventType == "mouseMoved")
+        {
+            OnMouseMoved(static_cast<sf::Vector2i *>(data));
+        } else if (eventType == "mouseReleased")
+        {
+            OnMouseReleased(static_cast<sf::Mouse::Button *>(data));
         }
     }
 
@@ -40,7 +58,7 @@ private:
     void OnOpenFile()
     {
         auto selection = pfd::open_file("Choose an image", ".",
-                                       {"Image Files", "*.jpg *.jpeg *.png *.bmp"});
+                                        {"Image Files", "*.jpg *.jpeg *.png *.bmp"});
         if (!selection.result().empty())
         {
             std::string filename = selection.result()[0];
@@ -48,6 +66,44 @@ private:
             {
                 m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
             }
+        }
+    }
+
+    void OnMousePressed(MouseData *mouseData)
+    {
+        // if (!m_model.hasImage()) return;
+        if (mouseData->button != sf::Mouse::Button::Left) return;
+
+        if (m_model.GetRect().contains(mouseData->pos))
+        {
+            m_isDragging = true;
+            m_dragStartPosition = {
+                    static_cast<float>(mouseData->pos.x),
+                    static_cast<float>(mouseData->pos.y)};
+
+//            m_modelStartPos = m_model.GetRect().position;
+        }
+    }
+
+    void OnMouseMoved(sf::Vector2i *pos)
+    {
+        if (!m_isDragging) return;
+
+        sf::Vector2f delta = {
+                static_cast<float>(pos->x) - m_dragStartPosition.x,
+                static_cast<float>(pos->y) - m_dragStartPosition.y
+        };
+        m_model.Move(delta);
+
+//        m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
+        m_view.MoveImage(delta);
+    }
+
+    void OnMouseReleased(const sf::Mouse::Button *button)
+    {
+        if (*button == sf::Mouse::Button::Left)
+        {
+            m_isDragging = false;
         }
     }
 };
