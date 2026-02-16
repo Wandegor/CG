@@ -34,15 +34,15 @@ public:
         m_fileMenu->AddItem("Open", [this]() {
             m_manager.NotifyListeners("openFile");
         });
-        m_fileMenu->AddItem("asd", [this]() {
-            m_window.close();
-        });
     }
 
     void SetImage(sf::Texture& texture, sf::IntRect& rect) override
     {
+        // m_sprite обновиться сам так как хранит ссылку на m_texture
         m_texture = texture;
         m_sprite.setTextureRect(rect);
+        m_sprite.setPosition({static_cast<float>(rect.position.x),
+                         static_cast<float>(rect.position.y)});
     }
 
     void MoveImage(sf::Vector2f delta) override

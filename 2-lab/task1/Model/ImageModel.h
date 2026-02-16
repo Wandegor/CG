@@ -10,12 +10,7 @@ private:
     sf::Rect<int> m_rect;
 
 public:
-    ImageModel()
-        : m_rect(sf::Vector2i(300, 300),
-                 {
-                     static_cast<int>(m_texture.getSize().x),
-                     static_cast<int>(m_texture.getSize().y)
-                 }) {}
+    ImageModel() = default;
 
     bool LoadFromFile(const std::string &filename)
     {

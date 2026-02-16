@@ -81,8 +81,6 @@ private:
                     static_cast<float>(mouseData->pos.y)};
 
         }
-
-//        m_lastMousePosition = m_dragStartPosition;
     }
 
     void OnMouseMoved(sf::Vector2i *pos)

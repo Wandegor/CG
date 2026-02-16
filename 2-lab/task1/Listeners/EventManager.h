@@ -20,6 +20,9 @@ public:
         if (it != m_listeners.end())
         {
             it->second.erase(&listener);
+            if (it->second.empty()) {
+                m_listeners.erase(it);
+            }
         }
     }
 

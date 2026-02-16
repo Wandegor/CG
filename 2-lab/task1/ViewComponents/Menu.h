@@ -18,8 +18,8 @@ public:
 
     void AddItem(const std::string &text, std::function<void()> onClick)
     {
-        float x = m_headerButton.GetPosition().x;
-        float y = m_headerButton.GetPosition().y + m_headerButton.GetSize().y + 2.0f
+        float x = m_headerButton.GetPosition().x + 10;
+        float y = m_headerButton.GetPosition().y + m_headerButton.GetSize().y + 6.0f
                   + static_cast<float>(m_items.size()) * (m_headerButton.GetSize().y + 2.0f);
 
         Button item(m_headerButton.GetFont(),
