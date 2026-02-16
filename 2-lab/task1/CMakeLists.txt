@@ -12,7 +12,6 @@ add_executable(${PROJECT_NAME}
         Presenter/ImagePresenter.h
         Listeners/EventManager.h
         Listeners/IEventListener.h
-        MouseData.h
         View/IView.h
         ViewComponents/Menu.h)
 
@@ -25,7 +24,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/ArialRegular.ttf
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ArialRegular.ttf
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
         COMMENT "Copying font to executable directory"
 )
@@ -37,6 +36,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        Libraries
+        ../Libraries
 )
 
