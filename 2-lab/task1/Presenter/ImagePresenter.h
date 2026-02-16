@@ -71,17 +71,18 @@ private:
 
     void OnMousePressed(MouseData *mouseData)
     {
-        // if (!m_model.hasImage()) return;
         if (mouseData->button != sf::Mouse::Button::Left) return;
 
         if (m_model.GetRect().contains(mouseData->pos))
         {
             m_isDragging = true;
-            m_dragStartPosition = {
+            m_lastMousePosition = {
                     static_cast<float>(mouseData->pos.x),
                     static_cast<float>(mouseData->pos.y)};
 
         }
+
+//        m_lastMousePosition = m_dragStartPosition;
     }
 
     void OnMouseMoved(sf::Vector2i *pos)
@@ -93,7 +94,6 @@ private:
         sf::Vector2f delta = currentPos - m_lastMousePosition;
 
         m_model.Move(delta);
-
         m_view.MoveImage(delta);
 
         m_lastMousePosition = currentPos;
