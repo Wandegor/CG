@@ -115,12 +115,23 @@ private:
         if (!mousePressed) return;
         if (mousePressed->button != sf::Mouse::Button::Left) return;
 
-        if (m_model.GetRect().contains(mousePressed->position))
+        if (!m_model.HasImage()) return;
+
+
+        auto& rect = m_model.GetRect();
+        sf::Vector2f imagePos = {
+            static_cast<float>(mousePressed->position.x - rect.position.x),
+            static_cast<float>(mousePressed->position.y - rect.position.y)};
+        // // Проверяем, что клик внутри изображения
+        // if (imagePos.x >= 0 && imagePos.x < (int)m_model.GetImageSize().x &&
+        //     imagePos.y >= 0 && imagePos.y < (int)m_model.GetImageSize().y)
+        if (rect.contains(mousePressed->position))
         {
             m_isDragging = true;
-            m_lastMousePosition = {
-                    static_cast<float>(mousePressed->position.x),
-                    static_cast<float>(mousePressed->position.y)};
+            m_lastMousePosition = imagePos;
+            // Ставим начальную точку
+            m_model.DrawPoint(sf::Vector2i(imagePos), sf::Color::Black);
+            m_model.UpdateTexture();
         }
     }
 
@@ -128,18 +139,24 @@ private:
     {
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
         if (!mouseMoved) return;
-
         if (!m_isDragging) return;
+        if (!m_model.HasImage()) return;
 
-        sf::Vector2f currentPos(static_cast<float>(mouseMoved->position.x),
-                            static_cast<float>(mouseMoved->position.y));
-        sf::Vector2f delta = currentPos - m_lastMousePosition;
+        auto& rect = m_model.GetRect();
+        sf::Vector2i currentPos = {
+            mouseMoved->position.x - rect.position.x,
+            mouseMoved->position.y - rect.position.y};
 
-        m_model.Move(delta);
-        m_view.MoveImage(delta);
+        if (currentPos.x < 0 || currentPos.x >= m_model.GetRect().size.x ||
+            currentPos.y < 0 || currentPos.y >= m_model.GetRect().size.y)
+        {
+            m_isDragging = false;
+            return;
+        }
 
-        m_lastMousePosition = currentPos;
-                
+        m_model.DrawLine(sf::Vector2i(m_lastMousePosition), currentPos, sf::Color::Black);
+        m_lastMousePosition = sf::Vector2f(currentPos);
+        m_model.UpdateTexture();
     }
 
     void OnMouseReleased(const sf::Event& event)

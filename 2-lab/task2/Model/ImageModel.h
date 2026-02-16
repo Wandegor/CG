@@ -36,7 +36,7 @@ public:
         return true;
     }
 
-    bool SaveToFile(const std::string& filename) const
+    bool SaveToFile(const std::string &filename) const
     {
         if (m_image.getSize().x == 0) return false;
         return m_image.saveToFile(filename);
@@ -49,6 +49,38 @@ public:
         m_rect.size.x = static_cast<int>(width);
         m_rect.size.y = static_cast<int>(height);
         m_rect.position = {200, 200};
+    }
+
+    void DrawPoint(sf::Vector2i pos, sf::Color color)
+    {
+        if (pos.x >= 0 && pos.x < m_image.getSize().x &&
+            pos.y >= 0 && pos.y < m_image.getSize().y)
+        {
+            m_image.setPixel({static_cast<unsigned>(pos.x),static_cast<unsigned>(pos.y)}, color);
+        }
+    }
+
+    void DrawLine(sf::Vector2i from, sf::Vector2i to, sf::Color color)
+    {
+        int x1 = from.x, y1 = from.y;
+        int x2 = to.x, y2 = to.y;
+        int dx = abs(x2 - x1), dy = abs(y2 - y1);
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        int err = dx - dy;
+
+        while (true)
+        {
+            if (x1 >= 0 && x1 < (int)m_image.getSize().x &&
+                y1 >= 0 && y1 < (int)m_image.getSize().y)
+            {
+                m_image.setPixel({static_cast<unsigned>(x1), static_cast<unsigned>(y1)}, color);
+            }
+            if (x1 == x2 && y1 == y2) break;
+            int e2 = 2 * err;
+            if (e2 > -dy) { err -= dy; x1 += sx; }
+            if (e2 < dx) { err += dx; y1 += sy; }
+        }
     }
 
     void Move(sf::Vector2f delta)
@@ -65,5 +97,15 @@ public:
     sf::Texture &GetTexture()
     {
         return m_texture;
+    }
+
+    bool HasImage() const
+    {
+        return m_image.getSize().x > 0;
+    }
+
+    void UpdateTexture()
+    {
+        m_texture.update(m_image);
     }
 };
