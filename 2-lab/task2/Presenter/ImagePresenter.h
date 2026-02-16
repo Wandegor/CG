@@ -22,6 +22,7 @@ public:
             : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
     {
         m_manager.Subscribe("openFile", *this);
+        m_manager.Subscribe("saveFile", *this);
         m_manager.Subscribe("mousePressed", *this);
         m_manager.Subscribe("mouseMoved", *this);
         m_manager.Subscribe("mouseReleased", *this);
@@ -31,6 +32,7 @@ public:
     virtual ~ImagePresenter()
     {
         m_manager.Unsubscribe("openFile", *this);
+        m_manager.Unsubscribe("saveFile", *this);
         m_manager.Unsubscribe("mousePressed", *this);
         m_manager.Unsubscribe("mouseMoved", *this);
         m_manager.Unsubscribe("mouseReleased", *this);
@@ -41,7 +43,12 @@ public:
         if (eventType == "openFile")
         {
             OnOpenFile();
-        } else if (eventType == "mousePressed")
+        }
+        else if (eventType == "saveFile")
+        {
+            OnSaveFile();
+        }
+        else if (eventType == "mousePressed")
         {
             OnMousePressed(event);
         } else if (eventType == "mouseMoved")
@@ -54,7 +61,7 @@ public:
     }
 
 private:
-    void OnOpenFile()
+    void OnOpenFile() const
     {
         auto selection = pfd::open_file("Choose an image", ".",
                                         {"Image Files", "*.jpg *.jpeg *.png *.bmp"});
@@ -64,6 +71,27 @@ private:
             if (m_model.LoadFromFile(filename))
             {
                 m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
+            }
+        }
+    }
+
+    void OnSaveFile() const
+    {
+        if (m_model.GetTexture().getSize().x == 0)
+        {
+            std::cerr << "No image to save" << std::endl;
+            return;
+        }
+
+        auto selection = pfd::save_file("Save image", ".",
+                                    {"Image Files", "*.jpg *.jpeg"});
+
+        if (!selection.result().empty())
+        {
+            std::string file = selection.result();
+            if (!m_model.SaveToFile(file))
+            {
+                std::cerr << "Failed to save image" << std::endl;
             }
         }
     }

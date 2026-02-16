@@ -36,6 +36,22 @@ public:
         return true;
     }
 
+    bool SaveToFile(const std::string &filename) const
+    {
+        sf::Image image = m_texture.copyToImage();
+        if (image.getSize().x == 0 || image.getSize().y == 0)
+        {
+            std::cerr << "No image loaded to save" << std::endl;
+            return false;
+        }
+        if (!image.saveToFile(filename))
+        {
+            std::cerr << "Failed to save image to " << filename << std::endl;
+            return false;
+        }
+        return true;
+    }
+
     void Move(sf::Vector2f delta)
     {
         m_rect.position.x += static_cast<int>(delta.x);

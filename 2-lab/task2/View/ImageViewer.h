@@ -34,6 +34,10 @@ public:
             sf::Event::MouseButtonPressed event;
             m_manager.NotifyListeners("openFile", event);
         });
+        m_fileMenu->AddItem("Save", [this]() {
+            sf::Event::MouseButtonPressed event;
+            m_manager.NotifyListeners("saveFile", event);
+        });
     }
 
     void SetImage(sf::Texture& texture, sf::IntRect& rect) override
