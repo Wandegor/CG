@@ -32,7 +32,8 @@ public:
 
         m_fileMenu = std::make_unique<Menu>(m_font, "File",sf::Vector2f(100, 100), sf::Vector2f(100, 40));
         m_fileMenu->AddItem("Open", [this]() {
-            m_manager.NotifyListeners("openFile");
+            sf::Event::MouseButtonPressed event;
+            m_manager.NotifyListeners("openFile", event);
         });
     }
 
@@ -69,19 +70,16 @@ public:
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
-                    MouseData data{sf::Mouse::getPosition(m_window), mousePressed->button};
-                    m_manager.NotifyListeners("mousePressed", &data);
+                    m_manager.NotifyListeners("mousePressed", *event);
                 }
             }
-
             else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
-                sf::Vector2i pos = sf::Mouse::getPosition(m_window);
-                m_manager.NotifyListeners("mouseMoved", &pos);
+                m_manager.NotifyListeners("mouseMoved", *event);
             }
             else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                m_manager.NotifyListeners("mouseReleased", const_cast<sf::Mouse::Button *>(&mouseReleased->button));
+                m_manager.NotifyListeners("mouseReleased", *event);
             }
 
             m_fileMenu->HandleEvent(*event, m_window);

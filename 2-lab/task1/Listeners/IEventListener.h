@@ -3,7 +3,8 @@
 
 class IEventListener {
 public:
-    virtual void Update(const std::string& eventType, void* data) = 0;
+    virtual void Update(const std::string& eventType, const sf::Event& event) = 0;
+    // virtual void Update(const std::string& eventType) = 0;
 
 protected:
     ~IEventListener() = default;

@@ -37,20 +37,20 @@ public:
         m_manager.Unsubscribe("mouseReleased", *this);
     }
 
-    void Update(const std::string &eventType, void *data) override
+    void Update(const std::string &eventType, const sf::Event& event) override
     {
         if (eventType == "openFile")
         {
             OnOpenFile();
         } else if (eventType == "mousePressed")
         {
-            OnMousePressed(static_cast<MouseData *>(data));
+            OnMousePressed(event);
         } else if (eventType == "mouseMoved")
         {
-            OnMouseMoved(static_cast<sf::Vector2i *>(data));
+            OnMouseMoved(event);
         } else if (eventType == "mouseReleased")
         {
-            OnMouseReleased(static_cast<sf::Mouse::Button *>(data));
+            OnMouseReleased(event);
         }
     }
 
@@ -69,26 +69,31 @@ private:
         }
     }
 
-    void OnMousePressed(MouseData *mouseData)
+    void OnMousePressed(const sf::Event& event)
     {
-        if (mouseData->button != sf::Mouse::Button::Left) return;
+        auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
+        if (!mousePressed) return;
+        if (mousePressed->button != sf::Mouse::Button::Left) return;
 
-        if (m_model.GetRect().contains(mouseData->pos))
+        if (m_model.GetRect().contains(mousePressed->position))
         {
             m_isDragging = true;
             m_lastMousePosition = {
-                    static_cast<float>(mouseData->pos.x),
-                    static_cast<float>(mouseData->pos.y)};
+                    static_cast<float>(mousePressed->position.x),
+                    static_cast<float>(mousePressed->position.y)};
 
         }
     }
 
-    void OnMouseMoved(sf::Vector2i *pos)
+    void OnMouseMoved(const sf::Event& event)
     {
+        auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
+        if (!mouseMoved) return;
+
         if (!m_isDragging) return;
 
-        sf::Vector2f currentPos(static_cast<float>(pos->x),
-                                static_cast<float>(pos->y));
+        sf::Vector2f currentPos(static_cast<float>(mouseMoved->position.x),
+                            static_cast<float>(mouseMoved->position.y));
         sf::Vector2f delta = currentPos - m_lastMousePosition;
 
         m_model.Move(delta);
@@ -98,9 +103,12 @@ private:
                 
     }
 
-    void OnMouseReleased(const sf::Mouse::Button *button)
+    void OnMouseReleased(const sf::Event& event)
     {
-        if (*button == sf::Mouse::Button::Left)
+        auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
+        if (!mouseReleased) return;
+
+        if (mouseReleased->button == sf::Mouse::Button::Left)
         {
             m_isDragging = false;
         }
