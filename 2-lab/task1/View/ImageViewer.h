@@ -99,7 +99,7 @@ public:
 
     void Draw()
     {
-        m_window.clear(sf::Color::Cyan);
+        m_window.clear(sf::Color(200, 200, 200));
         m_window.draw(m_sprite);
         m_openButton->DrawTo(m_window);
     }

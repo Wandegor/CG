@@ -15,7 +15,7 @@ private:
 
     bool m_isDragging;
     sf::Vector2f m_dragStartPosition;
-    sf::Vector2i m_modelStartPos;
+    sf::Vector2f m_lastMousePosition;
 
 public:
 
@@ -81,7 +81,6 @@ private:
                     static_cast<float>(mouseData->pos.x),
                     static_cast<float>(mouseData->pos.y)};
 
-//            m_modelStartPos = m_model.GetRect().position;
         }
     }
 
@@ -89,14 +88,16 @@ private:
     {
         if (!m_isDragging) return;
 
-        sf::Vector2f delta = {
-                static_cast<float>(pos->x) - m_dragStartPosition.x,
-                static_cast<float>(pos->y) - m_dragStartPosition.y
-        };
+        sf::Vector2f currentPos(static_cast<float>(pos->x),
+                                static_cast<float>(pos->y));
+        sf::Vector2f delta = currentPos - m_lastMousePosition;
+
         m_model.Move(delta);
 
-//        m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
         m_view.MoveImage(delta);
+
+        m_lastMousePosition = currentPos;
+                
     }
 
     void OnMouseReleased(const sf::Mouse::Button *button)
