@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "IView.h"
-#include "../Button.h"
+#include "../ViewComponents/Button.h"
 #include "../Listeners/EventManager.h"
 #include "../MouseData.h"
 

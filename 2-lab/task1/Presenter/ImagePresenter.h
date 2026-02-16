@@ -2,9 +2,10 @@
 
 #include "../Listeners/IEventListener.h"
 #include "../Model/ImageModel.h"
-#include "../../portable-file-dialogs.h"
+
 #include "../View/ImageViewer.h"
 #include "../MouseData.h"
+#include <portable-file-dialogs.h>
 
 class ImagePresenter : public IEventListener
 {
@@ -14,7 +15,6 @@ private:
     EventManager &m_manager;
 
     bool m_isDragging;
-    sf::Vector2f m_dragStartPosition;
     sf::Vector2f m_lastMousePosition;
 
 public:

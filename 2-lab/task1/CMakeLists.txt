@@ -6,14 +6,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
         main.cpp
-        Button.h
+        ViewComponents/Button.h
         View/ImageViewer.h
         Model/ImageModel.h
         Presenter/ImagePresenter.h
         Listeners/EventManager.h
         Listeners/IEventListener.h
         MouseData.h
-        View/IView.h)
+        View/IView.h
+        ViewComponents/Menu.h)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -33,5 +34,9 @@ target_link_libraries(${PROJECT_NAME}
         SFML::Graphics
         SFML::Window
         SFML::System
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        Libraries
 )
 

@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 
-#include "Button.h"
+#include "ViewComponents/Button.h"
 #include "Listeners/EventManager.h"
 #include "Presenter/ImagePresenter.h"
 #include "View/ImageViewer.h"
