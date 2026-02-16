@@ -18,10 +18,11 @@ private:
     sf::Color m_hoverColor = sf::Color::Magenta;
 public:
     Button(
-        sf::Font& font,
-        std::string text,
+        const sf::Font& font,
+        const std::string& text,
         sf::Vector2f position,
         sf::Vector2f size,
+        std::function<void()> onClick = nullptr,
 
         sf::Color textColor = sf::Color(0, 0, 0),
         sf::Color bgNormalColor = sf::Color(225, 225, 225),
@@ -29,6 +30,7 @@ public:
         )
     :
     m_text(font, text),
+    m_onClick(std::move(onClick)),
     m_normalColor(bgNormalColor),
     m_hoverColor(bgHoverColor)
     {
@@ -46,7 +48,7 @@ public:
         m_button.setSize(size);
         m_button.setFillColor(m_normalColor);
 
-        m_button.setOutlineThickness(5.0f);
+        m_button.setOutlineThickness(3.0f);
         m_button.setOutlineColor(sf::Color(128, 128, 128));
     }
     void DrawTo(sf::RenderWindow& window)
@@ -88,6 +90,22 @@ public:
         }
         return false;
     }
+
+    sf::Vector2f GetPosition() const
+    {
+        return m_button.getPosition();
+    }
+
+    sf::Vector2f GetSize() const
+    {
+        return m_button.getSize();
+    }
+
+    const sf::Font &GetFont() const
+    {
+        return m_text.getFont();
+    }
+
 };
 
 

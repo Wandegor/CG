@@ -6,6 +6,7 @@
 #include "../ViewComponents/Button.h"
 #include "../Listeners/EventManager.h"
 #include "../MouseData.h"
+#include "../ViewComponents/Menu.h"
 
 class ImageViewer :public IView
 {
@@ -15,7 +16,7 @@ private:
 
     sf::Font m_font;
 
-    std::unique_ptr<Button> m_openButton;
+    std::unique_ptr<Menu> m_fileMenu;
 
     sf::Texture m_texture;
     sf::Sprite m_sprite;
@@ -29,16 +30,12 @@ public:
             std::cerr << "Error loading font" << std::endl;
         }
 
-        m_openButton = std::make_unique<Button>(
-            m_font,
-            "open",
-            sf::Vector2f(100, 100),
-            sf::Vector2f(200, 60)
-        );
-
-        m_openButton->SetOnClick([this]()
-        {
+        m_fileMenu = std::make_unique<Menu>(m_font, "File",sf::Vector2f(100, 100), sf::Vector2f(100, 40));
+        m_fileMenu->AddItem("Open", [this]() {
             m_manager.NotifyListeners("openFile");
+        });
+        m_fileMenu->AddItem("asd", [this]() {
+            m_window.close();
         });
     }
 
@@ -72,16 +69,8 @@ public:
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(m_window);
-                    if (m_openButton->Contains(mousePos))
-                    {
-                        m_openButton->OnClick();
-                    }
-                    else
-                    {
-                        MouseData data{sf::Mouse::getPosition(m_window), mousePressed->button};
-                        m_manager.NotifyListeners("mousePressed", &data);
-                    }
+                    MouseData data{sf::Mouse::getPosition(m_window), mousePressed->button};
+                    m_manager.NotifyListeners("mousePressed", &data);
                 }
             }
 
@@ -94,6 +83,8 @@ public:
             {
                 m_manager.NotifyListeners("mouseReleased", const_cast<sf::Mouse::Button *>(&mouseReleased->button));
             }
+
+            m_fileMenu->HandleEvent(*event, m_window);
         }
     }
 
@@ -101,7 +92,7 @@ public:
     {
         m_window.clear(sf::Color(200, 200, 200));
         m_window.draw(m_sprite);
-        m_openButton->DrawTo(m_window);
+        m_fileMenu->Draw(m_window);
     }
 
     void Run()
