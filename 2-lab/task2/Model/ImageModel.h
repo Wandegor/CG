@@ -8,7 +8,8 @@ class ImageModel
 private:
     sf::Image m_image;
     sf::Texture m_texture;
-    sf::Rect<int> m_rect;
+    sf::Rect<int> m_textureRect; // какую часть картинки отображать
+    sf::Vector2i m_picturePosition;
 
 public:
     ImageModel() = default;
@@ -27,12 +28,12 @@ public:
             return false;
         }
 
-        sf::IntRect rect({0, 0},
-                         {
-                             static_cast<int>(m_texture.getSize().x),
-                             static_cast<int>(m_texture.getSize().y)
-                         });
-        m_rect = rect;
+        m_textureRect = sf::IntRect({0, 0},
+                                    {
+                                        static_cast<int>(m_texture.getSize().x),
+                                        static_cast<int>(m_texture.getSize().y)
+                                    });
+        m_picturePosition = {300, 300};
         return true;
     }
 
@@ -46,9 +47,13 @@ public:
     {
         m_image.resize({width, height}, color);
         if (!m_texture.loadFromImage(m_image)) return;
-        m_rect.size.x = static_cast<int>(width);
-        m_rect.size.y = static_cast<int>(height);
-        m_rect.position = {200, 200};
+        m_textureRect = sf::IntRect({0, 0},
+                                    {
+                                        static_cast<int>(width),
+                                        static_cast<int>(height)
+                                    });
+        m_picturePosition = {200, 200};
+
     }
 
     void DrawPoint(sf::Vector2i pos, sf::Color color)
@@ -56,7 +61,7 @@ public:
         if (pos.x >= 0 && pos.x < m_image.getSize().x &&
             pos.y >= 0 && pos.y < m_image.getSize().y)
         {
-            m_image.setPixel({static_cast<unsigned>(pos.x),static_cast<unsigned>(pos.y)}, color);
+            m_image.setPixel({static_cast<unsigned>(pos.x), static_cast<unsigned>(pos.y)}, color);
         }
     }
 
@@ -71,27 +76,40 @@ public:
 
         while (true)
         {
-            if (x1 >= 0 && x1 < (int)m_image.getSize().x &&
-                y1 >= 0 && y1 < (int)m_image.getSize().y)
+            if (x1 >= 0 && x1 < (int) m_image.getSize().x &&
+                y1 >= 0 && y1 < (int) m_image.getSize().y)
             {
                 m_image.setPixel({static_cast<unsigned>(x1), static_cast<unsigned>(y1)}, color);
             }
             if (x1 == x2 && y1 == y2) break;
             int e2 = 2 * err;
-            if (e2 > -dy) { err -= dy; x1 += sx; }
-            if (e2 < dx) { err += dx; y1 += sy; }
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x1 += sx;
+            }
+            if (e2 < dx)
+            {
+                err += dx;
+                y1 += sy;
+            }
         }
     }
 
     void Move(sf::Vector2f delta)
     {
-        m_rect.position.x += static_cast<int>(delta.x);
-        m_rect.position.y += static_cast<int>(delta.y);
+        m_textureRect.position.x += static_cast<int>(delta.x);
+        m_textureRect.position.y += static_cast<int>(delta.y);
     }
 
-    sf::Rect<int> &GetRect()
+    sf::Rect<int> GetTextureRect() const
     {
-        return m_rect;
+        return m_textureRect;
+    }
+
+    sf::Vector2i GetPicturePosition() const
+    {
+        return m_picturePosition;
     }
 
     sf::Texture &GetTexture()

@@ -16,7 +16,7 @@ private:
     EventManager &m_manager;
 
     bool m_isDrawing;
-    sf::Vector2f m_lastMousePosition;
+    sf::Vector2i m_lastDrawPosition;
 
 public:
 
@@ -71,7 +71,7 @@ private:
     void OnNewFile()
     {
         m_model.CreateNew(800, 600, sf::Color::White);
-        m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
+        m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
     }
 
     void OnOpenFile()
@@ -83,7 +83,7 @@ private:
             std::string filename = selection.result()[0];
             if (m_model.LoadFromFile(filename))
             {
-                m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
+                m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
             }
         }
     }
@@ -114,46 +114,51 @@ private:
         auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
         if (!mousePressed) return;
         if (mousePressed->button != sf::Mouse::Button::Left) return;
-
         if (!m_model.HasImage()) return;
 
 
-        auto& rect = m_model.GetRect();
-        sf::Vector2f imagePos = {
-            static_cast<float>(mousePressed->position.x - rect.position.x),
-            static_cast<float>(mousePressed->position.y - rect.position.y)};
-        if (rect.contains(mousePressed->position))
+        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2i onImagePos(
+            mousePressed->position.x - picturePos.x,
+            mousePressed->position.y - picturePos.y
+        );
+
+        // Проверка на попадание по картинке
+        if (onImagePos.x >= 0 && onImagePos.y >= 0
+            && onImagePos.x < m_model.GetTexture().getSize().x
+            && onImagePos.y < m_model.GetTexture().getSize().y)
         {
             m_isDrawing = true;
-            m_lastMousePosition = imagePos;
-            m_model.DrawPoint(sf::Vector2i(imagePos), sf::Color::Black);
+            m_lastDrawPosition = onImagePos;
+            m_model.DrawPoint(sf::Vector2i(onImagePos), sf::Color::Black); // относительно картинки
             m_model.UpdateTexture();
-            m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
         }
     }
 
     void OnMouseMoved(const sf::Event& event)
     {
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
-        if (!mouseMoved) return;
-        if (!m_isDrawing) return;
-        if (!m_model.HasImage()) return;
+        if (!mouseMoved || !m_isDrawing || !m_model.HasImage()) return;
 
-        auto& rect = m_model.GetRect();
-        sf::Vector2i currentPos = {
-            mouseMoved->position.x - rect.position.x,
-            mouseMoved->position.y - rect.position.y};
+        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2i onImagePos(
+            mouseMoved->position.x - picturePos.x,
+            mouseMoved->position.y - picturePos.y
+        );
 
-        if (!m_model.GetRect().contains(currentPos))
+        if (onImagePos.x >= 0 && onImagePos.y >= 0
+            && onImagePos.x < m_model.GetTexture().getSize().x
+            && onImagePos.y < m_model.GetTexture().getSize().y)
+        {
+            m_model.DrawLine(m_lastDrawPosition, onImagePos, sf::Color::Black);
+            m_lastDrawPosition = onImagePos;
+            m_model.UpdateTexture();
+        }
+        else
         {
             m_isDrawing = false;
             return;
         }
-
-        m_model.DrawLine(sf::Vector2i(m_lastMousePosition), currentPos, sf::Color::Black);
-        m_lastMousePosition = sf::Vector2f(currentPos);
-        m_model.UpdateTexture();
-        m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
     }
 
     void OnMouseReleased(const sf::Event& event)

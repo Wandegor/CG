@@ -47,20 +47,16 @@ public:
         });
     }
 
-    void SetImage(sf::Texture &texture, sf::IntRect &rect) override
+    void SetImage(sf::Texture &texture, sf::Vector2i screenPos) override
     {
         if (m_sprite.has_value())
         {
             m_sprite->setTexture(texture);
         } else
         {
-            m_sprite.emplace(texture);
+            m_sprite.emplace(texture); // Будет вызван конструктор sf::Sprite(texture, rect)
         }
-        m_sprite->setTextureRect(rect);
-        m_sprite->setPosition({
-            static_cast<float>(rect.position.x),
-            static_cast<float>(rect.position.y)
-        });
+        m_sprite->setPosition(sf::Vector2f(screenPos));
     }
 
     void MoveImage(sf::Vector2f delta) override
