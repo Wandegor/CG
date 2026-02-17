@@ -8,7 +8,7 @@
 #include "../Listeners/EventManager.h"
 #include "../ViewComponents/Menu.h"
 
-class ImageViewer :public IView
+class ImageViewer : public IView
 {
 private:
     sf::RenderWindow &m_window;
@@ -18,45 +18,54 @@ private:
 
     std::unique_ptr<Menu> m_fileMenu;
 
-    sf::Texture m_texture;
-    sf::Sprite m_sprite;
+    std::optional<sf::Sprite> m_sprite;
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
-        : m_window(window), m_manager(document), m_sprite(m_texture)
+        : m_window(window), m_manager(document), m_sprite(std::nullopt)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
             std::cerr << "Error loading font" << std::endl;
         }
 
-        m_fileMenu = std::make_unique<Menu>(m_font, "File",sf::Vector2f(100, 100), sf::Vector2f(100, 40));
-        m_fileMenu->AddItem("New", [this]() {
+        m_fileMenu = std::make_unique<Menu>(m_font, "File", sf::Vector2f(20, 20), sf::Vector2f(100, 40));
+        m_fileMenu->AddItem("New", [this]()
+        {
             sf::Event::MouseButtonPressed event;
             m_manager.NotifyListeners(EventType::NewFile, event);
         });
-        m_fileMenu->AddItem("Open", [this]() {
+        m_fileMenu->AddItem("Open", [this]()
+        {
             sf::Event::MouseButtonPressed event;
             m_manager.NotifyListeners(EventType::OpenFile, event);
         });
-        m_fileMenu->AddItem("Save", [this]() {
+        m_fileMenu->AddItem("Save", [this]()
+        {
             sf::Event::MouseButtonPressed event;
             m_manager.NotifyListeners(EventType::SaveFile, event);
         });
     }
 
-    void SetImage(sf::Texture& texture, sf::IntRect& rect) override
+    void SetImage(sf::Texture &texture, sf::IntRect &rect) override
     {
-        // m_sprite обновиться сам так как хранит ссылку на m_texture
-        m_texture = texture;
-        m_sprite.setTextureRect(rect);
-        m_sprite.setPosition({static_cast<float>(rect.position.x),
-                         static_cast<float>(rect.position.y)});
+        if (m_sprite.has_value())
+        {
+            m_sprite->setTexture(texture);
+        } else
+        {
+            m_sprite.emplace(texture);
+        }
+        m_sprite->setTextureRect(rect);
+        m_sprite->setPosition({
+            static_cast<float>(rect.position.x),
+            static_cast<float>(rect.position.y)
+        });
     }
 
     void MoveImage(sf::Vector2f delta) override
     {
-        m_sprite.move(delta);
+        m_sprite->move(delta);
     }
 
     void ProcessEvents()
@@ -66,26 +75,22 @@ public:
             if (event->is<sf::Event::Closed>())
             {
                 m_window.close();
-            }
-            else if (auto key = event->getIf<sf::Event::KeyPressed>())
+            } else if (auto key = event->getIf<sf::Event::KeyPressed>())
             {
                 if (key->code == sf::Keyboard::Key::Escape)
                 {
                     m_window.close();
                 }
-            }
-            else if (auto mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+            } else if (auto mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
                     m_manager.NotifyListeners(EventType::MousePressed, *event);
                 }
-            }
-            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            } else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
                 m_manager.NotifyListeners(EventType::MouseMoved, *event);
-            }
-            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            } else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, *event);
             }
@@ -97,7 +102,8 @@ public:
     void Draw()
     {
         m_window.clear(sf::Color(200, 200, 200));
-        m_window.draw(m_sprite);
+        if (m_sprite.has_value())
+            m_window.draw(m_sprite.value());
         m_fileMenu->Draw(m_window);
     }
 
