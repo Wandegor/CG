@@ -51,11 +51,12 @@ public:
     {
         if (m_sprite.has_value())
         {
-            m_sprite->setTexture(texture);
+            m_sprite->setTexture(texture, true);
         } else
         {
-            m_sprite.emplace(texture); // Будет вызван конструктор sf::Sprite(texture, rect)
+            m_sprite.emplace(texture); // Будет вызван конструктор sf::Sprite(texture)
         }
+
         m_sprite->setPosition(sf::Vector2f(screenPos));
     }
 
@@ -83,10 +84,10 @@ public:
                 {
                     m_manager.NotifyListeners(EventType::MousePressed, *event);
                 }
-            } else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            } else if (event->getIf<sf::Event::MouseMoved>())
             {
                 m_manager.NotifyListeners(EventType::MouseMoved, *event);
-            } else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            } else if (event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, *event);
             }

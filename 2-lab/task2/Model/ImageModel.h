@@ -8,7 +8,6 @@ class ImageModel
 private:
     sf::Image m_image;
     sf::Texture m_texture;
-    sf::Rect<int> m_textureRect; // какую часть картинки отображать
     sf::Vector2i m_picturePosition;
 
 public:
@@ -27,13 +26,8 @@ public:
             std::cerr << "Failed to create texture from image" << std::endl;
             return false;
         }
-
-        m_textureRect = sf::IntRect({0, 0},
-                                    {
-                                        static_cast<int>(m_texture.getSize().x),
-                                        static_cast<int>(m_texture.getSize().y)
-                                    });
         m_picturePosition = {300, 300};
+
         return true;
     }
 
@@ -47,13 +41,7 @@ public:
     {
         m_image.resize({width, height}, color);
         if (!m_texture.loadFromImage(m_image)) return;
-        m_textureRect = sf::IntRect({0, 0},
-                                    {
-                                        static_cast<int>(width),
-                                        static_cast<int>(height)
-                                    });
         m_picturePosition = {200, 200};
-
     }
 
     void DrawPoint(sf::Vector2i pos, sf::Color color)
@@ -94,17 +82,6 @@ public:
                 y1 += sy;
             }
         }
-    }
-
-    void Move(sf::Vector2f delta)
-    {
-        m_textureRect.position.x += static_cast<int>(delta.x);
-        m_textureRect.position.y += static_cast<int>(delta.y);
-    }
-
-    sf::Rect<int> GetTextureRect() const
-    {
-        return m_textureRect;
     }
 
     sf::Vector2i GetPicturePosition() const
