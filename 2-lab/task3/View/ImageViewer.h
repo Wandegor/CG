@@ -76,24 +76,25 @@ public:
         }
     }
 
-    void SetFieldElements(const std::vector<FieldElement>& elements) override
+    void SetFieldElements(const std::vector<FieldElement>& elements, const std::vector<LibraryElement>& library) override
     {
         m_fieldSprites.clear();
         m_fieldTexts.clear();
 
         for (const auto& elem: elements)
         {
-            sf::Sprite sprite(elem.info->texture);
+            const auto& libElem = library[elem.libraryIndex];
+            sf::Sprite sprite(libElem.texture);
             sprite.setPosition(elem.position);
             m_fieldSprites.push_back(sprite);
 
-            sf::Text text(m_font, elem.info->name);
+            sf::Text text(m_font, libElem.name);
             text.setCharacterSize(14);
             text.setFillColor(sf::Color::Black);
             sf::FloatRect textBounds = text.getLocalBounds();
-            float textX = elem.position.x + (static_cast<float>(elem.info->texture.getSize().x) - textBounds.size.x) /
+            float textX = elem.position.x + (static_cast<float>(libElem.texture.getSize().x) - textBounds.size.x) /
                           2.f;
-            float textY = elem.position.y + static_cast<float>(elem.info->texture.getSize().y) + 5.f;
+            float textY = elem.position.y + static_cast<float>(libElem.texture.getSize().y) + 5.f;
             text.setPosition({textX, textY});
             m_fieldTexts.push_back(text);
         }
@@ -120,7 +121,7 @@ public:
     {
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
-        m_draggedSprite->setColor(sf::Color(255, 255, 255, 250));
+        m_draggedSprite->setColor(sf::Color(255, 255, 255, 100));
 
         m_draggedSprite->setOrigin(offset);
         m_draggedSprite->setPosition(screenPos);

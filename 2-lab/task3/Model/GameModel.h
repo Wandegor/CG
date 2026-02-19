@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <map>
 #include <string>
 #include <SFML/Graphics.hpp>
 
@@ -11,7 +12,7 @@ struct LibraryElement
 
 struct FieldElement
 {
-    const LibraryElement* info;
+    int libraryIndex;
     sf::Vector2f position;
 };
 
@@ -21,6 +22,7 @@ private:
     std::vector<LibraryElement> m_library;
     std::vector<FieldElement> m_placedElements;
 
+    std::map<std::pair<int,int>, std::vector<int>> m_recipes;
 public:
     GameModel() = default;
 
@@ -42,12 +44,20 @@ public:
         m_library.push_back(createElement(L"Огонь", sf::Color::Red));
         m_library.push_back(createElement(L"Вода", sf::Color::Cyan));
         m_library.push_back(createElement(L"Воздух", sf::Color::White));
-        m_library.push_back(createElement(L"Воздух1231", sf::Color::Green));
-        m_library.push_back(createElement(L"СнегВРоссии", sf::Color::Yellow));
+        m_library.push_back(createElement(L"Лава", sf::Color::Yellow));
+        m_library.push_back(createElement(L"Пар", sf::Color(200,200,200)));
+
+        InitRecipes();
     }
 
-    void AddFieldElement(const LibraryElement* info, sf::Vector2f pos) {
-        m_placedElements.push_back({info, pos});
+    void InitRecipes()
+    {
+        m_recipes[{0,1}] = {4};
+        m_recipes[{2,1}] = {5};
+    }
+
+    void AddFieldElement(int libIndex, sf::Vector2f pos) {
+        m_placedElements.push_back({libIndex, pos});
     }
 
     void UpdateFieldElementPosition(int index, sf::Vector2f pos)
@@ -64,18 +74,4 @@ public:
     {
         return m_placedElements;
     }
-
-    // void Move(sf::Vector2i delta)
-    // {
-    //     m_picturePosition.x += delta.x;
-    //     m_picturePosition.y += delta.y;
-    // }
-    //
-    // sf::Vector2i GetPicturePosition() const
-    // {
-    //     return m_picturePosition;
-    // }
-    //
-    //
-    //
 };

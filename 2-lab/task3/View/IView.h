@@ -7,7 +7,7 @@ public:
     virtual ~IView() = default;
 
     virtual void SetLibrary(std::vector<LibraryElement>& library) = 0;
-    virtual void SetFieldElements(const std::vector<FieldElement>& elements) = 0;
+    virtual void SetFieldElements(const std::vector<FieldElement>& elements, const std::vector<LibraryElement>& library) = 0;
 
     virtual void UpdateFieldElementPosition(int index, sf::Vector2f newPos) = 0;
 

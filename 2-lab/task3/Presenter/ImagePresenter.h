@@ -138,27 +138,27 @@ private:
             // добавить на поле из lib
             if (m_dragInfo == DragInfo::Library)
             {
-                m_dragInfo = DragInfo::None;
-                const auto& lib = m_model.GetLibrary();
-                const LibraryElement* info = &lib[m_dragLibraryIndex];
+                // const auto& lib = m_model.GetLibrary();
+                // const LibraryElement* info = &lib[m_dragLibraryIndex];
 
                 sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
 
-                m_model.AddFieldElement(info, dropPos);
-                m_view.SetFieldElements(m_model.GetFieldElements());
+                m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
+                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
             }
             // перемещение полевого элемента
             if (m_dragInfo == DragInfo::InGame)
             {
                 sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
                 m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
-                m_view.SetFieldElements(m_model.GetFieldElements());
+                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
             }
+            // Соединение
         }
         else
         {
             m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-            m_view.SetFieldElements(m_model.GetFieldElements());
+            m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
         }
 
         m_view.HideDraggedElement();
