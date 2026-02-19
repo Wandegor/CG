@@ -129,8 +129,8 @@ private:
             && onImagePos.y < m_model.GetTexture().getSize().y)
         {
             m_isDrawing = true;
-            m_view.StartTemporaryStroke(onImagePos);
             m_lastDrawPosition = onImagePos;
+            m_view.StartTemporaryStroke(onImagePos);
         }
     }
 
@@ -149,7 +149,7 @@ private:
             && onImagePos.x < m_model.GetTexture().getSize().x
             && onImagePos.y < m_model.GetTexture().getSize().y)
         {
-            m_view.AddTemporaryPoint(onImagePos);
+            m_view.AddTemporaryPoint(m_lastDrawPosition, onImagePos);
             m_lastDrawPosition = onImagePos;
         }
         else
@@ -164,16 +164,11 @@ private:
         auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
         if (!mouseReleased) return;
 
-        if (mouseReleased->button == sf::Mouse::Button::Left)
+        if (mouseReleased->button == sf::Mouse::Button::Left && m_isDrawing)
         {
+            const sf::Texture& strokeTexture = m_view.FinishTemporaryStroke();
+            m_model.UpdateTexture(strokeTexture);
             m_isDrawing = false;
-            auto points = m_view.FinishTemporaryStroke();
-            if (points.size() >= 2)
-            {
-                for (size_t i = 1; i < points.size(); ++i)
-                    m_model.DrawLine(points[i-1], points[i], sf::Color::Black);
-                m_model.UpdateTexture();
-            }
         }
     }
 };
