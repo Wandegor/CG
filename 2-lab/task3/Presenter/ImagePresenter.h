@@ -103,8 +103,7 @@ private:
                 mousePressed->position.x - elem.position.x,
                 mousePressed->position.y - elem.position.y);
 
-            m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position), m_dragOffset);
-            return;
+            // m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position), m_dragOffset);
         }
     }
 
@@ -115,9 +114,15 @@ private:
         if (!m_isDragging) return;
 
         sf::Vector2i currentPos(mouseMoved->position.x, mouseMoved->position.y);
-        if (m_dragInfo == DragInfo::Library || m_dragInfo == DragInfo::InGame)
+        if (m_dragInfo == DragInfo::Library )
         {
             m_view.UpdateDraggedElement(sf::Vector2f(currentPos));
+        }
+        if (m_dragInfo == DragInfo::InGame )
+        {
+            sf::Vector2f newPos = sf::Vector2f(currentPos) - m_dragOffset;
+            m_model.UpdatePlacedElementPosition(m_dragFieldIndex, newPos);
+            m_view.UpdateFieldElementPosition(m_dragFieldIndex, newPos);
         }
     }
 

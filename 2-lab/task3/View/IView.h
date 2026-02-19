@@ -8,6 +8,8 @@ public:
     virtual void SetLibrary(std::vector<LibraryElement> & library) = 0;
     virtual void SetFieldElements(const std::vector<PlacedElement> & elements) = 0;
 
+    virtual void UpdateFieldElementPosition(int index, sf::Vector2f newPos) = 0;
+
     virtual void ShowDraggedElement(const LibraryElement* element, sf::Vector2f screenPos, sf::Vector2f offset) = 0;
     virtual void UpdateDraggedElement(sf::Vector2f screenPos) = 0;
     virtual void HideDraggedElement() = 0;

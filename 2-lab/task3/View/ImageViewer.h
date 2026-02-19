@@ -98,6 +98,23 @@ public:
         }
     }
 
+    void UpdateFieldElementPosition(int index, sf::Vector2f newPos) override
+    {
+        if (index >= 0 && index < m_fieldSprites.size())
+        {
+            m_fieldSprites[index].setPosition(newPos);
+
+            if (index < m_fieldTexts.size())
+            {
+                const auto& elem = m_fieldSprites[index];
+                sf::FloatRect textBounds = m_fieldTexts[index].getLocalBounds();
+                float textX = newPos.x + (elem.getTexture().getSize().x - textBounds.size.x) / 2.f;
+                float textY = newPos.y + elem.getTexture().getSize().y + 5.f;
+                m_fieldTexts[index].setPosition({textX, textY});
+            }
+        }
+    }
+
     void ShowDraggedElement(const LibraryElement* element, sf::Vector2f screenPos, sf::Vector2f offset) override
     {
         if (!element) return;
