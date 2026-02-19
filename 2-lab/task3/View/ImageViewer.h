@@ -3,10 +3,8 @@
 #include <SFML/Graphics.hpp>
 
 #include "IView.h"
-#include "../ViewComponents/Button.h"
 #include "../Listeners/EventManager.h"
 #include "../Listeners/EventType.h"
-#include "../ViewComponents/Menu.h"
 
 class ImageViewer :public IView
 {
@@ -38,6 +36,7 @@ public:
 
     void SetLibrary(std::vector<LibraryElement>& library) override
     {
+        if (library.empty()) return;
         m_librarySprites.clear();
         m_libraryTexts.clear();
 
@@ -110,11 +109,11 @@ public:
 
     sf::FloatRect GetFieldBounds() const override
     {
-        sf::Vector2f FieldSize = {
-                static_cast<float>(m_window.getSize().y),
-                m_window.getSize().x - m_leftPanelWidth};
-        auto pos = sf::Vector2f(m_window.getPosition());
-        return {pos, FieldSize};
+        float left = m_leftPanelWidth;
+        float top = 0.f;
+        float width = m_window.getSize().x - m_leftPanelWidth;
+        float height = m_window.getSize().y;
+        return sf::FloatRect({left, top}, {width, height});
     }
 
     void ProcessEvents()
