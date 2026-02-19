@@ -6,11 +6,11 @@
 #include "../Listeners/EventManager.h"
 #include "../Listeners/EventType.h"
 
-class ImageViewer :public IView
+class ImageViewer : public IView
 {
 private:
-    sf::RenderWindow &m_window;
-    EventManager &m_manager;
+    sf::RenderWindow& m_window;
+    EventManager& m_manager;
 
     float m_leftPanelWidth;
     sf::Font m_font;
@@ -24,7 +24,7 @@ private:
     std::optional<sf::Sprite> m_draggedSprite;
 
 public:
-    ImageViewer(sf::RenderWindow &window, EventManager &document)
+    ImageViewer(sf::RenderWindow& window, EventManager& document)
         : m_window(window), m_manager(document)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
@@ -32,7 +32,7 @@ public:
             std::cerr << "Error loading font" << std::endl;
         }
 
-        m_leftPanelWidth = m_window.getSize().x * 0.35f;
+        m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.35f;
     }
 
     void SetLibrary(std::vector<LibraryElement>& library) override
@@ -41,23 +41,23 @@ public:
         m_librarySprites.clear();
         m_libraryTexts.clear();
 
-        const float elemSize = library[0].texture.getSize().x;
-        const int columns = 4;
+        const float elemSize = static_cast<float>(library[0].texture.getSize().x);
+        constexpr int columns = 4;
 
         const float xSpacing = m_leftPanelWidth / columns - elemSize;
 
-        const float textOffsetY = 3.f;
         const float cellWidth = elemSize + xSpacing;
         const float cellHeight = elemSize + 40;
 
         for (size_t i = 0; i < library.size(); ++i)
         {
+            constexpr float textOffsetY = 3.f;
             const auto& elem = library[i];
             int col = static_cast<int>(i % columns);
             int row = static_cast<int>(i / columns);
 
-            float x = xSpacing/2 + col * cellWidth;
-            float y = 20 + row * cellHeight;
+            float x = xSpacing / 2 + static_cast<float>(col) * cellWidth;
+            float y = 20 + static_cast<float>(row) * cellHeight;
 
             sf::Sprite sprite(elem.texture);
             sprite.setPosition({x, y});
@@ -76,12 +76,12 @@ public:
         }
     }
 
-    void SetFieldElements(const std::vector<PlacedElement> & elements) override
+    void SetFieldElements(const std::vector<FieldElement>& elements) override
     {
         m_fieldSprites.clear();
         m_fieldTexts.clear();
 
-        for (const auto& elem : elements)
+        for (const auto& elem: elements)
         {
             sf::Sprite sprite(elem.info->texture);
             sprite.setPosition(elem.position);
@@ -91,8 +91,9 @@ public:
             text.setCharacterSize(14);
             text.setFillColor(sf::Color::Black);
             sf::FloatRect textBounds = text.getLocalBounds();
-            float textX = elem.position.x + (elem.info->texture.getSize().x - textBounds.size.x) / 2.f;
-            float textY = elem.position.y + elem.info->texture.getSize().y + 5.f;
+            float textX = elem.position.x + (static_cast<float>(elem.info->texture.getSize().x) - textBounds.size.x) /
+                          2.f;
+            float textY = elem.position.y + static_cast<float>(elem.info->texture.getSize().y) + 5.f;
             text.setPosition({textX, textY});
             m_fieldTexts.push_back(text);
         }
@@ -108,8 +109,8 @@ public:
             {
                 const auto& elem = m_fieldSprites[index];
                 sf::FloatRect textBounds = m_fieldTexts[index].getLocalBounds();
-                float textX = newPos.x + (elem.getTexture().getSize().x - textBounds.size.x) / 2.f;
-                float textY = newPos.y + elem.getTexture().getSize().y + 5.f;
+                float textX = newPos.x + (static_cast<float>(elem.getTexture().getSize().x) - textBounds.size.x) / 2.f;
+                float textY = newPos.y + static_cast<float>(elem.getTexture().getSize().y) + 5.f;
                 m_fieldTexts[index].setPosition({textX, textY});
             }
         }
@@ -140,7 +141,7 @@ public:
     {
         if (index >= 0 && index < m_librarySprites.size())
             return m_librarySprites[index].getPosition();
-        return sf::Vector2f(0, 0);
+        return {0, 0};
     }
 
     int GetLibraryIndexAt(sf::Vector2i mousePos) const override
@@ -167,9 +168,9 @@ public:
     {
         float left = m_leftPanelWidth;
         float top = 0.f;
-        float width = m_window.getSize().x - m_leftPanelWidth;
-        float height = m_window.getSize().y;
-        return sf::FloatRect({left, top}, {width, height});
+        float width = static_cast<float>(m_window.getSize().x) - m_leftPanelWidth;
+        float height = static_cast<float>(m_window.getSize().y);
+        return {{left, top}, {width, height}};
     }
 
     void ProcessEvents()
@@ -194,11 +195,11 @@ public:
                     m_manager.NotifyListeners(EventType::MousePressed, event);
                 }
             }
-            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            else if (event->getIf<sf::Event::MouseMoved>())
             {
                 m_manager.NotifyListeners(EventType::MouseMoved, event);
             }
-            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            else if (event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
@@ -213,13 +214,13 @@ public:
         leftPanel.setFillColor(sf::Color(180, 180, 180));
         m_window.draw(leftPanel);
 
-        for (const auto& sprite : m_librarySprites)
+        for (const auto& sprite: m_librarySprites)
             m_window.draw(sprite);
-        for (const auto& text : m_libraryTexts)
+        for (const auto& text: m_libraryTexts)
             m_window.draw(text);
-        for (const auto& sprite : m_fieldSprites)
+        for (const auto& sprite: m_fieldSprites)
             m_window.draw(sprite);
-        for (const auto& text : m_fieldTexts)
+        for (const auto& text: m_fieldTexts)
             m_window.draw(text);
 
         if (m_draggedSprite.has_value())

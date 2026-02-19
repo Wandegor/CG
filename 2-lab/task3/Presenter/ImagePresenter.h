@@ -8,22 +8,24 @@
 class ImagePresenter : public IEventListener
 {
 private:
-    IView &m_view;
-    GameModel &m_model;
-    EventManager &m_manager;
+    IView& m_view;
+    GameModel& m_model;
+    EventManager& m_manager;
 
     bool m_isDragging;
     sf::Vector2i m_lastMousePosition;
+
     enum class DragInfo { None, Library, InGame } m_dragInfo;
-    int m_dragLibraryIndex;
-    int m_dragFieldIndex;
+
+    int m_dragLibraryIndex{};
+    int m_dragFieldIndex{};
     sf::Vector2f m_dragOriginalPosition;
     sf::Vector2f m_dragOffset;
 
 public:
-
-    ImagePresenter(IView &view, GameModel &model, EventManager &document)
-            : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
+    ImagePresenter(IView& view, GameModel& model, EventManager& document)
+        : m_view(view), m_model(model), m_manager(document),
+          m_isDragging(false), m_dragInfo(DragInfo::None)
     {
         m_manager.Subscribe(EventType::InitLibrary, *this);
         m_manager.Subscribe(EventType::MousePressed, *this);
@@ -39,23 +41,23 @@ public:
         m_manager.Unsubscribe(EventType::MouseReleased, *this);
     }
 
-    void Update(EventType eventType, const std::optional<sf::Event> &event) override
+    void Update(EventType eventType, const std::optional<sf::Event>& event) override
     {
         switch (eventType)
         {
             case EventType::InitLibrary:
                 m_model.InitLibrary();
                 m_view.SetLibrary(m_model.GetLibrary());
-            break;
+                break;
             case EventType::MousePressed:
                 OnMousePressed(*event);
-            break;
+                break;
             case EventType::MouseMoved:
                 OnMouseMoved(*event);
-            break;
+                break;
             case EventType::MouseReleased:
                 OnMouseReleased(*event);
-            break;
+                break;
             default: ;
         }
     }
@@ -81,7 +83,7 @@ private:
             const LibraryElement* info = &lib[libIndex];
 
             sf::Vector2f elemPos = m_view.GetLibraryElementPosition(libIndex);
-            sf::Vector2f mousePos = sf::Vector2f(mousePressed->position);
+            auto mousePos = sf::Vector2f(mousePressed->position);
             m_dragOffset = mousePos - elemPos;
 
             m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
@@ -96,14 +98,10 @@ private:
             m_isDragging = true;
             m_lastMousePosition = mousePressed->position;
 
-            const auto& placed = m_model.GetPlacedElements();
+            const auto& placed = m_model.GetFieldElements();
             const auto& elem = placed[fieldIndex];
             m_dragOriginalPosition = elem.position;
-            m_dragOffset = sf::Vector2f(
-                mousePressed->position.x - elem.position.x,
-                mousePressed->position.y - elem.position.y);
-
-            // m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position), m_dragOffset);
+            m_dragOffset = sf::Vector2f(mousePressed->position) - elem.position;
         }
     }
 
@@ -114,11 +112,11 @@ private:
         if (!m_isDragging) return;
 
         sf::Vector2i currentPos(mouseMoved->position.x, mouseMoved->position.y);
-        if (m_dragInfo == DragInfo::Library )
+        if (m_dragInfo == DragInfo::Library)
         {
             m_view.UpdateDraggedElement(sf::Vector2f(currentPos));
         }
-        if (m_dragInfo == DragInfo::InGame )
+        if (m_dragInfo == DragInfo::InGame)
         {
             sf::Vector2f newPos = sf::Vector2f(currentPos) - m_dragOffset;
             m_view.UpdateFieldElementPosition(m_dragFieldIndex, newPos);
@@ -146,22 +144,21 @@ private:
 
                 sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
 
-                m_model.AddPlacedElement(info, dropPos);
-                m_view.SetFieldElements(m_model.GetPlacedElements());
-
+                m_model.AddFieldElement(info, dropPos);
+                m_view.SetFieldElements(m_model.GetFieldElements());
             }
             // перемещение полевого элемента
             if (m_dragInfo == DragInfo::InGame)
             {
                 sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
-                m_model.UpdatePlacedElementPosition(m_dragFieldIndex, dropPos);
-                m_view.SetFieldElements(m_model.GetPlacedElements());
+                m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
+                m_view.SetFieldElements(m_model.GetFieldElements());
             }
         }
         else
         {
-            m_model.UpdatePlacedElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-            m_view.SetFieldElements(m_model.GetPlacedElements());
+            m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
+            m_view.SetFieldElements(m_model.GetFieldElements());
         }
 
         m_view.HideDraggedElement();

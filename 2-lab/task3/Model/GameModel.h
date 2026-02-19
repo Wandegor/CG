@@ -9,7 +9,7 @@ struct LibraryElement
     sf::Texture texture;
 };
 
-struct PlacedElement
+struct FieldElement
 {
     const LibraryElement* info;
     sf::Vector2f position;
@@ -19,7 +19,7 @@ class GameModel
 {
 private:
     std::vector<LibraryElement> m_library;
-    std::vector<PlacedElement> m_placedElements;
+    std::vector<FieldElement> m_placedElements;
 
 public:
     GameModel() = default;
@@ -30,7 +30,7 @@ public:
         {
             LibraryElement elem;
             elem.name = name;
-            sf::Image img({60, 60}, color);
+            sf::Image img({80, 80}, color);
             if (!elem.texture.loadFromImage(img))
             {
                 std::cerr << "Failed to load texture for " << std::string(name.begin(), name.end()) << std::endl;
@@ -46,11 +46,11 @@ public:
         m_library.push_back(createElement(L"СнегВРоссии", sf::Color::Yellow));
     }
 
-    void AddPlacedElement(const LibraryElement* info, sf::Vector2f pos) {
+    void AddFieldElement(const LibraryElement* info, sf::Vector2f pos) {
         m_placedElements.push_back({info, pos});
     }
 
-    void UpdatePlacedElementPosition(int index, sf::Vector2f pos)
+    void UpdateFieldElementPosition(int index, sf::Vector2f pos)
     {
         m_placedElements[index].position = pos;
     }
@@ -60,7 +60,7 @@ public:
         return m_library;
     }
 
-    const std::vector<PlacedElement> &GetPlacedElements() const
+    const std::vector<FieldElement> &GetFieldElements() const
     {
         return m_placedElements;
     }
