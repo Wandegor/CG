@@ -18,6 +18,8 @@ private:
 
     std::vector<sf::Sprite> m_librarySprites;
     std::vector<sf::Text> m_libraryTexts;
+    float m_leftPanelWidth;
+
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
@@ -27,31 +29,46 @@ public:
         {
             std::cerr << "Error loading font" << std::endl;
         }
+
+        m_leftPanelWidth = m_window.getSize().x * 0.4f;
     }
 
-    void SetLibrary(std::vector<ElementInfo> & library) override
+    void SetLibrary(std::vector<ElementInfo>& library) override
     {
         m_librarySprites.clear();
         m_libraryTexts.clear();
-        const float startY = 20.f;
-        const float padding = 10.f;
-        const float iconSize = 64.f;
+
+        const float elemSize = library[0].texture.getSize().x;
+        const int columns = 4;
+
+        const float spacing = m_leftPanelWidth / columns - elemSize;
+
+        const float textOffsetY = 3.f;
+        const float cellWidth = elemSize + spacing;
+        const float cellHeight = elemSize + spacing + 30.f;
 
         for (size_t i = 0; i < library.size(); ++i)
         {
             const auto& elem = library[i];
+            int col = static_cast<int>(i % columns);
+            int row = static_cast<int>(i / columns);
+
+            float x = spacing/2 + col * cellWidth;
+            float y = 20 + row * cellHeight;
 
             sf::Sprite sprite(elem.texture);
-            // Позиция: слева, по вертикали с отступом
-            sprite.setPosition({padding, startY + i * (iconSize + padding)});
+            sprite.setPosition({x, y});
             m_librarySprites.push_back(sprite);
 
             sf::Text text(m_font, elem.name);
+            text.setCharacterSize(16);
             text.setFillColor(sf::Color::Black);
-            // Размещаем справа от иконки
-            float textX = iconSize + 2 * padding;
-            float textY = startY + i * (iconSize + padding) + iconSize/2 - text.getLocalBounds().size.y/2;
+
+            sf::FloatRect textBounds = text.getLocalBounds();
+            float textX = x + (elemSize - textBounds.size.x) / 2.f;
+            float textY = y + elemSize + textOffsetY;
             text.setPosition({textX, textY});
+
             m_libraryTexts.push_back(text);
         }
     }
@@ -93,8 +110,7 @@ public:
     {
         m_window.clear(sf::Color(200, 200, 200));
 
-        float leftPanelWidth = 600.f;
-        sf::RectangleShape leftPanel({leftPanelWidth, static_cast<float>(m_window.getSize().y)});
+        sf::RectangleShape leftPanel({m_leftPanelWidth, static_cast<float>(m_window.getSize().y)});
         leftPanel.setFillColor(sf::Color(180, 180, 180));
         m_window.draw(leftPanel);
 

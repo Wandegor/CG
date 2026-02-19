@@ -19,7 +19,7 @@ public:
     void InitLibrary()
     {
         sf::Texture texture;
-        sf::Image image({30, 30}, sf::Color::Blue);
+        sf::Image image({60, 60}, sf::Color::Blue);
 
         if (!texture.loadFromImage(image))
         {
