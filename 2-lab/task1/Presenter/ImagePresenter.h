@@ -15,6 +15,7 @@ private:
 
     bool m_isDragging;
     sf::Vector2i m_lastMousePosition;
+    sf::Vector2i m_dragStartModelPos;
 
 public:
 
@@ -90,6 +91,7 @@ private:
         {
             m_isDragging = true;
             m_lastMousePosition = mousePressed->position;
+            m_dragStartModelPos = m_model.GetPicturePosition();
         }
     }
 
@@ -104,7 +106,6 @@ private:
                             mouseMoved->position.y);
         sf::Vector2i delta = currentPos - m_lastMousePosition;
 
-        m_model.Move(delta);
         m_view.MoveImage(delta);
 
         m_lastMousePosition = currentPos;
@@ -114,10 +115,16 @@ private:
     void OnMouseReleased(const sf::Event& event)
     {
         auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
-        if (!mouseReleased) return;
+        if (!mouseReleased || mouseReleased->button != sf::Mouse::Button::Left) return;
 
-        if (mouseReleased->button == sf::Mouse::Button::Left)
+        if (m_isDragging)
         {
+            auto spritePos = m_view.GetSpritePosition();
+            if (spritePos.has_value())
+            {
+                m_model.SetPosition(sf::Vector2i(static_cast<int>(spritePos->x),
+                                                 static_cast<int>(spritePos->y)));
+            }
             m_isDragging = false;
         }
     }

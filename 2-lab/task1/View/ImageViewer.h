@@ -53,6 +53,13 @@ public:
         m_sprite->move(sf::Vector2f(delta));
     }
 
+    std::optional<sf::Vector2f> GetSpritePosition() const override
+    {
+        if (m_sprite.has_value())
+            return m_sprite->getPosition();
+        return std::nullopt;
+    }
+
     void ProcessEvents()
     {
         while (const auto event = m_window.pollEvent())

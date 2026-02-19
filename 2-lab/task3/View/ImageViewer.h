@@ -14,11 +14,14 @@ private:
     sf::RenderWindow &m_window;
     EventManager &m_manager;
 
+    float m_leftPanelWidth;
     sf::Font m_font;
 
     std::vector<sf::Sprite> m_librarySprites;
     std::vector<sf::Text> m_libraryTexts;
-    float m_leftPanelWidth;
+
+    std::vector<sf::Sprite> m_placedSprites;
+    std::vector<sf::Text> m_placedTexts;
 
 
 public:
@@ -81,28 +84,28 @@ public:
             {
                 m_window.close();
             }
-            // else if (auto key = event->getIf<sf::Event::KeyPressed>())
-            // {
-            //     if (key->code == sf::Keyboard::Key::Escape)
-            //     {
-            //         m_window.close();
-            //     }
-            // }
-            // else if (auto mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
-            // {
-            //     if (mousePressed->button == sf::Mouse::Button::Left)
-            //     {
-            //         m_manager.NotifyListeners(EventType::MousePressed, event);
-            //     }
-            // }
-            // else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
-            // {
-            //     m_manager.NotifyListeners(EventType::MouseMoved, event);
-            // }
-            // else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
-            // {
-            //     m_manager.NotifyListeners(EventType::MouseReleased, event);
-            // }
+            else if (auto key = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (key->code == sf::Keyboard::Key::Escape)
+                {
+                    m_window.close();
+                }
+            }
+            else if (auto mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+            {
+                if (mousePressed->button == sf::Mouse::Button::Left)
+                {
+                    m_manager.NotifyListeners(EventType::MousePressed, event);
+                }
+            }
+            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            {
+                m_manager.NotifyListeners(EventType::MouseMoved, event);
+            }
+            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            {
+                m_manager.NotifyListeners(EventType::MouseReleased, event);
+            }
         }
     }
 
@@ -117,6 +120,10 @@ public:
         for (const auto& sprite : m_librarySprites)
             m_window.draw(sprite);
         for (const auto& text : m_libraryTexts)
+            m_window.draw(text);
+        for (const auto& sprite : m_placedSprites)
+            m_window.draw(sprite);
+        for (const auto& text : m_placedTexts)
             m_window.draw(text);
     }
 

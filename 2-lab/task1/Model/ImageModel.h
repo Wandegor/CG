@@ -31,10 +31,9 @@ public:
         return true;
     }
 
-    void Move(sf::Vector2i delta)
+    void SetPosition(sf::Vector2i position)
     {
-        m_picturePosition.x += delta.x;
-        m_picturePosition.y += delta.y;
+        m_picturePosition = position;
     }
 
     sf::Vector2i GetPicturePosition() const
@@ -50,10 +49,5 @@ public:
     bool HasImage() const
     {
         return m_image.getSize().x > 0;
-    }
-
-    void UpdateTexture()
-    {
-        m_texture.update(m_image);
     }
 };
