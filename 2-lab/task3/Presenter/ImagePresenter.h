@@ -16,6 +16,8 @@ private:
     sf::Vector2i m_lastMousePosition;
     enum class DragInfo { None, Library, InGame } m_dragInfo;
     int m_dragLibraryIndex;
+    int m_dragFieldIndex;
+    sf::Vector2f m_dragOriginalPosition;
 
 public:
 
@@ -64,8 +66,8 @@ private:
         if (!mousePressed) return;
         if (mousePressed->button != sf::Mouse::Button::Left) return;
 
-        int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
         // Клик по библиотеке
+        int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
         if (libIndex != -1)
         {
             m_dragInfo = DragInfo::Library;
@@ -78,7 +80,23 @@ private:
             const LibraryElement* info = &lib[libIndex];
             m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position));
         }
+
         // Клики в другие места
+        int fieldIndex = m_view.GetFieldIndexAt(mousePressed->position);
+        if (fieldIndex != -1)
+        {
+            m_dragInfo = DragInfo::InGame;
+            m_dragFieldIndex = fieldIndex;
+            m_isDragging = true;
+            m_lastMousePosition = mousePressed->position;
+
+            const auto& placed = m_model.GetPlacedElements();
+            const auto& elem = placed[fieldIndex];
+            m_dragOriginalPosition = elem.position;
+
+            m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position));
+            return;
+        }
     }
 
     void OnMouseMoved(const sf::Event& event)
@@ -88,7 +106,7 @@ private:
         if (!m_isDragging) return;
 
         sf::Vector2i currentPos(mouseMoved->position.x, mouseMoved->position.y);
-        if (m_dragInfo == DragInfo::Library)
+        if (m_dragInfo == DragInfo::Library || m_dragInfo == DragInfo::InGame)
         {
             m_view.UpdateDraggedElement(sf::Vector2f(currentPos));
         }
@@ -102,10 +120,11 @@ private:
             return;
 
         sf::FloatRect fieldBounds = m_view.GetFieldBounds();
+
         // мышь в правой области?
-            // добавить на поле
         if (fieldBounds.contains(sf::Vector2f(mouseReleased->position)))
         {
+            // добавить на поле из lib
             if (m_dragInfo == DragInfo::Library)
             {
                 m_dragInfo = DragInfo::None;
@@ -119,11 +138,16 @@ private:
 
             }
             // перемещение полевого элемента
+            if (m_dragInfo == DragInfo::InGame)
+            {
+                sf::Vector2f newPos = sf::Vector2f(mouseReleased->position);
+                m_model.UpdatePlacedElementPosition(m_dragFieldIndex, newPos);
+                m_view.SetFieldElements(m_model.GetPlacedElements());
+            }
         }
 
         m_view.HideDraggedElement();
         m_isDragging = false;
         m_dragInfo = DragInfo::None;
-        // иначе вернуть на место(просто убрать призрак)
     }
 };

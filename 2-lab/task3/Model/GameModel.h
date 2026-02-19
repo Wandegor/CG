@@ -50,6 +50,10 @@ public:
         m_placedElements.push_back({info, pos});
     }
 
+    void UpdatePlacedElementPosition(int index, sf::Vector2f pos)
+    {
+        m_placedElements[index].position = pos;
+    }
 
     std::vector<LibraryElement> &GetLibrary()
     {

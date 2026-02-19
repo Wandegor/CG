@@ -13,6 +13,8 @@ public:
     virtual void HideDraggedElement() = 0;
 
     virtual int GetLibraryIndexAt(sf::Vector2i mousePos) const = 0;
+    virtual int GetFieldIndexAt(sf::Vector2i mousePos) const = 0;
+
     virtual sf::FloatRect GetFieldBounds() const = 0;
 
     // virtual void MoveImage(sf::Vector2i delta) = 0;

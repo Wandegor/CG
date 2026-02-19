@@ -102,7 +102,7 @@ public:
     {
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
-        m_draggedSprite->setColor(sf::Color(255, 255, 255, 180));
+        m_draggedSprite->setColor(sf::Color(255, 255, 255, 250));
 
         sf::Vector2u texSize = element->texture.getSize();
         m_draggedSprite->setOrigin(sf::Vector2f(texSize.x / 2.f, texSize.y / 2.f));
@@ -125,6 +125,16 @@ public:
         for (size_t i = 0; i < m_librarySprites.size(); ++i)
         {
             if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
+                return static_cast<int>(i);
+        }
+        return -1;
+    }
+
+    int GetFieldIndexAt(sf::Vector2i mousePos) const override
+    {
+        for (size_t i = 0; i < m_fieldSprites.size(); ++i)
+        {
+            if (m_fieldSprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
                 return static_cast<int>(i);
         }
         return -1;
