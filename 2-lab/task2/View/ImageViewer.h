@@ -81,7 +81,6 @@ public:
         background.setPosition({0, 0});
         m_tempLayer.draw(background);
 
-        // Рисуем начальную точку
         sf::Vertex point(sf::Vector2f(startPoint), sf::Color::Black);
         m_tempLayer.draw(&point, 1, sf::PrimitiveType::Points);
         m_tempLayer.display();
@@ -145,13 +144,13 @@ public:
         m_window.clear(sf::Color(200, 200, 200));
         if (m_sprite.has_value())
             m_window.draw(m_sprite.value());
-        m_fileMenu->Draw(m_window);
 
         if (m_tempLayerExist) {
             sf::Sprite tempSprite(m_tempLayer.getTexture());
             tempSprite.setPosition(m_sprite->getPosition());
             m_window.draw(tempSprite);
         }
+        m_fileMenu->Draw(m_window);
     }
 
     void Run()

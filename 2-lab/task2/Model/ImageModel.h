@@ -61,6 +61,7 @@ public:
 
     void UpdateTexture(const sf::Texture& newTexture)
     {
+        m_image = newTexture.copyToImage();
         m_texture.update(newTexture);
     }
 };
