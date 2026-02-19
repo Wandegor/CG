@@ -18,34 +18,22 @@ public:
 
     void InitLibrary()
     {
-        sf::Texture texture;
-        sf::Image image({60, 60}, sf::Color::Blue);
+        auto createElement = [](const std::wstring& name, sf::Color color) -> ElementInfo {
+            ElementInfo elem;
+            elem.name = name;
+            sf::Image img({60, 60}, color);
+            if (!elem.texture.loadFromImage(img)) {
+                std::cerr << "Failed to load texture for " << std::string(name.begin(), name.end()) << std::endl;
+            }
+            return elem;
+        };
 
-        if (!texture.loadFromImage(image))
-        {
-            std::cerr << "Failed to init texture elements" << std::endl;
-        }
-
-        ElementInfo earth;
-        earth.name = L"Земля";
-        earth.texture = texture;
-
-        ElementInfo fire;
-        fire.name = L"Огонь";
-        fire.texture = texture;
-
-        ElementInfo water;
-        water.name = L"Вода";
-        water.texture = texture;
-
-        ElementInfo air;
-        air.name = L"Воздух";
-        air.texture = texture;
-
-        m_library.push_back(earth);
-        m_library.push_back(fire);
-        m_library.push_back(water);
-        m_library.push_back(air);
+        m_library.push_back(createElement(L"Земля", sf::Color::Blue));
+        m_library.push_back(createElement(L"Огонь", sf::Color::Red));
+        m_library.push_back(createElement(L"Вода", sf::Color::Cyan));
+        m_library.push_back(createElement(L"Воздух", sf::Color::White));
+        m_library.push_back(createElement(L"Воздух1231", sf::Color::Green));
+        m_library.push_back(createElement(L"СнегВРоссии", sf::Color::Yellow));
     }
 
     std::vector<ElementInfo> &GetLibrary()

@@ -30,7 +30,7 @@ public:
             std::cerr << "Error loading font" << std::endl;
         }
 
-        m_leftPanelWidth = m_window.getSize().x * 0.4f;
+        m_leftPanelWidth = m_window.getSize().x * 0.35f;
     }
 
     void SetLibrary(std::vector<ElementInfo>& library) override
@@ -41,11 +41,11 @@ public:
         const float elemSize = library[0].texture.getSize().x;
         const int columns = 4;
 
-        const float spacing = m_leftPanelWidth / columns - elemSize;
+        const float xSpacing = m_leftPanelWidth / columns - elemSize;
 
         const float textOffsetY = 3.f;
-        const float cellWidth = elemSize + spacing;
-        const float cellHeight = elemSize + spacing + 30.f;
+        const float cellWidth = elemSize + xSpacing;
+        const float cellHeight = elemSize + 40;
 
         for (size_t i = 0; i < library.size(); ++i)
         {
@@ -53,7 +53,7 @@ public:
             int col = static_cast<int>(i % columns);
             int row = static_cast<int>(i / columns);
 
-            float x = spacing/2 + col * cellWidth;
+            float x = xSpacing/2 + col * cellWidth;
             float y = 20 + row * cellHeight;
 
             sf::Sprite sprite(elem.texture);
