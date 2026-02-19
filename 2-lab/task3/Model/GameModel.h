@@ -50,6 +50,7 @@ public:
         m_placedElements.push_back({info, pos});
     }
 
+
     std::vector<LibraryElement> &GetLibrary()
     {
         return m_library;

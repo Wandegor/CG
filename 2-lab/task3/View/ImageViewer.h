@@ -20,8 +20,8 @@ private:
     std::vector<sf::Sprite> m_librarySprites;
     std::vector<sf::Text> m_libraryTexts;
 
-    std::vector<sf::Sprite> m_placedSprites;
-    std::vector<sf::Text> m_placedTexts;
+    std::vector<sf::Sprite> m_fieldSprites;
+    std::vector<sf::Text> m_fieldTexts;
 
 
 public:
@@ -36,7 +36,7 @@ public:
         m_leftPanelWidth = m_window.getSize().x * 0.35f;
     }
 
-    void SetLibrary(std::vector<ElementInfo>& library) override
+    void SetLibrary(std::vector<LibraryElement>& library) override
     {
         m_librarySprites.clear();
         m_libraryTexts.clear();
@@ -74,6 +74,47 @@ public:
 
             m_libraryTexts.push_back(text);
         }
+    }
+
+    void SetFieldElements(const std::vector<PlacedElement> & elements) override
+    {
+        m_fieldSprites.clear();
+        m_fieldTexts.clear();
+
+        for (const auto& elem : elements)
+        {
+            sf::Sprite sprite(elem.info->texture);
+            sprite.setPosition(elem.position);
+            m_fieldSprites.push_back(sprite);
+
+            sf::Text text(m_font, elem.info->name);
+            text.setCharacterSize(14);
+            text.setFillColor(sf::Color::Black);
+            sf::FloatRect textBounds = text.getLocalBounds();
+            float textX = elem.position.x + (elem.info->texture.getSize().x - textBounds.size.x) / 2.f;
+            float textY = elem.position.y + elem.info->texture.getSize().y + 5.f;
+            text.setPosition({textX, textY});
+            m_fieldTexts.push_back(text);
+        }
+    }
+
+    int GetLibraryIndexAt(sf::Vector2i mousePos) const override
+    {
+        for (size_t i = 0; i < m_librarySprites.size(); ++i)
+        {
+            if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
+                return static_cast<int>(i);
+        }
+        return -1;
+    }
+
+    sf::FloatRect GetFieldBounds() const override
+    {
+        sf::Vector2f FieldSize = {
+                static_cast<float>(m_window.getSize().y),
+                m_window.getSize().x - m_leftPanelWidth};
+        auto pos = sf::Vector2f(m_window.getPosition());
+        return {pos, FieldSize};
     }
 
     void ProcessEvents()
@@ -121,9 +162,9 @@ public:
             m_window.draw(sprite);
         for (const auto& text : m_libraryTexts)
             m_window.draw(text);
-        for (const auto& sprite : m_placedSprites)
+        for (const auto& sprite : m_fieldSprites)
             m_window.draw(sprite);
-        for (const auto& text : m_placedTexts)
+        for (const auto& text : m_fieldTexts)
             m_window.draw(text);
     }
 

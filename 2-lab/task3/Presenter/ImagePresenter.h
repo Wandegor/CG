@@ -14,6 +14,8 @@ private:
 
     bool m_isDragging;
     sf::Vector2i m_lastMousePosition;
+    enum class DragInfo { None, Library, InGame } m_dragInfo;
+    int m_dragLibraryIndex;
 
 public:
 
@@ -43,13 +45,13 @@ public:
                 m_view.SetLibrary(m_model.GetLibrary());
             break;
             case EventType::MousePressed:
-                // OnMousePressed(*event);
+                OnMousePressed(*event);
             break;
             case EventType::MouseMoved:
-                // OnMouseMoved(*event);
+                OnMouseMoved(*event);
             break;
             case EventType::MouseReleased:
-                // OnMouseReleased(*event);
+                OnMouseReleased(*event);
             break;
             default: ;
         }
@@ -61,54 +63,63 @@ private:
         auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
         if (!mousePressed) return;
         if (mousePressed->button != sf::Mouse::Button::Left) return;
-        // if (!m_model.HasImage()) return;
 
-        for (auto el: m_model.GetLibrary())
+        int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
+        // Клик по библиотеке
+        if (libIndex != -1)
         {
-            if ()
-        }
-        sf::Vector2i elementPos = m_model.GetPicturePosition();
-        sf::Vector2i onElementPos(
-            mousePressed->position.x - picturePos.x,
-            mousePressed->position.y - picturePos.y
-        );
+            m_dragInfo = DragInfo::Library;
+            m_dragLibraryIndex = libIndex;
 
-        // Проверка на попадание по картинке
-        if (onElementPos.x >= 0 && onElementPos.y >= 0
-            && onElementPos.x < m_model.GetTexture().getSize().x
-            && onElementPos.y < m_model.GetTexture().getSize().y)
-        {
             m_isDragging = true;
             m_lastMousePosition = mousePressed->position;
         }
+        // Клики в другие места
     }
 
     void OnMouseMoved(const sf::Event& event)
     {
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
         if (!mouseMoved) return;
-
         if (!m_isDragging) return;
-
-        sf::Vector2i currentPos(mouseMoved->position.x,
-                            mouseMoved->position.y);
-        sf::Vector2i delta = currentPos - m_lastMousePosition;
-
-        m_model.Move(delta);
-        m_view.MoveImage(delta);
-
-        m_lastMousePosition = currentPos;
+        //
+        // sf::Vector2i currentPos(mouseMoved->position.x,
+        //                         mouseMoved->position.y);
+        // sf::Vector2i delta = currentPos - m_lastMousePosition;
+        //
+        // m_model.;
+        // m_view.MoveImage(delta);
+        //
+        // m_lastMousePosition = currentPos;
 
     }
 
     void OnMouseReleased(const sf::Event& event)
     {
         auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
-        if (!mouseReleased) return;
+        if (!mouseReleased || !m_isDragging
+            || mouseReleased->button != sf::Mouse::Button::Left)
+            return;
 
-        if (mouseReleased->button == sf::Mouse::Button::Left)
+        sf::FloatRect fieldBounds = m_view.GetFieldBounds();
+        // мышь в правой области?
+            // добавить на поле
+        if (fieldBounds.contains(sf::Vector2f(mouseReleased->position)))
         {
-            m_isDragging = false;
+            if (m_dragInfo == DragInfo::Library)
+            {
+                m_dragInfo = DragInfo::None;
+                const auto& lib = m_model.GetLibrary();
+                const LibraryElement* info = &lib[m_dragLibraryIndex];
+
+                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position);
+
+                m_model.AddPlacedElement(info, dropPos);
+                m_view.SetFieldElements(m_model.GetPlacedElements());
+            }
+            // перемещение полевого элемента
         }
+
+        // иначе вернуть на место(просто убрать призрак)
     }
 };
