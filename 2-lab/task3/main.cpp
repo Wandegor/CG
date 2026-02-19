@@ -8,11 +8,13 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({1600, 1200}), "2.3");
-    EventManager document;
+    EventManager eventManager;
     GameModel model;
 
-    ImageViewer viewer(window, document);
-    ImagePresenter presenter(viewer, model, document);
+    ImageViewer viewer(window, eventManager);
+    ImagePresenter presenter(viewer, model, eventManager);
+
+    eventManager.NotifyListeners(EventType::InitLibrary);
 
     viewer.Run();
     return 0;

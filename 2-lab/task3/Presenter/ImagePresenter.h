@@ -4,7 +4,6 @@
 #include "../Model/GameModel.h"
 
 #include "../View/ImageViewer.h"
-#include <portable-file-dialogs.h>
 
 class ImagePresenter : public IEventListener
 {
@@ -21,6 +20,7 @@ public:
     ImagePresenter(IView &view, GameModel &model, EventManager &document)
             : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
     {
+        m_manager.Subscribe(EventType::InitLibrary, *this);
         // m_manager.Subscribe(EventType::MousePressed, *this);
         // m_manager.Subscribe(EventType::MouseMoved, *this);
         // m_manager.Subscribe(EventType::MouseReleased, *this);
@@ -28,6 +28,7 @@ public:
 
     virtual ~ImagePresenter()
     {
+        m_manager.Unsubscribe(EventType::InitLibrary, *this);
         // m_manager.Unsubscribe(EventType::MousePressed, *this);
         // m_manager.Unsubscribe(EventType::MouseMoved, *this);
         // m_manager.Unsubscribe(EventType::MouseReleased, *this);
@@ -37,6 +38,10 @@ public:
     {
         switch (eventType)
         {
+            case EventType::InitLibrary:
+                m_model.InitLibrary();
+                m_view.SetLibrary(m_model.GetLibrary());
+            break;
             case EventType::MousePressed:
                 // OnMousePressed(*event);
             break;

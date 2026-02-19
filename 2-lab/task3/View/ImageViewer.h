@@ -16,11 +16,12 @@ private:
 
     sf::Font m_font;
 
-    std::optional<sf::Sprite> m_sprite;
+    std::vector<sf::Sprite> m_librarySprites;
+    std::vector<sf::Text> m_libraryTexts;
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
-        : m_window(window), m_manager(document), m_sprite(std::nullopt)
+        : m_window(window), m_manager(document)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -28,22 +29,31 @@ public:
         }
     }
 
-    void SetImage(sf::Texture &texture, sf::Vector2i screenPos) override
+    void SetLibrary(std::vector<ElementInfo> & library) override
     {
-        if (m_sprite.has_value())
+        m_librarySprites.clear();
+        m_libraryTexts.clear();
+        const float startY = 20.f;
+        const float padding = 10.f;
+        const float iconSize = 64.f;
+
+        for (size_t i = 0; i < library.size(); ++i)
         {
-            m_sprite->setTexture(texture, true);
-        } else
-        {
-            m_sprite.emplace(texture); // Будет вызван конструктор sf::Sprite(texture)
+            const auto& elem = library[i];
+
+            sf::Sprite sprite(elem.texture);
+            // Позиция: слева, по вертикали с отступом
+            sprite.setPosition({padding, startY + i * (iconSize + padding)});
+            m_librarySprites.push_back(sprite);
+
+            sf::Text text(m_font, elem.name);
+            text.setFillColor(sf::Color::Black);
+            // Размещаем справа от иконки
+            float textX = iconSize + 2 * padding;
+            float textY = startY + i * (iconSize + padding) + iconSize/2 - text.getLocalBounds().size.y/2;
+            text.setPosition({textX, textY});
+            m_libraryTexts.push_back(text);
         }
-
-        m_sprite->setPosition(sf::Vector2f(screenPos));
-    }
-
-    void MoveImage(sf::Vector2i delta) override
-    {
-        m_sprite->move(sf::Vector2f(delta));
     }
 
     void ProcessEvents()
@@ -87,6 +97,11 @@ public:
         sf::RectangleShape leftPanel({leftPanelWidth, static_cast<float>(m_window.getSize().y)});
         leftPanel.setFillColor(sf::Color(180, 180, 180));
         m_window.draw(leftPanel);
+
+        for (const auto& sprite : m_librarySprites)
+            m_window.draw(sprite);
+        for (const auto& text : m_libraryTexts)
+            m_window.draw(text);
     }
 
     void Run()

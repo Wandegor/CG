@@ -2,6 +2,7 @@
 
 enum class EventType
 {
+    InitLibrary,
     NewFile,
     OpenFile,
     SaveFile,

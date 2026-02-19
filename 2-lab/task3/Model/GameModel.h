@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 struct ElementInfo {
-    std::string name;
+    std::wstring name;
     sf::Texture texture;
 };
 
@@ -16,7 +16,7 @@ private:
 public:
     GameModel() = default;
 
-    void InitElements()
+    void InitLibrary()
     {
         sf::Texture texture;
         sf::Image image({30, 30}, sf::Color::Blue);
@@ -27,25 +27,30 @@ public:
         }
 
         ElementInfo earth;
-        earth.name = "Земля";
+        earth.name = L"Земля";
         earth.texture = texture;
 
         ElementInfo fire;
-        fire.name = "Огонь";
+        fire.name = L"Огонь";
         fire.texture = texture;
 
         ElementInfo water;
-        water.name = "Вода";
+        water.name = L"Вода";
         water.texture = texture;
 
         ElementInfo air;
-        air.name = "Воздух";
+        air.name = L"Воздух";
         air.texture = texture;
 
         m_library.push_back(earth);
         m_library.push_back(fire);
         m_library.push_back(water);
         m_library.push_back(air);
+    }
+
+    std::vector<ElementInfo> &GetLibrary()
+    {
+        return m_library;
     }
 
     // void Move(sf::Vector2i delta)
@@ -59,18 +64,6 @@ public:
     //     return m_picturePosition;
     // }
     //
-    // sf::Texture &GetTexture()
-    // {
-    //     return m_texture;
-    // }
     //
-    // bool HasImage() const
-    // {
-    //     return m_image.getSize().x > 0;
-    // }
     //
-    // void UpdateTexture()
-    // {
-    //     m_texture.update(m_image);
-    // }
 };
