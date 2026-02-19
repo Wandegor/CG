@@ -117,10 +117,10 @@ private:
         if (!m_model.HasImage()) return;
 
 
-        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2f picturePos = m_view.GetSpritePosition();
         sf::Vector2i onImagePos(
-            mousePressed->position.x - picturePos.x,
-            mousePressed->position.y - picturePos.y
+            mousePressed->position.x - static_cast<int>(picturePos.x),
+            mousePressed->position.y - static_cast<int>(picturePos.y)
         );
 
         // Проверка на попадание по картинке
@@ -129,9 +129,8 @@ private:
             && onImagePos.y < m_model.GetTexture().getSize().y)
         {
             m_isDrawing = true;
+            m_view.StartTemporaryStroke(onImagePos);
             m_lastDrawPosition = onImagePos;
-            m_model.DrawPoint(sf::Vector2i(onImagePos), sf::Color::Black); // относительно картинки
-            m_model.UpdateTexture();
         }
     }
 
@@ -140,19 +139,18 @@ private:
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
         if (!mouseMoved || !m_isDrawing || !m_model.HasImage()) return;
 
-        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2f picturePos = m_view.GetSpritePosition();
         sf::Vector2i onImagePos(
-            mouseMoved->position.x - picturePos.x,
-            mouseMoved->position.y - picturePos.y
+            mouseMoved->position.x - static_cast<int>(picturePos.x),
+            mouseMoved->position.y - static_cast<int>(picturePos.y)
         );
 
         if (onImagePos.x >= 0 && onImagePos.y >= 0
             && onImagePos.x < m_model.GetTexture().getSize().x
             && onImagePos.y < m_model.GetTexture().getSize().y)
         {
-            m_model.DrawLine(m_lastDrawPosition, onImagePos, sf::Color::Black);
+            m_view.AddTemporaryPoint(onImagePos);
             m_lastDrawPosition = onImagePos;
-            m_model.UpdateTexture();
         }
         else
         {
@@ -169,6 +167,13 @@ private:
         if (mouseReleased->button == sf::Mouse::Button::Left)
         {
             m_isDrawing = false;
+            auto points = m_view.FinishTemporaryStroke();
+            if (points.size() >= 2)
+            {
+                for (size_t i = 1; i < points.size(); ++i)
+                    m_model.DrawLine(points[i-1], points[i], sf::Color::Black);
+                m_model.UpdateTexture();
+            }
         }
     }
 };

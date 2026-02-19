@@ -19,6 +19,7 @@ private:
     std::unique_ptr<Menu> m_fileMenu;
 
     std::optional<sf::Sprite> m_sprite;
+    std::vector<sf::Vector2i> m_tempStrokePoints;
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
@@ -57,9 +58,26 @@ public:
         m_sprite->setPosition(sf::Vector2f(screenPos));
     }
 
-    void MoveImage(sf::Vector2f delta) override
+    void StartTemporaryStroke(sf::Vector2i startPoint) override
     {
-        m_sprite->move(delta);
+        m_tempStrokePoints.clear();
+        m_tempStrokePoints.push_back(startPoint);
+    }
+
+    void AddTemporaryPoint(sf::Vector2i point) override
+    {
+        m_tempStrokePoints.push_back(point);
+    }
+
+    std::vector<sf::Vector2i> FinishTemporaryStroke() override
+    {
+        return std::move(m_tempStrokePoints); // очищается
+    }
+
+    sf::Vector2f GetSpritePosition() const override {
+        return m_sprite.has_value()
+            ? m_sprite->getPosition()
+            : sf::Vector2f(0,0);
     }
 
     void ProcessEvents()
@@ -99,6 +117,19 @@ public:
         if (m_sprite.has_value())
             m_window.draw(m_sprite.value());
         m_fileMenu->Draw(m_window);
+
+        if (!m_tempStrokePoints.empty())
+        {
+            sf::VertexArray lines(sf::PrimitiveType::LineStrip, m_tempStrokePoints.size());
+            for (size_t i = 0; i < m_tempStrokePoints.size(); ++i)
+            {
+                // поз спрайта + поз внутри спрайта = поз внутри окна
+                sf::Vector2f onScreenPos = m_sprite->getPosition() + sf::Vector2f(m_tempStrokePoints[i]);
+                lines[i].position = onScreenPos;
+                lines[i].color = sf::Color::Black;
+            }
+            m_window.draw(lines);
+        }
     }
 
     void Run()
