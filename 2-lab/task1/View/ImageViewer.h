@@ -18,12 +18,11 @@ private:
 
     std::unique_ptr<Menu> m_fileMenu;
 
-    sf::Texture m_texture;
-    sf::Sprite m_sprite;
+    std::optional<sf::Sprite> m_sprite;
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
-        : m_window(window), m_manager(document), m_sprite(m_texture)
+        : m_window(window), m_manager(document), m_sprite(std::nullopt)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -32,23 +31,26 @@ public:
 
         m_fileMenu = std::make_unique<Menu>(m_font, "File",sf::Vector2f(100, 100), sf::Vector2f(100, 40));
         m_fileMenu->AddItem("Open", [this]() {
-            sf::Event::MouseButtonPressed event;
-            m_manager.NotifyListeners(EventType::OpenFile, event);
+            m_manager.NotifyListeners(EventType::OpenFile);
         });
     }
 
-    void SetImage(sf::Texture& texture, sf::IntRect& rect) override
+    void SetImage(sf::Texture &texture, sf::Vector2i screenPos) override
     {
-        // m_sprite обновиться сам так как хранит ссылку на m_texture
-        m_texture = texture;
-        m_sprite.setTextureRect(rect);
-        m_sprite.setPosition({static_cast<float>(rect.position.x),
-                         static_cast<float>(rect.position.y)});
+        if (m_sprite.has_value())
+        {
+            m_sprite->setTexture(texture, true);
+        } else
+        {
+            m_sprite.emplace(texture); // Будет вызван конструктор sf::Sprite(texture)
+        }
+
+        m_sprite->setPosition(sf::Vector2f(screenPos));
     }
 
-    void MoveImage(sf::Vector2f delta) override
+    void MoveImage(sf::Vector2i delta) override
     {
-        m_sprite.move(delta);
+        m_sprite->move(sf::Vector2f(delta));
     }
 
     void ProcessEvents()
@@ -70,16 +72,16 @@ public:
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
-                    m_manager.NotifyListeners(EventType::MousePressed, *event);
+                    m_manager.NotifyListeners(EventType::MousePressed, event);
                 }
             }
             else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
-                m_manager.NotifyListeners(EventType::MouseMoved, *event);
+                m_manager.NotifyListeners(EventType::MouseMoved, event);
             }
             else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                m_manager.NotifyListeners(EventType::MouseReleased, *event);
+                m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
 
             m_fileMenu->HandleEvent(*event, m_window);
@@ -89,7 +91,8 @@ public:
     void Draw()
     {
         m_window.clear(sf::Color(200, 200, 200));
-        m_window.draw(m_sprite);
+        if (m_sprite.has_value())
+            m_window.draw(m_sprite.value());
         m_fileMenu->Draw(m_window);
     }
 

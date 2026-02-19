@@ -6,49 +6,54 @@
 class ImageModel
 {
 private:
+    sf::Image m_image;
     sf::Texture m_texture;
-    sf::Rect<int> m_rect;
+    sf::Vector2i m_picturePosition;
 
 public:
     ImageModel() = default;
 
     bool LoadFromFile(const std::string &filename)
     {
-        sf::Image image;
-        if (!image.loadFromFile(filename))
+        if (!m_image.loadFromFile(filename))
         {
             std::cerr << "Failed to load image: " << filename << std::endl;
             return false;
         }
 
-        if (!m_texture.loadFromImage(image))
+        if (!m_texture.loadFromImage(m_image))
         {
             std::cerr << "Failed to create texture from image" << std::endl;
             return false;
         }
+        m_picturePosition = {300, 300};
 
-        sf::IntRect rect({0, 0},
-                         {
-                             static_cast<int>(m_texture.getSize().x),
-                             static_cast<int>(m_texture.getSize().y)
-                         });
-        m_rect = rect;
         return true;
     }
 
-    void Move(sf::Vector2f delta)
+    void Move(sf::Vector2i delta)
     {
-        m_rect.position.x += static_cast<int>(delta.x);
-        m_rect.position.y += static_cast<int>(delta.y);
+        m_picturePosition.x += delta.x;
+        m_picturePosition.y += delta.y;
     }
 
-    sf::Rect<int> &GetRect()
+    sf::Vector2i GetPicturePosition() const
     {
-        return m_rect;
+        return m_picturePosition;
     }
 
     sf::Texture &GetTexture()
     {
         return m_texture;
+    }
+
+    bool HasImage() const
+    {
+        return m_image.getSize().x > 0;
+    }
+
+    void UpdateTexture()
+    {
+        m_texture.update(m_image);
     }
 };

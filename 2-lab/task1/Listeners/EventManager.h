@@ -29,7 +29,7 @@ public:
         }
     }
 
-    void NotifyListeners(EventType eventType, const sf::Event &event)
+    void NotifyListeners(EventType eventType, const std::optional<sf::Event> &event = std::nullopt)
     {
         if (const auto it = m_listeners.find(eventType); it != m_listeners.end())
         {

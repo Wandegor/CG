@@ -14,7 +14,7 @@ private:
     EventManager &m_manager;
 
     bool m_isDragging;
-    sf::Vector2f m_lastMousePosition;
+    sf::Vector2i m_lastMousePosition;
 
 public:
 
@@ -35,7 +35,7 @@ public:
         m_manager.Unsubscribe(EventType::MouseReleased, *this);
     }
 
-    void Update(EventType eventType, const sf::Event& event) override
+    void Update(EventType eventType, const std::optional<sf::Event> &event) override
     {
         switch (eventType)
         {
@@ -43,13 +43,13 @@ public:
                 OnOpenFile();
             break;
             case EventType::MousePressed:
-                OnMousePressed(event);
+                OnMousePressed(*event);
             break;
             case EventType::MouseMoved:
-                OnMouseMoved(event);
+                OnMouseMoved(*event);
             break;
             case EventType::MouseReleased:
-                OnMouseReleased(event);
+                OnMouseReleased(*event);
             break;
             default: ;
         }
@@ -59,13 +59,13 @@ private:
     void OnOpenFile()
     {
         auto selection = pfd::open_file("Choose an image", ".",
-                                        {"Image Files", "*.jpg *.jpeg *.png *.bmp"});
+                                        {"Image Files", "*.jpg *.jpeg"});
         if (!selection.result().empty())
         {
             std::string filename = selection.result()[0];
             if (m_model.LoadFromFile(filename))
             {
-                m_view.SetImage(m_model.GetTexture(), m_model.GetRect());
+                m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
             }
         }
     }
@@ -75,14 +75,21 @@ private:
         auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
         if (!mousePressed) return;
         if (mousePressed->button != sf::Mouse::Button::Left) return;
+        if (!m_model.HasImage()) return;
 
-        if (m_model.GetRect().contains(mousePressed->position))
+        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2i onImagePos(
+            mousePressed->position.x - picturePos.x,
+            mousePressed->position.y - picturePos.y
+        );
+
+        // Проверка на попадание по картинке
+        if (onImagePos.x >= 0 && onImagePos.y >= 0
+            && onImagePos.x < m_model.GetTexture().getSize().x
+            && onImagePos.y < m_model.GetTexture().getSize().y)
         {
             m_isDragging = true;
-            m_lastMousePosition = {
-                    static_cast<float>(mousePressed->position.x),
-                    static_cast<float>(mousePressed->position.y)};
-
+            m_lastMousePosition = mousePressed->position;
         }
     }
 
@@ -93,9 +100,9 @@ private:
 
         if (!m_isDragging) return;
 
-        sf::Vector2f currentPos(static_cast<float>(mouseMoved->position.x),
-                            static_cast<float>(mouseMoved->position.y));
-        sf::Vector2f delta = currentPos - m_lastMousePosition;
+        sf::Vector2i currentPos(mouseMoved->position.x,
+                            mouseMoved->position.y);
+        sf::Vector2i delta = currentPos - m_lastMousePosition;
 
         m_model.Move(delta);
         m_view.MoveImage(delta);
