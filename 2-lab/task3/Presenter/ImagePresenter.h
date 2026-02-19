@@ -73,6 +73,10 @@ private:
 
             m_isDragging = true;
             m_lastMousePosition = mousePressed->position;
+
+            const auto& lib = m_model.GetLibrary();
+            const LibraryElement* info = &lib[libIndex];
+            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position));
         }
         // Клики в другие места
     }
@@ -82,16 +86,12 @@ private:
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
         if (!mouseMoved) return;
         if (!m_isDragging) return;
-        //
-        // sf::Vector2i currentPos(mouseMoved->position.x,
-        //                         mouseMoved->position.y);
-        // sf::Vector2i delta = currentPos - m_lastMousePosition;
-        //
-        // m_model.;
-        // m_view.MoveImage(delta);
-        //
-        // m_lastMousePosition = currentPos;
 
+        sf::Vector2i currentPos(mouseMoved->position.x, mouseMoved->position.y);
+        if (m_dragInfo == DragInfo::Library)
+        {
+            m_view.UpdateDraggedElement(sf::Vector2f(currentPos));
+        }
     }
 
     void OnMouseReleased(const sf::Event& event)
@@ -116,10 +116,14 @@ private:
 
                 m_model.AddPlacedElement(info, dropPos);
                 m_view.SetFieldElements(m_model.GetPlacedElements());
+
             }
             // перемещение полевого элемента
         }
 
+        m_view.HideDraggedElement();
+        m_isDragging = false;
+        m_dragInfo = DragInfo::None;
         // иначе вернуть на место(просто убрать призрак)
     }
 };

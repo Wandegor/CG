@@ -21,6 +21,7 @@ private:
     std::vector<sf::Sprite> m_fieldSprites;
     std::vector<sf::Text> m_fieldTexts;
 
+    std::optional<sf::Sprite> m_draggedSprite;
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
@@ -97,6 +98,28 @@ public:
         }
     }
 
+    void ShowDraggedElement(const LibraryElement* element, sf::Vector2f screenPos) override
+    {
+        if (!element) return;
+        m_draggedSprite.emplace(element->texture);
+        m_draggedSprite->setColor(sf::Color(255, 255, 255, 180));
+
+        sf::Vector2u texSize = element->texture.getSize();
+        m_draggedSprite->setOrigin(sf::Vector2f(texSize.x / 2.f, texSize.y / 2.f));
+        m_draggedSprite->setPosition(screenPos);
+    }
+
+    void UpdateDraggedElement(sf::Vector2f screenPos) override
+    {
+        if (m_draggedSprite.has_value())
+            m_draggedSprite->setPosition(screenPos);
+    }
+
+    void HideDraggedElement() override
+    {
+        m_draggedSprite.reset();
+    }
+
     int GetLibraryIndexAt(sf::Vector2i mousePos) const override
     {
         for (size_t i = 0; i < m_librarySprites.size(); ++i)
@@ -165,6 +188,9 @@ public:
             m_window.draw(sprite);
         for (const auto& text : m_fieldTexts)
             m_window.draw(text);
+
+        if (m_draggedSprite.has_value())
+            m_window.draw(*m_draggedSprite);
     }
 
     void Run()
