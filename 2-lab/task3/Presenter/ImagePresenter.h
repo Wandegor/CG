@@ -121,7 +121,6 @@ private:
         if (m_dragInfo == DragInfo::InGame )
         {
             sf::Vector2f newPos = sf::Vector2f(currentPos) - m_dragOffset;
-            m_model.UpdatePlacedElementPosition(m_dragFieldIndex, newPos);
             m_view.UpdateFieldElementPosition(m_dragFieldIndex, newPos);
         }
     }
@@ -158,6 +157,11 @@ private:
                 m_model.UpdatePlacedElementPosition(m_dragFieldIndex, dropPos);
                 m_view.SetFieldElements(m_model.GetPlacedElements());
             }
+        }
+        else
+        {
+            m_model.UpdatePlacedElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
+            m_view.SetFieldElements(m_model.GetPlacedElements());
         }
 
         m_view.HideDraggedElement();
