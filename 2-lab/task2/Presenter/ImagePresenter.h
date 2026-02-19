@@ -41,7 +41,7 @@ public:
         m_manager.Unsubscribe(EventType::MouseReleased, *this);
     }
 
-    void Update(EventType eventType, const sf::Event& event) override
+    void Update(EventType eventType, const std::optional<sf::Event> &event) override
     {
         switch (eventType)
         {
@@ -55,13 +55,13 @@ public:
                 OnSaveFile();
             break;
             case EventType::MousePressed:
-                OnMousePressed(event);
+                OnMousePressed(event.value());
             break;
             case EventType::MouseMoved:
-                OnMouseMoved(event);
+                OnMouseMoved(event.value());
             break;
             case EventType::MouseReleased:
-                OnMouseReleased(event);
+                OnMouseReleased(event.value());
             break;
         }
     }
