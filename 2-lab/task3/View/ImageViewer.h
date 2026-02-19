@@ -98,14 +98,13 @@ public:
         }
     }
 
-    void ShowDraggedElement(const LibraryElement* element, sf::Vector2f screenPos) override
+    void ShowDraggedElement(const LibraryElement* element, sf::Vector2f screenPos, sf::Vector2f offset) override
     {
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
         m_draggedSprite->setColor(sf::Color(255, 255, 255, 250));
 
-        sf::Vector2u texSize = element->texture.getSize();
-        m_draggedSprite->setOrigin(sf::Vector2f(texSize.x / 2.f, texSize.y / 2.f));
+        m_draggedSprite->setOrigin(offset);
         m_draggedSprite->setPosition(screenPos);
     }
 
@@ -118,6 +117,13 @@ public:
     void HideDraggedElement() override
     {
         m_draggedSprite.reset();
+    }
+
+    sf::Vector2f GetLibraryElementPosition(int index) const override
+    {
+        if (index >= 0 && index < m_librarySprites.size())
+            return m_librarySprites[index].getPosition();
+        return sf::Vector2f(0, 0);
     }
 
     int GetLibraryIndexAt(sf::Vector2i mousePos) const override

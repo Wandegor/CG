@@ -18,6 +18,7 @@ private:
     int m_dragLibraryIndex;
     int m_dragFieldIndex;
     sf::Vector2f m_dragOriginalPosition;
+    sf::Vector2f m_dragOffset;
 
 public:
 
@@ -78,7 +79,12 @@ private:
 
             const auto& lib = m_model.GetLibrary();
             const LibraryElement* info = &lib[libIndex];
-            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position));
+
+            sf::Vector2f elemPos = m_view.GetLibraryElementPosition(libIndex);
+            sf::Vector2f mousePos = sf::Vector2f(mousePressed->position);
+            m_dragOffset = mousePos - elemPos;
+
+            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
         }
 
         // Клики в другие места
@@ -93,8 +99,11 @@ private:
             const auto& placed = m_model.GetPlacedElements();
             const auto& elem = placed[fieldIndex];
             m_dragOriginalPosition = elem.position;
+            m_dragOffset = sf::Vector2f(
+                mousePressed->position.x - elem.position.x,
+                mousePressed->position.y - elem.position.y);
 
-            m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position));
+            m_view.ShowDraggedElement(elem.info, sf::Vector2f(mousePressed->position), m_dragOffset);
             return;
         }
     }
@@ -131,7 +140,7 @@ private:
                 const auto& lib = m_model.GetLibrary();
                 const LibraryElement* info = &lib[m_dragLibraryIndex];
 
-                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position);
+                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
 
                 m_model.AddPlacedElement(info, dropPos);
                 m_view.SetFieldElements(m_model.GetPlacedElements());
@@ -140,8 +149,8 @@ private:
             // перемещение полевого элемента
             if (m_dragInfo == DragInfo::InGame)
             {
-                sf::Vector2f newPos = sf::Vector2f(mouseReleased->position);
-                m_model.UpdatePlacedElementPosition(m_dragFieldIndex, newPos);
+                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
+                m_model.UpdatePlacedElementPosition(m_dragFieldIndex, dropPos);
                 m_view.SetFieldElements(m_model.GetPlacedElements());
             }
         }
