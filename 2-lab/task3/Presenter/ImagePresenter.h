@@ -192,10 +192,7 @@ private:
         else
         {
             // полевой элемент -> возврат в поле
-            if (m_dragInfo == DragInfo::InGame)
-            {
-                // m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-            }
+            if (m_dragInfo == DragInfo::InGame) {}
             // Lib элемент -> возврат в lib
             if (m_dragInfo == DragInfo::Library) {}
         }

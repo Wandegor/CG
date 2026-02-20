@@ -29,24 +29,30 @@ public:
 
     void InitLibrary()
     {
-        auto createElement = [](const std::wstring& name, sf::Color color) -> LibraryElement
+        std::vector<std::pair<std::wstring, std::string>> elementData = {
+            {L"Земля", "earth.png"},
+            {L"Огонь", "fire.png"},
+            {L"Вода", "water.png"},
+            {L"Воздух", "air.png"},
+            {L"Лава", "lava.png"},
+            {L"Пар", "steam.png"}
+        };
+
+        for (const auto& [name, filename] : elementData)
         {
             LibraryElement elem;
             elem.name = name;
-            sf::Image img({80, 80}, color);
-            if (!elem.texture.loadFromImage(img))
-            {
-                std::cerr << "Failed to load texture for " << std::string(name.begin(), name.end()) << std::endl;
-            }
-            return elem;
-        };
 
-        m_library.push_back(createElement(L"Земля", sf::Color::Blue));
-        m_library.push_back(createElement(L"Огонь", sf::Color::Red));
-        m_library.push_back(createElement(L"Вода", sf::Color::Cyan));
-        m_library.push_back(createElement(L"Воздух", sf::Color::White));
-        m_library.push_back(createElement(L"Лава", sf::Color::Yellow));
-        m_library.push_back(createElement(L"Пар", sf::Color(200, 200, 200)));
+            std::string path = "D:/Projects/6-SEM/CG/2-lab/task3/Resources/" + filename;
+            if (!elem.texture.loadFromFile(path))
+            {
+                std::cerr << "Failed to load texture " << path
+                          << " for " << std::string(name.begin(), name.end()) << std::endl;
+                sf::Image image = sf::Image({80, 80}, sf::Color::Blue);
+                elem.texture.loadFromImage(image);
+            }
+            m_library.push_back(elem);
+        }
 
         InitRecipes();
     }

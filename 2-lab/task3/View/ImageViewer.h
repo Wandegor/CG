@@ -21,6 +21,8 @@ private:
     std::vector<sf::Sprite> m_fieldSprites;
     std::vector<sf::Text> m_fieldTexts;
 
+    float m_iconSize;
+
     std::optional<sf::Sprite> m_draggedSprite;
     std::optional<sf::Text> m_draggedText;
     sf::Vector2f m_lastDragOffset;
@@ -28,7 +30,8 @@ private:
 
 public:
     ImageViewer(sf::RenderWindow& window, EventManager& document)
-        : m_window(window), m_manager(document), m_hiddenFieldIndex(-1)
+        : m_window(window), m_manager(document),
+        m_hiddenFieldIndex(-1), m_iconSize(80.f)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -44,13 +47,12 @@ public:
         m_librarySprites.clear();
         m_libraryTexts.clear();
 
-        const float elemSize = static_cast<float>(library[0].texture.getSize().x);
         constexpr int columns = 4;
 
-        const float xSpacing = m_leftPanelWidth / columns - elemSize;
+        const float xSpacing = m_leftPanelWidth / columns - m_iconSize;
 
-        const float cellWidth = elemSize + xSpacing;
-        const float cellHeight = elemSize + 40;
+        const float cellWidth = m_iconSize + xSpacing;
+        const float cellHeight = m_iconSize + 40;
 
         for (size_t i = 0; i < library.size(); ++i)
         {
@@ -63,16 +65,21 @@ public:
             float y = 20 + static_cast<float>(row) * cellHeight;
 
             sf::Sprite sprite(elem.texture);
+            sf::Vector2u size = elem.texture.getSize();
+            float scaleX = m_iconSize / static_cast<float>(size.x);
+            float scaleY = m_iconSize / static_cast<float>(size.y);
+            sprite.setScale({scaleX, scaleY});
             sprite.setPosition({x, y});
             m_librarySprites.push_back(sprite);
 
             sf::Text text(m_font, elem.name);
-            text.setCharacterSize(16);
             text.setFillColor(sf::Color::Black);
+            text.setCharacterSize(18);
 
             sf::FloatRect textBounds = text.getLocalBounds();
-            float textX = x + (elemSize - textBounds.size.x) / 2.f;
-            float textY = y + elemSize + textOffsetY;
+
+            float textX = x + (m_iconSize - textBounds.size.x) / 2.f;
+            float textY = y + m_iconSize + textOffsetY;
             text.setPosition({textX, textY});
 
             m_libraryTexts.push_back(text);
@@ -90,17 +97,22 @@ public:
         {
             const auto& libElem = library[elem.libraryIndex];
             sf::Sprite sprite(libElem.texture);
+            sf::Vector2u texSize = libElem.texture.getSize();
+            float scaleX = m_iconSize / static_cast<float>(texSize.x);
+            float scaleY = m_iconSize/ static_cast<float>(texSize.y);
+            sprite.setScale({scaleX, scaleY});
             sprite.setPosition(elem.position);
             m_fieldSprites.push_back(sprite);
 
+            sf::Vector2f spriteSize = sprite.getGlobalBounds().size;
             sf::Text text(m_font, libElem.name);
-            text.setCharacterSize(14);
             text.setFillColor(sf::Color::Black);
+            text.setCharacterSize(18);
             sf::FloatRect textBounds = text.getLocalBounds();
             // textX = spriteLeft + (spriteSize.x - textWidth) / 2
-            float textX = elem.position.x + (static_cast<float>(libElem.texture.getSize().x) - textBounds.size.x) / 2.f;
+            float textX = elem.position.x + (m_iconSize - textBounds.size.x) / 2.f;
             // textY = spriteTop + spriteSize.y + 5
-            float textY = elem.position.y + static_cast<float>(libElem.texture.getSize().y) + 5.f;
+            float textY = elem.position.y + m_iconSize + 5.f;
             text.setPosition({textX, textY});
             m_fieldTexts.push_back(text);
         }
@@ -114,10 +126,11 @@ public:
 
             if (index < m_fieldTexts.size())
             {
-                const auto& elem = m_fieldSprites[index];
+                const auto& sprite = m_fieldSprites[index];
+                sf::Vector2f spriteSize = sprite.getGlobalBounds().size;
                 sf::FloatRect textBounds = m_fieldTexts[index].getLocalBounds();
-                float textX = newPos.x + (static_cast<float>(elem.getTexture().getSize().x) - textBounds.size.x) / 2.f;
-                float textY = newPos.y + static_cast<float>(elem.getTexture().getSize().y) + 5.f;
+                float textX = newPos.x + (spriteSize.x - textBounds.size.x) / 2.f;
+                float textY = newPos.y + spriteSize.y + 5.f;
                 m_fieldTexts[index].setPosition({textX, textY});
             }
         }
@@ -128,16 +141,19 @@ public:
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
         m_draggedSprite->setColor(sf::Color(255, 255, 255));
-        m_draggedSprite->setOrigin(offset);
-        m_draggedSprite->setPosition(screenPos);
+        sf::Vector2u texSize = element->texture.getSize();
+        float scaleX = m_iconSize / static_cast<float>(texSize.x);
+        float scaleY = m_iconSize/ static_cast<float>(texSize.y);
+        m_draggedSprite->setScale({scaleX, scaleY});
+        m_draggedSprite->setPosition(screenPos - offset);
 
         m_draggedText.emplace(m_font, element->name);
-        m_draggedText->setCharacterSize(14);
+        m_draggedText->setCharacterSize(18);
         m_draggedText->setFillColor(sf::Color::Black);
         sf::FloatRect textBounds = m_draggedText->getLocalBounds();
-        sf::Vector2f spriteSize = static_cast<sf::Vector2f>(element->texture.getSize());
-        float textX = screenPos.x - offset.x + (spriteSize.x - textBounds.size.x) / 2.f;
-        float textY = screenPos.y - offset.y + spriteSize.y + 5.f;
+
+        float textX = screenPos.x - offset.x + (m_iconSize - textBounds.size.x) / 2.f;
+        float textY = screenPos.y - offset.y + m_iconSize + 5.f;
         m_draggedText->setPosition({textX, textY});
 
         m_lastDragOffset = offset;
@@ -147,11 +163,10 @@ public:
     {
         if (m_draggedSprite.has_value() && m_draggedText.has_value())
         {
-            m_draggedSprite->setPosition(screenPos);
+            m_draggedSprite->setPosition(screenPos - m_lastDragOffset);
             sf::FloatRect textBounds = m_draggedText->getLocalBounds();
-            sf::Vector2f spriteSize = static_cast<sf::Vector2f>(m_draggedSprite->getTexture().getSize());
-            float textX = screenPos.x - m_lastDragOffset.x + (spriteSize.x - textBounds.size.x) / 2.f;
-            float textY = screenPos.y - m_lastDragOffset.y + spriteSize.y + 5.f;
+            float textX = screenPos.x - m_lastDragOffset.x + (m_iconSize - textBounds.size.x) / 2.f;
+            float textY = screenPos.y - m_lastDragOffset.y + m_iconSize + 5.f;
             m_draggedText->setPosition({textX, textY});
         }
     }
