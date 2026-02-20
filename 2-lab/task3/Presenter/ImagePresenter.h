@@ -130,35 +130,43 @@ private:
             || mouseReleased->button != sf::Mouse::Button::Left)
             return;
 
+        auto releasePos = sf::Vector2f(mouseReleased->position);
         sf::FloatRect fieldBounds = m_view.GetFieldBounds();
 
-        // мышь в правой области?
-        if (fieldBounds.contains(sf::Vector2f(mouseReleased->position)))
+        int targetIndex = m_view.GetFieldIndexAt(mouseReleased->position);
+
+        // Отпускание в поле
+        if (fieldBounds.contains(releasePos))
         {
-            // добавить на поле из lib
+            // добавить на поле из Lib
             if (m_dragInfo == DragInfo::Library)
             {
-                // const auto& lib = m_model.GetLibrary();
-                // const LibraryElement* info = &lib[m_dragLibraryIndex];
-
-                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
-
+                sf::Vector2f dropPos = releasePos - m_dragOffset;
                 m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
                 m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
             }
             // перемещение полевого элемента
             if (m_dragInfo == DragInfo::InGame)
             {
-                sf::Vector2f dropPos = sf::Vector2f(mouseReleased->position) - m_dragOffset;
+                sf::Vector2f dropPos = releasePos - m_dragOffset;
                 m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
                 m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
             }
             // Соединение
         }
+        // Отпускание в Lib
         else
         {
-            m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-            m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+            // полевой элемент -> возврат в поле
+            if (m_dragInfo == DragInfo::InGame)
+            {
+                m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
+                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+            }
+            // Lib элемент -> возврат в lib
+            if (m_dragInfo == DragInfo::Library)
+            {
+            }
         }
 
         m_view.HideDraggedElement();
