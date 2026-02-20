@@ -22,6 +22,8 @@ private:
     std::vector<sf::Text> m_fieldTexts;
 
     std::optional<sf::Sprite> m_draggedSprite;
+    std::optional<sf::Text> m_draggedText;
+    sf::Vector2f m_lastDragOffset;
     int m_hiddenFieldIndex;
 
 public:
@@ -77,7 +79,8 @@ public:
         }
     }
 
-    void SetFieldElements(const std::vector<FieldElement>& elements, const std::vector<LibraryElement>& library) override
+    void SetFieldElements(const std::vector<FieldElement>& elements,
+                          const std::vector<LibraryElement>& library) override
     {
         m_fieldSprites.clear();
         m_fieldTexts.clear();
@@ -94,8 +97,9 @@ public:
             text.setCharacterSize(14);
             text.setFillColor(sf::Color::Black);
             sf::FloatRect textBounds = text.getLocalBounds();
-            float textX = elem.position.x + (static_cast<float>(libElem.texture.getSize().x) - textBounds.size.x) /
-                          2.f;
+            // textX = spriteLeft + (spriteSize.x - textWidth) / 2
+            float textX = elem.position.x + (static_cast<float>(libElem.texture.getSize().x) - textBounds.size.x) / 2.f;
+            // textY = spriteTop + spriteSize.y + 5
             float textY = elem.position.y + static_cast<float>(libElem.texture.getSize().y) + 5.f;
             text.setPosition({textX, textY});
             m_fieldTexts.push_back(text);
@@ -124,23 +128,42 @@ public:
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
         m_draggedSprite->setColor(sf::Color(255, 255, 255));
-
         m_draggedSprite->setOrigin(offset);
         m_draggedSprite->setPosition(screenPos);
+
+        m_draggedText.emplace(m_font, element->name);
+        m_draggedText->setCharacterSize(14);
+        m_draggedText->setFillColor(sf::Color::Black);
+        sf::FloatRect textBounds = m_draggedText->getLocalBounds();
+        sf::Vector2f spriteSize = static_cast<sf::Vector2f>(element->texture.getSize());
+        float textX = screenPos.x - offset.x + (spriteSize.x - textBounds.size.x) / 2.f;
+        float textY = screenPos.y - offset.y + spriteSize.y + 5.f;
+        m_draggedText->setPosition({textX, textY});
+
+        m_lastDragOffset = offset;
     }
 
     void UpdateDraggedElement(sf::Vector2f screenPos) override
     {
-        if (m_draggedSprite.has_value())
+        if (m_draggedSprite.has_value() && m_draggedText.has_value())
+        {
             m_draggedSprite->setPosition(screenPos);
+            sf::FloatRect textBounds = m_draggedText->getLocalBounds();
+            sf::Vector2f spriteSize = static_cast<sf::Vector2f>(m_draggedSprite->getTexture().getSize());
+            float textX = screenPos.x - m_lastDragOffset.x + (spriteSize.x - textBounds.size.x) / 2.f;
+            float textY = screenPos.y - m_lastDragOffset.y + spriteSize.y + 5.f;
+            m_draggedText->setPosition({textX, textY});
+        }
     }
 
     void HideDraggedElement() override
     {
         m_draggedSprite.reset();
+        m_draggedText.reset();
     }
 
-    void HideFieldElement(int index) override {
+    void HideFieldElement(int index) override
+    {
         m_hiddenFieldIndex = index;
     }
 
@@ -237,16 +260,18 @@ public:
         for (const auto& text: m_libraryTexts)
             m_window.draw(text);
 
-        for (size_t i = 0; i < m_fieldSprites.size(); ++i) {
+        for (size_t i = 0; i < m_fieldSprites.size(); ++i)
+        {
             if (m_hiddenFieldIndex != -1 && m_hiddenFieldIndex == static_cast<int>(i))
                 continue;
             m_window.draw(m_fieldSprites[i]);
+            m_window.draw(m_fieldTexts[i]);
         }
-        for (const auto& text: m_fieldTexts)
-            m_window.draw(text);
 
         if (m_draggedSprite.has_value())
             m_window.draw(*m_draggedSprite);
+        if (m_draggedText.has_value())
+            m_window.draw(*m_draggedText);
     }
 
     void Run()

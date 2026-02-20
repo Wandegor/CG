@@ -176,11 +176,10 @@ private:
                         int second = std::min(m_dragFieldIndex, targetIndex);
                         m_model.RemoveFieldElement(first);
                         m_model.RemoveFieldElement(second);
-                        for (int resIdx : results)
+                        for (int resIdx: results)
                         {
                             m_model.AddFieldElement(resIdx, releasePos - m_dragOffset);
                         }
-
                     }
                     else // нет такой комбинации
                     {
