@@ -22,4 +22,5 @@ public:
     [[nodiscard]] virtual int GetFieldIndexAtIgnoring(sf::Vector2i mousePos, int ignoreIndex) const = 0;
 
     [[nodiscard]] virtual sf::FloatRect GetFieldBounds() const = 0;
+    [[nodiscard]] virtual float GetIconSize() const = 0;
 };

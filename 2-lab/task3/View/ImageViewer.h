@@ -229,6 +229,11 @@ public:
         return {{left, top}, {width, height}};
     }
 
+    float GetIconSize() const override
+    {
+        return m_iconSize;
+    }
+
     void ProcessEvents()
     {
         while (const auto event = m_window.pollEvent())

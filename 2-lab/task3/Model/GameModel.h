@@ -34,7 +34,7 @@ public:
             {L"Огонь", "fire.png"},
             {L"Вода", "water.png"},
             {L"Воздух", "air.png"},
-            {L"Лава", "lava.png"},
+            {L"Лава", "lava.jpg"},
             {L"Пар", "steam.png"}
         };
 
@@ -49,7 +49,7 @@ public:
                 std::cerr << "Failed to load texture " << path
                           << " for " << std::string(name.begin(), name.end()) << std::endl;
                 sf::Image image = sf::Image({80, 80}, sf::Color::Blue);
-                elem.texture.loadFromImage(image);
+                if (!elem.texture.loadFromImage(image)) {}
             }
             m_library.push_back(elem);
         }
