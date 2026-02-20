@@ -102,6 +102,13 @@ private:
             const auto& elem = placed[fieldIndex];
             m_dragOriginalPosition = elem.position;
             m_dragOffset = sf::Vector2f(mousePressed->position) - elem.position;
+
+            // Призрак пол элемента
+            m_view.HideFieldElement(fieldIndex);
+
+            const auto& lib = m_model.GetLibrary();
+            const LibraryElement* info = &lib[elem.libraryIndex];
+            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
         }
     }
 
@@ -112,14 +119,9 @@ private:
         if (!m_isDragging) return;
 
         sf::Vector2i currentPos(mouseMoved->position.x, mouseMoved->position.y);
-        if (m_dragInfo == DragInfo::Library)
+        if (m_dragInfo == DragInfo::Library || m_dragInfo == DragInfo::InGame)
         {
             m_view.UpdateDraggedElement(sf::Vector2f(currentPos));
-        }
-        if (m_dragInfo == DragInfo::InGame)
-        {
-            sf::Vector2f newPos = sf::Vector2f(currentPos) - m_dragOffset;
-            m_view.UpdateFieldElementPosition(m_dragFieldIndex, newPos);
         }
     }
 
@@ -133,7 +135,7 @@ private:
         auto releasePos = sf::Vector2f(mouseReleased->position);
         sf::FloatRect fieldBounds = m_view.GetFieldBounds();
 
-        int targetIndex = m_view.GetFieldIndexAt(mouseReleased->position);
+        int targetIndex = m_view.GetFieldIndexAtIgnoring(mouseReleased->position, m_dragFieldIndex);
 
         // Отпускание в поле
         if (fieldBounds.contains(releasePos))
@@ -145,14 +147,12 @@ private:
                 {
                     sf::Vector2f dropPos = releasePos - m_dragOffset;
                     m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
-                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
                 }
                 // перемещение полевого элемента
                 if (m_dragInfo == DragInfo::InGame)
                 {
                     sf::Vector2f dropPos = releasePos - m_dragOffset;
                     m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
-                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
                 }
             }
             else // Соединение с targetIndex
@@ -162,7 +162,6 @@ private:
                 {
                     sf::Vector2f dropPos = releasePos - m_dragOffset;
                     m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
-                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
                 }
                 // Соединение полевых
                 if (m_dragInfo == DragInfo::InGame)
@@ -181,12 +180,11 @@ private:
                         {
                             m_model.AddFieldElement(resIdx, releasePos - m_dragOffset);
                         }
-                        m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+
                     }
                     else // нет такой комбинации
                     {
                         m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-                        m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
                     }
                 }
             }
@@ -197,13 +195,13 @@ private:
             // полевой элемент -> возврат в поле
             if (m_dragInfo == DragInfo::InGame)
             {
-                m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
-                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                // m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
             }
             // Lib элемент -> возврат в lib
             if (m_dragInfo == DragInfo::Library) {}
         }
 
+        m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
         m_view.HideDraggedElement();
         m_isDragging = false;
         m_dragInfo = DragInfo::None;

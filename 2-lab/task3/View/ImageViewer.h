@@ -22,10 +22,11 @@ private:
     std::vector<sf::Text> m_fieldTexts;
 
     std::optional<sf::Sprite> m_draggedSprite;
+    int m_hiddenFieldIndex;
 
 public:
     ImageViewer(sf::RenderWindow& window, EventManager& document)
-        : m_window(window), m_manager(document)
+        : m_window(window), m_manager(document), m_hiddenFieldIndex(-1)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -80,6 +81,7 @@ public:
     {
         m_fieldSprites.clear();
         m_fieldTexts.clear();
+        m_hiddenFieldIndex = -1;
 
         for (const auto& elem: elements)
         {
@@ -121,7 +123,7 @@ public:
     {
         if (!element) return;
         m_draggedSprite.emplace(element->texture);
-        m_draggedSprite->setColor(sf::Color(255, 255, 255, 100));
+        m_draggedSprite->setColor(sf::Color(255, 255, 255));
 
         m_draggedSprite->setOrigin(offset);
         m_draggedSprite->setPosition(screenPos);
@@ -138,6 +140,10 @@ public:
         m_draggedSprite.reset();
     }
 
+    void HideFieldElement(int index) override {
+        m_hiddenFieldIndex = index;
+    }
+
     sf::Vector2f GetLibraryElementPosition(int index) const override
     {
         if (index >= 0 && index < m_librarySprites.size())
@@ -150,6 +156,17 @@ public:
         for (size_t i = 0; i < m_librarySprites.size(); ++i)
         {
             if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
+                return static_cast<int>(i);
+        }
+        return -1;
+    }
+
+    int GetFieldIndexAtIgnoring(sf::Vector2i mousePos, int ignoreIndex) const override
+    {
+        for (size_t i = 0; i < m_fieldSprites.size(); ++i)
+        {
+            if (static_cast<int>(i) == ignoreIndex) continue;
+            if (m_fieldSprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
                 return static_cast<int>(i);
         }
         return -1;
@@ -219,8 +236,12 @@ public:
             m_window.draw(sprite);
         for (const auto& text: m_libraryTexts)
             m_window.draw(text);
-        for (const auto& sprite: m_fieldSprites)
-            m_window.draw(sprite);
+
+        for (size_t i = 0; i < m_fieldSprites.size(); ++i) {
+            if (m_hiddenFieldIndex != -1 && m_hiddenFieldIndex == static_cast<int>(i))
+                continue;
+            m_window.draw(m_fieldSprites[i]);
+        }
         for (const auto& text: m_fieldTexts)
             m_window.draw(text);
 
