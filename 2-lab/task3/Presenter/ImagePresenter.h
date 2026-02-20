@@ -178,7 +178,10 @@ private:
                         m_model.RemoveFieldElement(first);
                         m_model.RemoveFieldElement(second);
                         for (int resIdx : results)
-                            m_model.AddFieldElement(resIdx, releasePos);
+                        {
+                            m_model.AddFieldElement(resIdx, releasePos - m_dragOffset);
+                        }
+                        m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
                     }
                     else // нет такой комбинации
                     {
