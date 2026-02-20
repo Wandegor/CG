@@ -138,21 +138,55 @@ private:
         // Отпускание в поле
         if (fieldBounds.contains(releasePos))
         {
-            // добавить на поле из Lib
-            if (m_dragInfo == DragInfo::Library)
+            if (targetIndex == -1 || targetIndex == m_dragFieldIndex)
             {
-                sf::Vector2f dropPos = releasePos - m_dragOffset;
-                m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
-                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                // добавить на поле из Lib
+                if (m_dragInfo == DragInfo::Library)
+                {
+                    sf::Vector2f dropPos = releasePos - m_dragOffset;
+                    m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
+                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                }
+                // перемещение полевого элемента
+                if (m_dragInfo == DragInfo::InGame)
+                {
+                    sf::Vector2f dropPos = releasePos - m_dragOffset;
+                    m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
+                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                }
             }
-            // перемещение полевого элемента
-            if (m_dragInfo == DragInfo::InGame)
+            else // Соединение с targetIndex
             {
-                sf::Vector2f dropPos = releasePos - m_dragOffset;
-                m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
-                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                // добавить на поле из Lib (пока что)
+                if (m_dragInfo == DragInfo::Library)
+                {
+                    sf::Vector2f dropPos = releasePos - m_dragOffset;
+                    m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
+                    m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                }
+                // Соединение полевых
+                if (m_dragInfo == DragInfo::InGame)
+                {
+                    int sourceIdx = m_model.GetFieldElements()[m_dragFieldIndex].libraryIndex;
+                    int targetIdx = m_model.GetFieldElements()[targetIndex].libraryIndex;
+
+                    std::vector<int> results;
+                    if (m_model.GetCombinationResult(sourceIdx, targetIdx, results))
+                    {
+                        int first = std::max(m_dragFieldIndex, targetIndex);
+                        int second = std::min(m_dragFieldIndex, targetIndex);
+                        m_model.RemoveFieldElement(first);
+                        m_model.RemoveFieldElement(second);
+                        for (int resIdx : results)
+                            m_model.AddFieldElement(resIdx, releasePos);
+                    }
+                    else // нет такой комбинации
+                    {
+                        m_model.UpdateFieldElementPosition(m_dragFieldIndex, m_dragOriginalPosition);
+                        m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                    }
+                }
             }
-            // Соединение
         }
         // Отпускание в Lib
         else
@@ -164,9 +198,7 @@ private:
                 m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
             }
             // Lib элемент -> возврат в lib
-            if (m_dragInfo == DragInfo::Library)
-            {
-            }
+            if (m_dragInfo == DragInfo::Library) {}
         }
 
         m_view.HideDraggedElement();

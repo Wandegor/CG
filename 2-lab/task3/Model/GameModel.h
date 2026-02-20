@@ -56,8 +56,38 @@ public:
         m_recipes[{2,1}] = {5};
     }
 
+    bool GetCombinationResult(int idxA, int idxB, std::vector<int>& outResults) const
+    {
+        auto it = m_recipes.find({idxA, idxB});
+        if (it != m_recipes.end()) {
+            outResults = it->second;
+            return true;
+        }
+        it = m_recipes.find({idxB, idxA});
+        if (it != m_recipes.end()) {
+            outResults = it->second;
+            return true;
+        }
+        return false;
+    }
+
+    int AddToLibraryIfNew(const LibraryElement& elem)
+    {
+        for (size_t i = 0; i < m_library.size(); ++i) {
+            if (m_library[i].name == elem.name)
+                return static_cast<int>(i);
+        }
+        m_library.push_back(elem);
+        return static_cast<int>(m_library.size() - 1);
+    }
+
     void AddFieldElement(int libIndex, sf::Vector2f pos) {
         m_placedElements.push_back({libIndex, pos});
+    }
+
+    void RemoveFieldElement(int index) {
+        if (index >= 0 && index < m_placedElements.size())
+            m_placedElements.erase(m_placedElements.begin() + index);
     }
 
     void UpdateFieldElementPosition(int index, sf::Vector2f pos)
