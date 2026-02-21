@@ -6,8 +6,9 @@ class IView
 public:
     virtual ~IView() = default;
 
-    virtual void SetLibrary(std::vector<LibraryElement>& library) = 0;
-    virtual void SetFieldElements(const std::vector<FieldElement>& elements, const std::vector<LibraryElement>& library) = 0;
+    virtual void SetLibrary(const std::vector<LibraryElement>& library) = 0;
+    virtual void SetFieldElements(const std::vector<FieldElement>& elements,
+                                  const std::vector<LibraryElement>& library) = 0;
 
     virtual void UpdateFieldElementPosition(int index, sf::Vector2f newPos) = 0;
 
@@ -19,7 +20,6 @@ public:
     [[nodiscard]] virtual sf::Vector2f GetLibraryElementPosition(int index) const = 0;
     [[nodiscard]] virtual int GetLibraryIndexAt(sf::Vector2i mousePos) const = 0;
     [[nodiscard]] virtual int GetFieldIndexAt(sf::Vector2i mousePos) const = 0;
-    [[nodiscard]] virtual int GetFieldIndexAtIgnoring(sf::Vector2i mousePos, int ignoreIndex) const = 0;
 
     [[nodiscard]] virtual sf::FloatRect GetFieldBounds() const = 0;
     [[nodiscard]] virtual float GetIconSize() const = 0;

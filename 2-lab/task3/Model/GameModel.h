@@ -136,13 +136,13 @@ public:
         // Вода + Земля = Болото
         m_recipes[{idx(L"Вода"), idx(L"Земля")}] = {idx(L"Болото")};
         // Спирт + Огонь = Коктейль Молотова
-        m_recipes[{idx(L"Спирт"), idx(L"Огонь")}] = { idx(L"Коктейль Молотова") };
+        m_recipes[{idx(L"Спирт"), idx(L"Огонь")}] = {idx(L"Коктейль Молотова")};
         // Болото + Энергия = Жизнь
-        m_recipes[{idx(L"Болото"), idx(L"Энергия")}] = { idx(L"Жизнь") };
+        m_recipes[{idx(L"Болото"), idx(L"Энергия")}] = {idx(L"Жизнь")};
         // Жизнь + Болото = Бактерии
-        m_recipes[{idx(L"Жизнь"), idx(L"Болото")}] = { idx(L"Бактерии") };
+        m_recipes[{idx(L"Жизнь"), idx(L"Болото")}] = {idx(L"Бактерии")};
         // Спирт + Вода = Водка
-        m_recipes[{idx(L"Спирт"), idx(L"Вода")}] = { idx(L"Водка") };
+        m_recipes[{idx(L"Спирт"), idx(L"Вода")}] = {idx(L"Водка")};
     }
 
     bool GetCombinationResult(int idxA, int idxB, std::vector<int>& outResults) const
@@ -160,17 +160,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    int AddToLibraryIfNew(const LibraryElement& elem)
-    {
-        for (size_t i = 0; i < m_library.size(); ++i)
-        {
-            if (m_library[i].name == elem.name)
-                return static_cast<int>(i);
-        }
-        m_library.push_back(elem);
-        return static_cast<int>(m_library.size() - 1);
     }
 
     void AddFieldElement(int libIndex, sf::Vector2f pos)
@@ -193,7 +182,7 @@ public:
         m_placedElements.push_back(elem);
     }
 
-    std::vector<LibraryElement>& GetLibrary()
+    const std::vector<LibraryElement>& GetLibrary() const
     {
         return m_library;
     }

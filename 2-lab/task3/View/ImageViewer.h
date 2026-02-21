@@ -31,7 +31,7 @@ private:
 public:
     ImageViewer(sf::RenderWindow& window, EventManager& document)
         : m_window(window), m_manager(document),
-        m_hiddenFieldIndex(-1), m_iconSize(80.f)
+          m_hiddenFieldIndex(-1), m_iconSize(80.f)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -41,7 +41,7 @@ public:
         m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.35f;
     }
 
-    void SetLibrary(std::vector<LibraryElement>& library) override
+    void SetLibrary(const std::vector<LibraryElement>& library) override
     {
         if (library.empty()) return;
         m_librarySprites.clear();
@@ -99,7 +99,7 @@ public:
             sf::Sprite sprite(libElem.texture);
             sf::Vector2u texSize = libElem.texture.getSize();
             float scaleX = m_iconSize / static_cast<float>(texSize.x);
-            float scaleY = m_iconSize/ static_cast<float>(texSize.y);
+            float scaleY = m_iconSize / static_cast<float>(texSize.y);
             sprite.setScale({scaleX, scaleY});
             sprite.setPosition(elem.position);
             m_fieldSprites.push_back(sprite);
@@ -143,7 +143,7 @@ public:
         m_draggedSprite->setColor(sf::Color(255, 255, 255));
         sf::Vector2u texSize = element->texture.getSize();
         float scaleX = m_iconSize / static_cast<float>(texSize.x);
-        float scaleY = m_iconSize/ static_cast<float>(texSize.y);
+        float scaleY = m_iconSize / static_cast<float>(texSize.y);
         m_draggedSprite->setScale({scaleX, scaleY});
         m_draggedSprite->setPosition(screenPos - offset);
 
@@ -152,8 +152,9 @@ public:
         m_draggedText->setFillColor(sf::Color::Black);
         sf::FloatRect textBounds = m_draggedText->getLocalBounds();
 
-        float textX = screenPos.x - offset.x + (m_iconSize - textBounds.size.x) / 2.f;
-        float textY = screenPos.y - offset.y + m_iconSize + 5.f;
+        sf::Vector2f spriteSize = m_draggedSprite->getGlobalBounds().size;
+        float textX = screenPos.x - offset.x + (spriteSize.x - textBounds.size.x) / 2.f;
+        float textY = screenPos.y - offset.y + spriteSize.y + 5.f;
         m_draggedText->setPosition({textX, textY});
 
         m_lastDragOffset = offset;
@@ -165,8 +166,9 @@ public:
         {
             m_draggedSprite->setPosition(screenPos - m_lastDragOffset);
             sf::FloatRect textBounds = m_draggedText->getLocalBounds();
-            float textX = screenPos.x - m_lastDragOffset.x + (m_iconSize - textBounds.size.x) / 2.f;
-            float textY = screenPos.y - m_lastDragOffset.y + m_iconSize + 5.f;
+            sf::Vector2f spriteSize = m_draggedSprite->getGlobalBounds().size;
+            float textX = screenPos.x - m_lastDragOffset.x + (spriteSize.x - textBounds.size.x) / 2.f;
+            float textY = screenPos.y - m_lastDragOffset.y + spriteSize.y + 5.f;
             m_draggedText->setPosition({textX, textY});
         }
     }
@@ -194,17 +196,6 @@ public:
         for (size_t i = 0; i < m_librarySprites.size(); ++i)
         {
             if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
-                return static_cast<int>(i);
-        }
-        return -1;
-    }
-
-    int GetFieldIndexAtIgnoring(sf::Vector2i mousePos, int ignoreIndex) const override
-    {
-        for (size_t i = 0; i < m_fieldSprites.size(); ++i)
-        {
-            if (static_cast<int>(i) == ignoreIndex) continue;
-            if (m_fieldSprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
                 return static_cast<int>(i);
         }
         return -1;
