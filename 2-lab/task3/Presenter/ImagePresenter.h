@@ -171,16 +171,18 @@ private:
         // Нет пересечения
         if (targetIndex == -1)
         {
-            // добавить на поле из Lib
+            float leftBound = fieldBounds.position.x;
+            sf::Vector2f finalPos = dropPos;
+            // чтобы спрайт не вылазил за игровое поле или lib
+            if (finalPos.x < leftBound)
+                finalPos.x = leftBound + 10;
+
             if (m_dragInfo == DragInfo::Library)
-            {
-                m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
-            }
-            // перемещение полевого элемента
-            if (m_dragInfo == DragInfo::InGame)
-            {
-                m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
-            }
+                // Добавить на поле из Lib
+                m_model.AddFieldElement(m_dragLibraryIndex, finalPos);
+            else if (m_dragInfo == DragInfo::InGame)
+                // Перемещение полевого элемента
+                m_model.UpdateFieldElementPosition(m_dragFieldIndex, finalPos);
         }
         else // Соединение с targetIndex
         {
