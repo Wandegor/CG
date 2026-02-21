@@ -202,9 +202,11 @@ private:
                     int second = std::min(m_dragFieldIndex, targetIndex);
                     m_model.RemoveFieldElement(first);
                     m_model.RemoveFieldElement(second);
-                    for (int resIdx: results)
+                    for (size_t i = 0; i < results.size(); i++)
                     {
-                        m_model.AddFieldElement(resIdx, dropPos);
+                        m_model.AddFieldElement(results[i], {
+                            dropPos.x + static_cast<float>(i)*(iconSize+5),
+                            dropPos.y});
                     }
                 }
                 else // нет такой комбинации - возврат обратно
