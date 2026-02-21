@@ -47,7 +47,7 @@ public:
             {L"Электричество", "electricity.png"},
             {L"Водород", "hydrogen.png"},
             {L"Кислород", "oxygen.png"},
-            {L"Озон", "ozon.png"},
+            {L"Озон", "ozon.jpg"},
             {L"Грязь", "dirty.png"},
             {L"Гейзер", "geyser.png"},
             {L"Паровой котел", "steam-boiler.png"},
@@ -56,7 +56,7 @@ public:
             {L"Гремучий газ", "explosive-gas.png"},
             {L"Болото", "boloto.jpg"},
             {L"Спирт", "ethyl-alcohol.png"},
-            {L"Коктейль Молотова", "molotov.png"},
+            {L"Молотов", "molotov.png"},
             {L"Жизнь", "life.png"},
             {L"Бактерии", "bacteria.png"},
             {L"Водка", "vodka.png"},
@@ -136,7 +136,7 @@ public:
         // Вода + Земля = Болото
         m_recipes[{idx(L"Вода"), idx(L"Земля")}] = {idx(L"Болото")};
         // Спирт + Огонь = Коктейль Молотова
-        m_recipes[{idx(L"Спирт"), idx(L"Огонь")}] = {idx(L"Коктейль Молотова")};
+        m_recipes[{idx(L"Спирт"), idx(L"Огонь")}] = {idx(L"Молотов")};
         // Болото + Энергия = Жизнь
         m_recipes[{idx(L"Болото"), idx(L"Энергия")}] = {idx(L"Жизнь")};
         // Жизнь + Болото = Бактерии
