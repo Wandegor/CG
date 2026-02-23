@@ -14,6 +14,7 @@ private:
     EventManager& m_manager;
 
     sf::Music m_backgroundMusic;
+
     float m_leftPanelWidth;
 
     sf::Font m_font;
@@ -40,11 +41,12 @@ public:
         : m_window(window), m_manager(document),
           m_hiddenFieldIndex(-1), m_iconSize(80.f)
     {
-        if (!m_backgroundMusic.openFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/zyi-zai-zui-zai-zy.mp3")) {
+        if (!m_backgroundMusic.openFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/Sounds/LumierExpedition.mp3"))
+        {
             std::cerr << "Failed to load background music" << std::endl;
         }
         m_backgroundMusic.setLooping(true);
-        m_backgroundMusic.setVolume(1.f);
+        m_backgroundMusic.setVolume(6.f);
 
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -66,7 +68,7 @@ public:
         }
         m_removeSprite.emplace(m_crossTexture);
         m_removeSprite->setPosition(sf::Vector2f(
-             m_leftPanelWidth + (static_cast<float>(m_window.getSize().x) - m_leftPanelWidth)/2,
+            m_leftPanelWidth + (static_cast<float>(m_window.getSize().x) - m_leftPanelWidth) / 2,
             static_cast<float>(m_window.getSize().y) - 125));
         std::cout << m_removeSprite->getPosition().x << std::endl;
     }

@@ -12,6 +12,9 @@ private:
     GameModel& m_model;
     EventManager& m_manager;
 
+    sf::SoundBuffer m_unlockBuffer;
+    std::optional<sf::Sound> m_unlockSound;
+
     bool m_isDragging;
     sf::Vector2i m_lastMousePosition;
 
@@ -32,6 +35,16 @@ public:
         m_manager.Subscribe(EventType::MousePressed, *this);
         m_manager.Subscribe(EventType::MouseMoved, *this);
         m_manager.Subscribe(EventType::MouseReleased, *this);
+
+        if (m_unlockBuffer.loadFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/Sounds/anime-wow.mp3"))
+        {
+            m_unlockSound.emplace(m_unlockBuffer);
+            m_unlockSound->setVolume(2.0f);
+        }
+        else
+        {
+            std::cerr << "Failed to load unlock sound" << std::endl;
+        }
     }
 
     virtual ~ImagePresenter()
@@ -245,6 +258,7 @@ private:
                             dropPos.x + static_cast<float>(i)*(iconSize+5),
                             dropPos.y});
                         m_model.UnlockElement(results[i]);
+                        m_unlockSound->play();
                         m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
                     }
                 }
