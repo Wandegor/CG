@@ -6,7 +6,7 @@ class IView
 public:
     virtual ~IView() = default;
 
-    virtual void SetLibrary(const std::vector<LibraryElement>& library) = 0;
+    virtual void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) = 0;
     virtual void SetFieldElements(const std::vector<FieldElement>& elements,
                                   const std::vector<LibraryElement>& library) = 0;
 

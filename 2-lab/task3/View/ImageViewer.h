@@ -41,7 +41,7 @@ public:
         m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.35f;
     }
 
-    void SetLibrary(const std::vector<LibraryElement>& library) override
+    void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
     {
         if (library.empty()) return;
         m_librarySprites.clear();
@@ -54,10 +54,11 @@ public:
         const float cellWidth = m_iconSize + xSpacing;
         const float cellHeight = m_iconSize + 40;
 
-        for (size_t i = 0; i < library.size(); ++i)
+        for (size_t i = 0; i < unlockedIndices.size(); ++i)
         {
+            int libIndex = unlockedIndices[i];
             constexpr float textOffsetY = 3.f;
-            const auto& elem = library[i];
+            const auto& elem = library[libIndex];
             int col = static_cast<int>(i % columns);
             int row = static_cast<int>(i / columns);
 

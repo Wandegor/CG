@@ -47,7 +47,7 @@ public:
         {
             case EventType::InitLibrary:
                 m_model.InitLibrary();
-                m_view.SetLibrary(m_model.GetLibrary());
+                m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
                 break;
             case EventType::MousePressed:
                 OnMousePressed(*event);
@@ -174,7 +174,7 @@ private:
             float leftBound = fieldBounds.position.x;
             sf::Vector2f finalPos = dropPos;
             // чтобы спрайт не вылазил за игровое поле или lib
-            if (finalPos.x < leftBound)
+            if (finalPos.x <= leftBound)
                 finalPos.x = leftBound + 10;
 
             if (m_dragInfo == DragInfo::Library)
@@ -209,6 +209,8 @@ private:
                         m_model.AddFieldElement(results[i], {
                             dropPos.x + static_cast<float>(i)*(iconSize+5),
                             dropPos.y});
+                        m_model.UnlockElement(results[i]);
+                        m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
                     }
                 }
                 else // нет такой комбинации - возврат обратно

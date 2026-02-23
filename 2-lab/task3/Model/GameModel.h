@@ -6,6 +6,7 @@
 
 struct LibraryElement
 {
+    bool unlocked = false;
     std::wstring name;
     sf::Texture texture;
 };
@@ -20,7 +21,7 @@ class GameModel
 {
 private:
     std::vector<LibraryElement> m_library;
-    std::vector<FieldElement> m_placedElements;
+    std::vector<FieldElement> m_fieldElements;
 
     std::map<std::pair<int, int>, std::vector<int> > m_recipes;
     std::unordered_map<std::wstring, int> m_nameToIndex;
@@ -71,6 +72,7 @@ public:
             const auto& [name, filename] = elementData[i];
             LibraryElement elem;
             elem.name = name;
+            elem.unlocked = (i < 4);
 
             std::string path = "D:/Projects/6-SEM/CG/2-lab/task3/Resources/" + filename;
             if (!elem.texture.loadFromFile(path))
@@ -162,24 +164,28 @@ public:
         return false;
     }
 
+    void UnlockElement(int libIndex)
+    {
+        m_library[libIndex].unlocked = true;
+    }
     void AddFieldElement(int libIndex, sf::Vector2f pos)
     {
-        m_placedElements.push_back({libIndex, pos});
+        m_fieldElements.push_back({libIndex, pos});
     }
 
     void RemoveFieldElement(int index)
     {
-        if (index >= 0 && index < m_placedElements.size())
-            m_placedElements.erase(m_placedElements.begin() + index);
+        if (index >= 0 && index < m_fieldElements.size())
+            m_fieldElements.erase(m_fieldElements.begin() + index);
     }
 
     void UpdateFieldElementPosition(int index, sf::Vector2f pos)
     {
-        if (index < 0 || index >= m_placedElements.size()) return;
-        FieldElement elem = m_placedElements[index];
+        if (index < 0 || index >= m_fieldElements.size()) return;
+        FieldElement elem = m_fieldElements[index];
         elem.position = pos;
-        m_placedElements.erase(m_placedElements.begin() + index);
-        m_placedElements.push_back(elem);
+        m_fieldElements.erase(m_fieldElements.begin() + index);
+        m_fieldElements.push_back(elem);
     }
 
     const std::vector<LibraryElement>& GetLibrary() const
@@ -189,6 +195,17 @@ public:
 
     const std::vector<FieldElement>& GetFieldElements() const
     {
-        return m_placedElements;
+        return m_fieldElements;
+    }
+
+    std::vector<int> GetUnlockedIndices() const
+    {
+        std::vector<int> indices;
+        for (int i = 0; i < m_library.size(); ++i)
+        {
+            if (m_library[i].unlocked) indices.push_back(i);
+        }
+
+        return indices;
     }
 };
