@@ -33,6 +33,7 @@ target_link_libraries(${PROJECT_NAME}
         SFML::Graphics
         SFML::Window
         SFML::System
+        SFML::Audio
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

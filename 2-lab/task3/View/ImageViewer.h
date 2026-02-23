@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "IView.h"
 #include "../Listeners/EventManager.h"
@@ -12,6 +13,7 @@ private:
     sf::RenderWindow& m_window;
     EventManager& m_manager;
 
+    sf::Music m_backgroundMusic;
     float m_leftPanelWidth;
 
     sf::Font m_font;
@@ -38,6 +40,12 @@ public:
         : m_window(window), m_manager(document),
           m_hiddenFieldIndex(-1), m_iconSize(80.f)
     {
+        if (!m_backgroundMusic.openFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/zyi-zai-zui-zai-zy.mp3")) {
+            std::cerr << "Failed to load background music" << std::endl;
+        }
+        m_backgroundMusic.setLooping(true);
+        m_backgroundMusic.setVolume(1.f);
+
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
             std::cerr << "Error loading font" << std::endl;
@@ -337,6 +345,7 @@ public:
 
     void Run()
     {
+        m_backgroundMusic.play();
         while (m_window.isOpen())
         {
             ProcessEvents();

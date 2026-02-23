@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SFML_DIR "D:/SFML-3.0.0/lib/cmake/SFML")
 find_package(SFML 3.0 COMPONENTS Graphics Window System REQUIRED)
+find_package(SFML 3.0 COMPONENTS Graphics Window System Audio REQUIRED)
 
 add_subdirectory(task1)
 add_subdirectory(task2)

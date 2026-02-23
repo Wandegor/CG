@@ -51,6 +51,7 @@ public:
             {L"Кислород", "oxygen.png"},
             {L"Озон", "ozon.jpg"},
             {L"Грязь", "dirty.png"},
+            {L"Вайлдбериз", "WB.png"},
             {L"Гейзер", "geyser.png"},
             {L"Паровой котел", "steam-boiler.png"},
             {L"Давление", "preasure.png"},
@@ -73,7 +74,8 @@ public:
             const auto& [name, filename] = elementData[i];
             LibraryElement elem;
             elem.name = name;
-            elem.unlocked = (i < 4);
+            elem.unlocked = (i < elementData.capacity());
+            // elem.unlocked = (i < 4);
 
             std::string path = "D:/Projects/6-SEM/CG/2-lab/task3/Resources/" + filename;
             if (!elem.texture.loadFromFile(path))
@@ -89,7 +91,7 @@ public:
 
         for (int i = 0; i < m_library.size(); ++i)
         {
-            if (m_library[i].unlocked) // первые 4 уже unlocked
+            if (m_library[i].unlocked)
                 m_unlockedIndices.push_back(i);
         }
 
@@ -132,6 +134,8 @@ public:
         m_recipes[{idx(L"Электричество"), idx(L"Кислород")}] = {idx(L"Озон")};
         // Пыль + Вода = Грязь
         m_recipes[{idx(L"Пыль"), idx(L"Вода")}] = {idx(L"Грязь")};
+        // Озон + Грязь = Вб
+        m_recipes[{idx(L"Озон"), idx(L"Грязь")}] = {idx(L"Вайлдбериз")};
         // Пар + Земля = Гейзер
         m_recipes[{idx(L"Пар"), idx(L"Земля")}] = {idx(L"Гейзер")};
         // Пар + Металл = Паровой котел
