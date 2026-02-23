@@ -13,7 +13,10 @@ private:
     EventManager& m_manager;
 
     float m_leftPanelWidth;
+
     sf::Font m_font;
+
+    std::unique_ptr<Button> m_sortButton;
 
     std::vector<sf::Sprite> m_librarySprites;
     std::vector<sf::Text> m_libraryTexts;
@@ -39,6 +42,13 @@ public:
         }
 
         m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.35f;
+        m_sortButton = std::make_unique<Button>(
+            m_font,
+            "Sort",
+            sf::Vector2f(m_leftPanelWidth / 2 - 50, static_cast<float>(m_window.getSize().y) - 75),
+            sf::Vector2f(100, 50),
+            [this]() { m_manager.NotifyListeners(EventType::SortLibrary); }
+        );
     }
 
     void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
@@ -111,7 +121,7 @@ public:
             text.setCharacterSize(18);
             sf::FloatRect textBounds = text.getLocalBounds();
             // textX = spriteLeft + (spriteSize.x - textWidth) / 2
-            float textX = elem.position.x + (spriteSize.x- textBounds.size.x) / 2.f;
+            float textX = elem.position.x + (spriteSize.x - textBounds.size.x) / 2.f;
             // textY = spriteTop + spriteSize.y + 5
             float textY = elem.position.y + spriteSize.y + 5.f;
             text.setPosition({textX, textY});
@@ -255,6 +265,11 @@ public:
             {
                 if (mousePressed->button == sf::Mouse::Button::Left)
                 {
+                    if (m_sortButton->Contains(mousePressed->position))
+                    {
+                        m_sortButton->OnClick();
+                        continue;
+                    }
                     m_manager.NotifyListeners(EventType::MousePressed, event);
                 }
             }
@@ -289,6 +304,8 @@ public:
             m_window.draw(m_fieldSprites[i]);
             m_window.draw(m_fieldTexts[i]);
         }
+
+        m_sortButton->DrawTo(m_window);
 
         if (m_draggedSprite.has_value())
             m_window.draw(*m_draggedSprite);

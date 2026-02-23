@@ -27,6 +27,7 @@ public:
         : m_view(view), m_model(model), m_manager(document),
           m_isDragging(false), m_dragInfo(DragInfo::None)
     {
+        m_manager.Subscribe(EventType::SortLibrary, *this);
         m_manager.Subscribe(EventType::InitLibrary, *this);
         m_manager.Subscribe(EventType::MousePressed, *this);
         m_manager.Subscribe(EventType::MouseMoved, *this);
@@ -35,6 +36,7 @@ public:
 
     virtual ~ImagePresenter()
     {
+        m_manager.Unsubscribe(EventType::SortLibrary, *this);
         m_manager.Unsubscribe(EventType::InitLibrary, *this);
         m_manager.Unsubscribe(EventType::MousePressed, *this);
         m_manager.Unsubscribe(EventType::MouseMoved, *this);
@@ -45,6 +47,10 @@ public:
     {
         switch (eventType)
         {
+            case EventType::SortLibrary:
+                m_model.SortIndices();
+                m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
+            break;
             case EventType::InitLibrary:
                 m_model.InitLibrary();
                 m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
@@ -70,7 +76,6 @@ private:
         if (mousePressed->button != sf::Mouse::Button::Left) return;
 
         // Клик по библиотеке
-        // int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
         std::wstring elemName = m_view.GetLibraryElementNameAt(mousePressed->position);
         if (!elemName.empty())
         {

@@ -2,10 +2,8 @@
 
 enum class EventType
 {
+    SortLibrary,
     InitLibrary,
-    NewFile,
-    OpenFile,
-    SaveFile,
     MousePressed,
     MouseMoved,
     MouseReleased

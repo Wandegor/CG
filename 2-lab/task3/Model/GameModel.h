@@ -181,6 +181,15 @@ public:
             m_unlockedIndices.push_back(libIndex);
         }
     }
+
+    void SortIndices()
+    {
+        std::sort(m_unlockedIndices.begin(), m_unlockedIndices.end(),
+        [this](int a, int b) {
+            return m_library[a].name < m_library[b].name;
+        });
+    }
+
     void AddFieldElement(int libIndex, sf::Vector2f pos)
     {
         if (libIndex < 0 || libIndex >= m_library.size()) return;
@@ -213,7 +222,7 @@ public:
         return m_fieldElements;
     }
 
-    std::vector<int> GetUnlockedIndices() const
+    const std::vector<int>& GetUnlockedIndices() const
     {
         return m_unlockedIndices;
     }
