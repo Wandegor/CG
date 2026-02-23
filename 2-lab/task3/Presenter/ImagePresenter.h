@@ -171,6 +171,21 @@ private:
             return;
         }
 
+        // Проверка на крестик
+        if (m_dragInfo == DragInfo::InGame)
+        {
+            sf::FloatRect delBounds = m_view.GetDelElemBounds();
+            if (dropRect.findIntersection(delBounds))
+            {
+                m_model.RemoveFieldElement(m_dragFieldIndex);
+                m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
+                m_view.HideDraggedElement();
+                m_isDragging = false;
+                m_dragInfo = DragInfo::None;
+                return;
+            }
+        }
+
         // Drop в поле (ищем targetIndex)
         const auto& fieldElements = m_model.GetFieldElements();
         int targetIndex = -1;

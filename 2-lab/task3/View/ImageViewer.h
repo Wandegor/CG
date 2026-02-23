@@ -24,6 +24,8 @@ private:
     std::vector<sf::Sprite> m_fieldSprites;
     std::vector<sf::Text> m_fieldTexts;
 
+    sf::Texture m_crossTexture;
+    std::optional<sf::Sprite> m_removeSprite;
     float m_iconSize;
 
     std::optional<sf::Sprite> m_draggedSprite;
@@ -49,6 +51,16 @@ public:
             sf::Vector2f(100, 50),
             [this]() { m_manager.NotifyListeners(EventType::SortLibrary); }
         );
+
+        if (!m_crossTexture.loadFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/removeElementCross.png"))
+        {
+            std::cerr << "Error loading removeElementCross.png" << std::endl;
+        }
+        m_removeSprite.emplace(m_crossTexture);
+        m_removeSprite->setPosition(sf::Vector2f(
+             m_leftPanelWidth + (static_cast<float>(m_window.getSize().x) - m_leftPanelWidth)/2,
+            static_cast<float>(m_window.getSize().y) - 125));
+        std::cout << m_removeSprite->getPosition().x << std::endl;
     }
 
     void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
@@ -241,6 +253,13 @@ public:
         return {{left, top}, {width, height}};
     }
 
+    sf::FloatRect GetDelElemBounds() const override
+    {
+        if (m_removeSprite.has_value())
+            return m_removeSprite->getGlobalBounds();
+        return {};
+    }
+
     float GetIconSize() const override
     {
         return m_iconSize;
@@ -277,7 +296,7 @@ public:
             {
                 m_manager.NotifyListeners(EventType::MouseMoved, event);
             }
-            else if (event->getIf<sf::Event::MouseButtonReleased>())
+            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
@@ -306,6 +325,9 @@ public:
         }
 
         m_sortButton->DrawTo(m_window);
+
+        if (m_removeSprite.has_value())
+            m_window.draw(*m_removeSprite);
 
         if (m_draggedSprite.has_value())
             m_window.draw(*m_draggedSprite);
