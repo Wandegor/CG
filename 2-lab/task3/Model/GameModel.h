@@ -22,6 +22,7 @@ class GameModel
 private:
     std::vector<LibraryElement> m_library;
     std::vector<FieldElement> m_fieldElements;
+    std::vector<int> m_unlockedOrder;
 
     std::map<std::pair<int, int>, std::vector<int> > m_recipes;
     std::unordered_map<std::wstring, int> m_nameToIndex;
@@ -84,6 +85,12 @@ public:
             }
             m_library.push_back(elem);
             m_nameToIndex[name] = static_cast<int>(i);
+        }
+
+        for (int i = 0; i < m_library.size(); ++i)
+        {
+            if (m_library[i].unlocked) // первые 4 уже помечены как unlocked
+                m_unlockedOrder.push_back(i);
         }
 
         InitRecipes();
@@ -166,10 +173,18 @@ public:
 
     void UnlockElement(int libIndex)
     {
-        m_library[libIndex].unlocked = true;
+        if (libIndex < 0 || libIndex >= m_library.size()) return;
+
+        if (!m_library[libIndex].unlocked)
+        {
+            m_library[libIndex].unlocked = true;
+            m_unlockedOrder.push_back(libIndex);
+        }
     }
     void AddFieldElement(int libIndex, sf::Vector2f pos)
     {
+        if (libIndex < 0 || libIndex >= m_library.size()) return;
+
         m_fieldElements.push_back({libIndex, pos});
     }
 
@@ -200,12 +215,6 @@ public:
 
     std::vector<int> GetUnlockedIndices() const
     {
-        std::vector<int> indices;
-        for (int i = 0; i < m_library.size(); ++i)
-        {
-            if (m_library[i].unlocked) indices.push_back(i);
-        }
-
-        return indices;
+        return m_unlockedOrder;
     }
 };
