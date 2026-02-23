@@ -22,7 +22,7 @@ class GameModel
 private:
     std::vector<LibraryElement> m_library;
     std::vector<FieldElement> m_fieldElements;
-    std::vector<int> m_unlockedOrder;
+    std::vector<int> m_unlockedIndices;
 
     std::map<std::pair<int, int>, std::vector<int> > m_recipes;
     std::unordered_map<std::wstring, int> m_nameToIndex;
@@ -89,8 +89,8 @@ public:
 
         for (int i = 0; i < m_library.size(); ++i)
         {
-            if (m_library[i].unlocked) // первые 4 уже помечены как unlocked
-                m_unlockedOrder.push_back(i);
+            if (m_library[i].unlocked) // первые 4 уже unlocked
+                m_unlockedIndices.push_back(i);
         }
 
         InitRecipes();
@@ -178,7 +178,7 @@ public:
         if (!m_library[libIndex].unlocked)
         {
             m_library[libIndex].unlocked = true;
-            m_unlockedOrder.push_back(libIndex);
+            m_unlockedIndices.push_back(libIndex);
         }
     }
     void AddFieldElement(int libIndex, sf::Vector2f pos)
@@ -215,6 +215,12 @@ public:
 
     std::vector<int> GetUnlockedIndices() const
     {
-        return m_unlockedOrder;
+        return m_unlockedIndices;
+    }
+
+    int GetElementIndex(const std::wstring& name) const
+    {
+        auto it = m_nameToIndex.find(name);
+        return it != m_nameToIndex.end() ? it->second : -1;
     }
 };

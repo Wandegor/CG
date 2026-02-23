@@ -17,6 +17,7 @@ public:
     virtual void HideDraggedElement() = 0;
     virtual void HideFieldElement(int index) = 0;
 
+    [[nodiscard]] virtual std::wstring GetLibraryElementNameAt(sf::Vector2i mousePos) const = 0;
     [[nodiscard]] virtual sf::Vector2f GetLibraryElementPosition(int index) const = 0;
     [[nodiscard]] virtual int GetLibraryIndexAt(sf::Vector2i mousePos) const = 0;
     [[nodiscard]] virtual int GetFieldIndexAt(sf::Vector2i mousePos) const = 0;

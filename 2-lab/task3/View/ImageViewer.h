@@ -111,9 +111,9 @@ public:
             text.setCharacterSize(18);
             sf::FloatRect textBounds = text.getLocalBounds();
             // textX = spriteLeft + (spriteSize.x - textWidth) / 2
-            float textX = elem.position.x + (m_iconSize - textBounds.size.x) / 2.f;
+            float textX = elem.position.x + (spriteSize.x- textBounds.size.x) / 2.f;
             // textY = spriteTop + spriteSize.y + 5
-            float textY = elem.position.y + m_iconSize + 5.f;
+            float textY = elem.position.y + spriteSize.y + 5.f;
             text.setPosition({textX, textY});
             m_fieldTexts.push_back(text);
         }
@@ -183,6 +183,16 @@ public:
     void HideFieldElement(int index) override
     {
         m_hiddenFieldIndex = index;
+    }
+
+    std::wstring GetLibraryElementNameAt(sf::Vector2i mousePos) const override
+    {
+        for (size_t i = 0; i < m_librarySprites.size(); ++i)
+        {
+            if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
+                return m_libraryTexts[i].getString();
+        }
+        return L"";
     }
 
     sf::Vector2f GetLibraryElementPosition(int index) const override

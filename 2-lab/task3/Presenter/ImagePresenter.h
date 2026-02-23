@@ -70,23 +70,38 @@ private:
         if (mousePressed->button != sf::Mouse::Button::Left) return;
 
         // Клик по библиотеке
-        int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
-        if (libIndex != -1)
+        // int libIndex = m_view.GetLibraryIndexAt(mousePressed->position);
+        std::wstring elemName = m_view.GetLibraryElementNameAt(mousePressed->position);
+        if (!elemName.empty())
         {
-            m_dragInfo = DragInfo::Library;
-            m_dragLibraryIndex = libIndex;
+            int libIndex = m_model.GetElementIndex(elemName);
+            if (libIndex != -1)
+            {
+                const auto& unlocked = m_model.GetUnlockedIndices();
+                int displayIndex = -1;
+                for (size_t i = 0; i < unlocked.size(); ++i) {
+                    if (unlocked[i] == libIndex) {
+                        displayIndex = static_cast<int>(i);
+                        break;
+                    }
+                }
+                if (displayIndex == -1) return;
 
-            m_isDragging = true;
-            m_lastMousePosition = mousePressed->position;
+                m_dragInfo = DragInfo::Library;
+                m_dragLibraryIndex = libIndex;
 
-            const auto& lib = m_model.GetLibrary();
-            const LibraryElement* info = &lib[libIndex];
+                m_isDragging = true;
+                m_lastMousePosition = mousePressed->position;
 
-            sf::Vector2f elemPos = m_view.GetLibraryElementPosition(libIndex);
-            auto mousePos = sf::Vector2f(mousePressed->position);
-            m_dragOffset = mousePos - elemPos;
+                const auto& lib = m_model.GetLibrary();
+                const LibraryElement* info = &lib[libIndex];
 
-            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
+                sf::Vector2f elemPos = m_view.GetLibraryElementPosition(displayIndex);
+                auto mousePos = sf::Vector2f(mousePressed->position);
+                m_dragOffset = mousePos - elemPos;
+
+                m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
+            }
         }
 
         // Клики в другие места
