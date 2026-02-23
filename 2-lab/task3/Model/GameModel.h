@@ -74,8 +74,8 @@ public:
             const auto& [name, filename] = elementData[i];
             LibraryElement elem;
             elem.name = name;
-            // elem.unlocked = (i < elementData.capacity());
-            elem.unlocked = (i < 4);
+            elem.unlocked = (i < elementData.capacity()-1);
+            // elem.unlocked = (i < 4);
 
             std::string path = "D:/Projects/6-SEM/CG/2-lab/task3/Resources/" + filename;
             if (!elem.texture.loadFromFile(path))
@@ -235,5 +235,13 @@ public:
     {
         auto it = m_nameToIndex.find(name);
         return it != m_nameToIndex.end() ? it->second : -1;
+    }
+
+    bool AllUnlocked() const
+    {
+        for (const auto& elem : m_library) {
+            if (!elem.unlocked) return false;
+        }
+        return true;
     }
 };

@@ -259,6 +259,9 @@ private:
                             dropPos.y});
                         m_model.UnlockElement(results[i]);
                         m_unlockSound->play();
+                        if (m_model.AllUnlocked()) {
+                            m_view.ShowGameOverMessage(L"Хароош! Все элементы открыл!");
+                        }
                         m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
                     }
                 }

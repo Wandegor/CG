@@ -36,6 +36,9 @@ private:
     sf::Vector2f m_lastDragOffset;
     int m_hiddenFieldIndex;
 
+    sf::Clock m_gameOverClock;
+    std::optional<sf::Text> m_gameOverText;
+
 public:
     ImageViewer(sf::RenderWindow& window, EventManager& document)
         : m_window(window), m_manager(document),
@@ -343,6 +346,13 @@ public:
             m_window.draw(*m_draggedSprite);
         if (m_draggedText.has_value())
             m_window.draw(*m_draggedText);
+
+        if (m_gameOverText.has_value()) {
+            m_window.draw(*m_gameOverText);
+            if (m_gameOverClock.getElapsedTime().asSeconds() > 4.0f) {
+                m_gameOverText.reset();
+            }
+        }
     }
 
     void Run()
@@ -354,5 +364,15 @@ public:
             Draw();
             m_window.display();
         }
+    }
+
+    void ShowGameOverMessage(const std::wstring& message) override {
+        m_gameOverText.emplace(m_font, message);
+        m_gameOverText->setCharacterSize(40);
+        m_gameOverText->setFillColor(sf::Color::Green);
+        m_gameOverText->setPosition({
+            static_cast<float>(m_window.getSize().x)/2,
+            static_cast<float>(m_window.getSize().y)/2});
+        m_gameOverClock.restart();
     }
 };

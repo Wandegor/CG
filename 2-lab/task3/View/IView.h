@@ -25,4 +25,6 @@ public:
     [[nodiscard]] virtual sf::FloatRect GetDelElemBounds() const = 0;
     [[nodiscard]] virtual sf::FloatRect GetFieldBounds() const = 0;
     [[nodiscard]] virtual float GetIconSize() const = 0;
+
+    virtual void ShowGameOverMessage(const std::wstring& message) = 0;
 };
