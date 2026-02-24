@@ -152,11 +152,6 @@ private:
             m_view.AddTemporaryPoint(m_lastDrawPosition, onImagePos);
             m_lastDrawPosition = onImagePos;
         }
-        else
-        {
-            m_isDrawing = false;
-            return;
-        }
     }
 
     void OnMouseReleased(const sf::Event& event)

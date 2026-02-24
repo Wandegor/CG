@@ -47,7 +47,7 @@ public:
         });
     }
 
-    void SetImage(sf::Texture &texture, sf::Vector2i screenPos) override
+    void SetImage(const sf::Texture &texture, sf::Vector2i screenPos) override
     {
         if (m_sprite.has_value())
         {

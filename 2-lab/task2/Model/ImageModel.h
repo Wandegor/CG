@@ -26,7 +26,7 @@ public:
             std::cerr << "Failed to create texture from image" << std::endl;
             return false;
         }
-        m_picturePosition = {300, 300};
+        m_picturePosition = {100, 100};
 
         return true;
     }
@@ -41,7 +41,7 @@ public:
     {
         m_image.resize({width, height}, color);
         if (!m_texture.loadFromImage(m_image)) return;
-        m_picturePosition = {200, 200};
+        m_picturePosition = {200, 100};
     }
 
     sf::Vector2i GetPicturePosition() const
@@ -49,7 +49,7 @@ public:
         return m_picturePosition;
     }
 
-    sf::Texture &GetTexture()
+    const sf::Texture &GetTexture() const
     {
         return m_texture;
     }

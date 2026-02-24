@@ -7,7 +7,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({1600, 1200}), "2.1");
+    sf::RenderWindow window(sf::VideoMode({1200, 800}), "2.2");
     EventManager document;
     ImageModel model;
 

@@ -7,7 +7,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({1600, 1000}), "2.3");
+    sf::RenderWindow window(sf::VideoMode({1200, 800}), "2.3");
     EventManager eventManager;
     GameModel model;
 
