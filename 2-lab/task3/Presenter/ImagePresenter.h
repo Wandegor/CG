@@ -39,7 +39,7 @@ public:
         if (m_unlockBuffer.loadFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/Sounds/anime-wow.mp3"))
         {
             m_unlockSound.emplace(m_unlockBuffer);
-            m_unlockSound->setVolume(2.0f);
+            m_unlockSound->setVolume(5.0f);
         }
         else
         {

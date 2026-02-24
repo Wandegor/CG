@@ -56,7 +56,7 @@ public:
             std::cerr << "Error loading font" << std::endl;
         }
 
-        m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.35f;
+        m_leftPanelWidth = static_cast<float>(m_window.getSize().x) * 0.4f;
         m_sortButton = std::make_unique<Button>(
             m_font,
             "Sort",
@@ -82,7 +82,7 @@ public:
         m_librarySprites.clear();
         m_libraryTexts.clear();
 
-        constexpr int columns = 4;
+        constexpr int columns = 5;
 
         const float xSpacing = m_leftPanelWidth / columns - m_iconSize;
 
