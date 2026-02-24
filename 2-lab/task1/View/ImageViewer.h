@@ -82,11 +82,11 @@ public:
                     m_manager.NotifyListeners(EventType::MousePressed, event);
                 }
             }
-            else if (auto mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            else if (event->getIf<sf::Event::MouseMoved>())
             {
                 m_manager.NotifyListeners(EventType::MouseMoved, event);
             }
-            else if (auto mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            else if (event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }

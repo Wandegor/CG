@@ -7,5 +7,5 @@ public:
 
     virtual void SetImage(sf::Texture& texture, sf::Vector2i screenPos) = 0;
     virtual void MoveImage(sf::Vector2i delta) = 0;
-    virtual std::optional<sf::Vector2f> GetSpritePosition() const = 0;
+    [[nodiscard]] virtual std::optional<sf::Vector2f> GetSpritePosition() const = 0;
 };
