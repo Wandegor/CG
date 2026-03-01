@@ -28,7 +28,10 @@ private:
     std::unordered_map<std::wstring, int> m_nameToIndex;
 
 public:
-    GameModel() = default;
+    GameModel()
+    {
+        InitLibrary();
+    }
 
     void InitLibrary()
     {

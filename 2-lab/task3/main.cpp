@@ -14,8 +14,6 @@ int main()
     ImageViewer viewer(window, eventManager);
     ImagePresenter presenter(viewer, model, eventManager);
 
-    eventManager.NotifyListeners(EventType::InitLibrary);
-
     viewer.Run();
     return 0;
 }

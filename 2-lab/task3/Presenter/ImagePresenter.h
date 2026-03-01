@@ -31,7 +31,6 @@ public:
           m_isDragging(false), m_dragInfo(DragInfo::None)
     {
         m_manager.Subscribe(EventType::SortLibrary, *this);
-        m_manager.Subscribe(EventType::InitLibrary, *this);
         m_manager.Subscribe(EventType::MousePressed, *this);
         m_manager.Subscribe(EventType::MouseMoved, *this);
         m_manager.Subscribe(EventType::MouseReleased, *this);
@@ -45,12 +44,13 @@ public:
         {
             std::cerr << "Failed to load unlock sound" << std::endl;
         }
+
+        m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
     }
 
     virtual ~ImagePresenter()
     {
         m_manager.Unsubscribe(EventType::SortLibrary, *this);
-        m_manager.Unsubscribe(EventType::InitLibrary, *this);
         m_manager.Unsubscribe(EventType::MousePressed, *this);
         m_manager.Unsubscribe(EventType::MouseMoved, *this);
         m_manager.Unsubscribe(EventType::MouseReleased, *this);
@@ -64,10 +64,6 @@ public:
                 m_model.SortIndices();
                 m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
             break;
-            case EventType::InitLibrary:
-                m_model.InitLibrary();
-                m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
-                break;
             case EventType::MousePressed:
                 OnMousePressed(*event);
                 break;
