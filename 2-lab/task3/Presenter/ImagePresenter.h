@@ -240,10 +240,31 @@ private:
         }
         else // Соединение с targetIndex
         {
-            // добавить на поле из Lib (пока что)
+            // добавить на поле из Lib (теперь есть соединение)
             if (m_dragInfo == DragInfo::Library)
             {
-                m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
+                int sourceLibIdx = m_dragLibraryIndex;
+                int targetLibIdx = m_model.GetFieldElements()[targetIndex].libraryIndex;
+
+                std::vector<int> results;
+                if (m_model.GetCombinationResult(sourceLibIdx, targetLibIdx, results))
+                {
+                    m_model.RemoveFieldElement(targetIndex);
+                    for (size_t i = 0; i < results.size(); i++)
+                    {
+                        m_model.AddFieldElement(results[i], {
+                            dropPos.x + static_cast<float>(i)*(iconSize+5),
+                            dropPos.y});
+                        if (m_model.UnlockElement(results[i]))
+                        {
+                            m_unlockSound->play();
+                        }
+                        if (m_model.AllUnlocked()) {
+                            m_view.ShowGameOverMessage(L"Хароош! Все элементы открыл!");
+                        }
+                        m_view.SetLibrary(m_model.GetLibrary(), m_model.GetUnlockedIndices());
+                    }
+                }
             }
             // Соединение полевых
             if (m_dragInfo == DragInfo::InGame)
