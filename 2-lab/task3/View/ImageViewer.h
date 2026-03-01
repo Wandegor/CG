@@ -83,8 +83,6 @@ public:
             static_cast<float>(m_window.getSize().y) - 125));
         std::cout << m_removeSprite->getPosition().x << std::endl;
 
-        m_baseSize = sf::Vector2f(m_window.getSize());
-
         m_gameView.setSize(m_baseSize);
         m_gameView.setCenter(m_baseSize / 2.f);
 
@@ -145,7 +143,6 @@ public:
                           const std::vector<LibraryElement>& library) override
     {
         m_lastFieldElements = elements;
-
         m_fieldSprites.clear();
         m_fieldTexts.clear();
         m_hiddenFieldIndex = -1;
@@ -158,7 +155,7 @@ public:
             float scaleX = m_iconSize / static_cast<float>(texSize.x);
             float scaleY = m_iconSize / static_cast<float>(texSize.y);
             sprite.setScale({scaleX, scaleY});
-            sprite.setPosition(elem.position);
+            sprite.setPosition({m_leftPanelWidth + elem.position.x, elem.position.y});
             m_fieldSprites.push_back(sprite);
 
             sf::Vector2f spriteSize = sprite.getGlobalBounds().size;
@@ -167,7 +164,7 @@ public:
             text.setCharacterSize(18);
             sf::FloatRect textBounds = text.getLocalBounds();
             // textX = spriteLeft + (spriteSize.x - textWidth) / 2
-            float textX = elem.position.x + (spriteSize.x - textBounds.size.x) / 2.f;
+            float textX = m_leftPanelWidth + elem.position.x + (spriteSize.x - textBounds.size.x) / 2.f;
             // textY = spriteTop + spriteSize.y + 5
             float textY = elem.position.y + spriteSize.y + 5.f;
             text.setPosition({textX, textY});
@@ -179,7 +176,7 @@ public:
     {
         if (index >= 0 && index < m_fieldSprites.size())
         {
-            m_fieldSprites[index].setPosition(newPos);
+            m_fieldSprites[index].setPosition({m_leftPanelWidth + newPos.x, newPos.y});
 
             if (index < m_fieldTexts.size())
             {
@@ -258,26 +255,6 @@ public:
         return {0, 0};
     }
 
-    int GetLibraryIndexAt(sf::Vector2i mousePos) const override
-    {
-        for (size_t i = 0; i < m_librarySprites.size(); ++i)
-        {
-            if (m_librarySprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
-                return static_cast<int>(i);
-        }
-        return -1;
-    }
-
-    int GetFieldIndexAt(sf::Vector2i mousePos) const override
-    {
-        for (size_t i = 0; i < m_fieldSprites.size(); ++i)
-        {
-            if (m_fieldSprites[i].getGlobalBounds().contains(sf::Vector2f(mousePos)))
-                return static_cast<int>(i);
-        }
-        return -1;
-    }
-
     sf::FloatRect GetFieldBounds() const override
     {
         float left = m_leftPanelWidth;
@@ -285,6 +262,10 @@ public:
         float width = static_cast<float>(m_window.getSize().x) - m_leftPanelWidth;
         float height = static_cast<float>(m_window.getSize().y);
         return {{left, top}, {width, height}};
+    }
+
+    float GetLeftPanelWidth() const override {
+        return m_leftPanelWidth;
     }
 
     sf::FloatRect GetDelElemBounds() const override
@@ -340,7 +321,6 @@ public:
                 m_uiView.setSize(sf::Vector2f(newSize));
                 m_uiView.setCenter(sf::Vector2f(newSize) / 2.f);
 
-                // --- Обновляем игровой вид (letterbox для правой части) ---
                 float leftPanelWidth = newSize.x * 0.4f;
 
                 m_sortButton->SetPosition(sf::Vector2f(leftPanelWidth / 2 - 50, newSize.y - 75));
@@ -394,8 +374,6 @@ public:
             m_window.draw(m_fieldSprites[i]);
             m_window.draw(m_fieldTexts[i]);
         }
-
-        m_window.setView(m_uiView);
 
         if (m_draggedSprite.has_value())
             m_window.draw(*m_draggedSprite);

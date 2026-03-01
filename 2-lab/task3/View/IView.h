@@ -19,11 +19,10 @@ public:
 
     [[nodiscard]] virtual std::wstring GetLibraryElementNameAt(sf::Vector2i mousePos) const = 0;
     [[nodiscard]] virtual sf::Vector2f GetLibraryElementPosition(int index) const = 0;
-    [[nodiscard]] virtual int GetLibraryIndexAt(sf::Vector2i mousePos) const = 0;
-    [[nodiscard]] virtual int GetFieldIndexAt(sf::Vector2i mousePos) const = 0;
 
     [[nodiscard]] virtual sf::FloatRect GetDelElemBounds() const = 0;
     [[nodiscard]] virtual sf::FloatRect GetFieldBounds() const = 0;
+    [[nodiscard]] virtual float GetLeftPanelWidth() const = 0;
     [[nodiscard]] virtual float GetIconSize() const = 0;
 
     virtual void ShowGameOverMessage(const std::wstring& message) = 0;

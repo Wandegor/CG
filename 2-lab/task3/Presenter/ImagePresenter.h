@@ -119,25 +119,32 @@ private:
         }
 
         // Клики в другие места
-        int fieldIndex = m_view.GetFieldIndexAt(mousePressed->position);
-        if (fieldIndex != -1)
+        sf::Vector2f worldMouse = sf::Vector2f(mousePressed->position); // абсолютные экранные
+        const auto& fieldElements = m_model.GetFieldElements();
+        for (int i = 0; i < static_cast<int>(fieldElements.size()); ++i)
         {
-            m_dragInfo = DragInfo::InGame;
-            m_dragFieldIndex = fieldIndex;
-            m_isDragging = true;
-            m_lastMousePosition = mousePressed->position;
+            // прямоугольник элемента в относительных координатах
+            sf::FloatRect elemRect(fieldElements[i].position, {m_view.GetIconSize(), m_view.GetIconSize()});
+            // преобразуем абсолютный клик в относительные координаты
+            sf::Vector2f relativeClick = worldMouse - sf::Vector2f(m_view.GetLeftPanelWidth(), 0);
+            if (elemRect.contains(relativeClick))
+            {
+                // нашли элемент
+                m_dragInfo = DragInfo::InGame;
+                m_dragFieldIndex = i;
+                m_isDragging = true;
+                m_lastMousePosition = mousePressed->position;
 
-            const auto& placed = m_model.GetFieldElements();
-            const auto& elem = placed[fieldIndex];
-            m_dragOriginalPosition = elem.position;
-            m_dragOffset = sf::Vector2f(mousePressed->position) - elem.position;
+                const auto& elem = fieldElements[i];
+                m_dragOriginalPosition = elem.position; // относительная позицию
+                m_dragOffset = relativeClick - elem.position; // относительное смещение
 
-            // Призрак пол элемента
-            m_view.HideFieldElement(fieldIndex);
-
-            const auto& lib = m_model.GetLibrary();
-            const LibraryElement* info = &lib[elem.libraryIndex];
-            m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
+                m_view.HideFieldElement(i);
+                const auto& lib = m_model.GetLibrary();
+                const LibraryElement* info = &lib[elem.libraryIndex];
+                m_view.ShowDraggedElement(info, sf::Vector2f(mousePressed->position), m_dragOffset);
+                break;
+            }
         }
     }
 
@@ -164,9 +171,10 @@ private:
         auto releasePos = sf::Vector2f(mouseReleased->position);
         sf::FloatRect fieldBounds = m_view.GetFieldBounds();
         float iconSize = m_view.GetIconSize();
+        float leftPanel = m_view.GetLeftPanelWidth();
 
-        sf::Vector2f dropPos = releasePos - m_dragOffset;
-        sf::FloatRect dropRect(dropPos, {iconSize, iconSize});
+        sf::Vector2f dropAbsPos = releasePos - m_dragOffset;
+        sf::FloatRect dropAbsRect(dropAbsPos, {iconSize, iconSize});
 
         // Drop в Lib
         if (!fieldBounds.contains(releasePos))
@@ -184,7 +192,7 @@ private:
         if (m_dragInfo == DragInfo::InGame)
         {
             sf::FloatRect delBounds = m_view.GetDelElemBounds();
-            if (dropRect.findIntersection(delBounds))
+            if (dropAbsRect.findIntersection(delBounds))
             {
                 m_model.RemoveFieldElement(m_dragFieldIndex);
                 m_view.SetFieldElements(m_model.GetFieldElements(), m_model.GetLibrary());
@@ -194,6 +202,11 @@ private:
                 return;
             }
         }
+
+        // Относительная позиция для поля
+        sf::Vector2f relativeRelease = releasePos - sf::Vector2f(leftPanel, 0);
+        sf::Vector2f dropPos = relativeRelease - m_dragOffset;
+        sf::FloatRect dropRect(dropPos, {iconSize, iconSize});
 
         // Drop в поле (ищем targetIndex)
         const auto& fieldElements = m_model.GetFieldElements();
@@ -215,18 +228,15 @@ private:
         // Нет пересечения
         if (targetIndex == -1)
         {
-            float leftBound = fieldBounds.position.x;
-            sf::Vector2f finalPos = dropPos;
-            // чтобы спрайт не вылазил за игровое поле или lib
-            if (finalPos.x <= leftBound)
-                finalPos.x = leftBound + 10;
+            if (dropPos.x < 0)
+                dropPos.x = 10;
 
             if (m_dragInfo == DragInfo::Library)
                 // Добавить на поле из Lib
-                m_model.AddFieldElement(m_dragLibraryIndex, finalPos);
+                m_model.AddFieldElement(m_dragLibraryIndex, dropPos);
             else if (m_dragInfo == DragInfo::InGame)
                 // Перемещение полевого элемента
-                m_model.UpdateFieldElementPosition(m_dragFieldIndex, finalPos);
+                m_model.UpdateFieldElementPosition(m_dragFieldIndex, dropPos);
         }
         else // Соединение с targetIndex
         {
