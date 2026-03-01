@@ -99,7 +99,7 @@ public:
         m_librarySprites.clear();
         m_libraryTexts.clear();
 
-        constexpr int columns = 5;
+        const int columns = static_cast<int>(m_leftPanelWidth / (m_iconSize * 1.2f));
 
         const float xSpacing = m_leftPanelWidth / columns - m_iconSize;
 
