@@ -176,6 +176,16 @@ private:
         sf::Vector2f dropAbsPos = releasePos - m_dragOffset;
         sf::FloatRect dropAbsRect(dropAbsPos, {iconSize, iconSize});
 
+         auto clampToField = [&](sf::Vector2f pos) -> sf::Vector2f {
+            float maxX = fieldBounds.size.x - iconSize;
+            float maxY = fieldBounds.size.y - iconSize;
+            if (pos.x < 0) pos.x = 0;
+            if (pos.x > maxX) pos.x = maxX;
+            if (pos.y < 0) pos.y = 0;
+            if (pos.y > maxY) pos.y = maxY;
+            return pos;
+        };
+
         // Drop в Lib
         if (!fieldBounds.contains(releasePos))
         {
@@ -228,8 +238,7 @@ private:
         // Нет пересечения
         if (targetIndex == -1)
         {
-            if (dropPos.x < 0)
-                dropPos.x = 10;
+            dropPos = clampToField(dropPos);
 
             if (m_dragInfo == DragInfo::Library)
                 // Добавить на поле из Lib
@@ -252,9 +261,10 @@ private:
                     m_model.RemoveFieldElement(targetIndex);
                     for (size_t i = 0; i < results.size(); i++)
                     {
-                        m_model.AddFieldElement(results[i], {
-                            dropPos.x + static_cast<float>(i)*(iconSize+5),
-                            dropPos.y});
+                        sf::Vector2f newPos = dropPos + sf::Vector2f(static_cast<float>(i)*(iconSize+5), 0);
+                        dropPos = clampToField(newPos);
+                        m_model.AddFieldElement(results[i], dropPos);
+
                         if (m_model.UnlockElement(results[i]))
                         {
                             m_unlockSound->play();
@@ -281,9 +291,10 @@ private:
                     m_model.RemoveFieldElement(second);
                     for (size_t i = 0; i < results.size(); i++)
                     {
-                        m_model.AddFieldElement(results[i], {
-                            dropPos.x + static_cast<float>(i)*(iconSize+5),
-                            dropPos.y});
+                        sf::Vector2f newPos = dropPos + sf::Vector2f(static_cast<float>(i)*(iconSize+5), 0);
+                        dropPos = clampToField(newPos);
+                        m_model.AddFieldElement(results[i], dropPos);
+
                         if (m_model.UnlockElement(results[i]))
                         {
                             m_unlockSound->play();
