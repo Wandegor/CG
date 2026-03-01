@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
+#include "../ViewComponents/Button.h"
 #include "IView.h"
 #include "../Listeners/EventManager.h"
 #include "../Listeners/EventType.h"
@@ -12,6 +13,13 @@ class ImageViewer : public IView
 private:
     sf::RenderWindow& m_window;
     EventManager& m_manager;
+
+    sf::Vector2f m_baseSize;
+    sf::View m_gameView;
+    sf::View m_uiView;
+    std::vector<LibraryElement> m_lastLibrary;
+    std::vector<int> m_lastUnlockedIndices;
+    std::vector<FieldElement> m_lastFieldElements;
 
     sf::Music m_backgroundMusic;
 
@@ -42,7 +50,7 @@ private:
 public:
     ImageViewer(sf::RenderWindow& window, EventManager& document)
         : m_window(window), m_manager(document),
-          m_hiddenFieldIndex(-1), m_iconSize(80.f)
+          m_hiddenFieldIndex(-1), m_iconSize(80.f), m_baseSize(1200.f, 800.f)
     {
         if (!m_backgroundMusic.openFromFile("Resources/Sounds/LumierExpedition.mp3"))
         {
@@ -74,10 +82,21 @@ public:
             m_leftPanelWidth + (static_cast<float>(m_window.getSize().x) - m_leftPanelWidth) / 2,
             static_cast<float>(m_window.getSize().y) - 125));
         std::cout << m_removeSprite->getPosition().x << std::endl;
+
+        m_baseSize = sf::Vector2f(m_window.getSize());
+
+        m_gameView.setSize(m_baseSize);
+        m_gameView.setCenter(m_baseSize / 2.f);
+
+        m_uiView.setSize(sf::Vector2f(window.getSize()));
+        m_uiView.setCenter(sf::Vector2f(window.getSize()) / 2.f);
     }
 
     void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
     {
+        m_lastLibrary = library;
+        m_lastUnlockedIndices = unlockedIndices;
+
         if (library.empty()) return;
         m_librarySprites.clear();
         m_libraryTexts.clear();
@@ -125,6 +144,8 @@ public:
     void SetFieldElements(const std::vector<FieldElement>& elements,
                           const std::vector<LibraryElement>& library) override
     {
+        m_lastFieldElements = elements;
+
         m_fieldSprites.clear();
         m_fieldTexts.clear();
         m_hiddenFieldIndex = -1;
@@ -313,12 +334,41 @@ public:
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
+            else if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+                sf::Vector2u newSize = m_window.getSize();
+
+                m_uiView.setSize(sf::Vector2f(newSize));
+                m_uiView.setCenter(sf::Vector2f(newSize) / 2.f);
+
+                // --- Обновляем игровой вид (letterbox для правой части) ---
+                float leftPanelWidth = newSize.x * 0.4f;
+
+                m_sortButton->SetPosition(sf::Vector2f(leftPanelWidth / 2 - 50, newSize.y - 75));
+
+                if (m_removeSprite.has_value()) {
+                    m_removeSprite->setPosition(sf::Vector2f(
+                        leftPanelWidth + (newSize.x - leftPanelWidth) / 2,
+                        newSize.y - 125
+                    ));
+                }
+
+                m_leftPanelWidth = leftPanelWidth;
+
+                if (!m_lastLibrary.empty() && !m_lastUnlockedIndices.empty()) {
+                    SetLibrary(m_lastLibrary, m_lastUnlockedIndices);
+                }
+                if (!m_lastFieldElements.empty() && !m_lastLibrary.empty()) {
+                    SetFieldElements(m_lastFieldElements, m_lastLibrary);
+                }
+            }
         }
     }
 
     void Draw()
     {
         m_window.clear(sf::Color(200, 200, 200));
+
+        m_window.setView(m_uiView);
 
         sf::RectangleShape leftPanel({m_leftPanelWidth, static_cast<float>(m_window.getSize().y)});
         leftPanel.setFillColor(sf::Color(180, 180, 180));
@@ -329,6 +379,14 @@ public:
         for (const auto& text: m_libraryTexts)
             m_window.draw(text);
 
+        // Кнопка сортировки
+        m_sortButton->DrawTo(m_window);
+
+        // Крестик
+        if (m_removeSprite.has_value())
+            m_window.draw(*m_removeSprite);
+
+        // m_window.setView(m_gameView);
         for (size_t i = 0; i < m_fieldSprites.size(); ++i)
         {
             if (m_hiddenFieldIndex != -1 && m_hiddenFieldIndex == static_cast<int>(i))
@@ -337,10 +395,7 @@ public:
             m_window.draw(m_fieldTexts[i]);
         }
 
-        m_sortButton->DrawTo(m_window);
-
-        if (m_removeSprite.has_value())
-            m_window.draw(*m_removeSprite);
+        m_window.setView(m_uiView);
 
         if (m_draggedSprite.has_value())
             m_window.draw(*m_draggedSprite);

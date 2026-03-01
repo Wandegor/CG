@@ -77,8 +77,8 @@ public:
             const auto& [name, filename] = elementData[i];
             LibraryElement elem;
             elem.name = name;
-//             elem.unlocked = (i < elementData.capacity()-1);
-            elem.unlocked = (i < 4);
+             elem.unlocked = (i < elementData.capacity()-1);
+            // elem.unlocked = (i < 4);
 
             std::string path = "Resources/" + filename;
             if (!elem.texture.loadFromFile(path))
