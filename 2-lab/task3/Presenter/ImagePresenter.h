@@ -36,7 +36,7 @@ public:
         m_manager.Subscribe(EventType::MouseMoved, *this);
         m_manager.Subscribe(EventType::MouseReleased, *this);
 
-        if (m_unlockBuffer.loadFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/Sounds/anime-wow.mp3"))
+        if (m_unlockBuffer.loadFromFile("Resources/Sounds/anime-wow.mp3"))
         {
             m_unlockSound.emplace(m_unlockBuffer);
             m_unlockSound->setVolume(5.0f);
@@ -257,8 +257,11 @@ private:
                         m_model.AddFieldElement(results[i], {
                             dropPos.x + static_cast<float>(i)*(iconSize+5),
                             dropPos.y});
-                        m_model.UnlockElement(results[i]);
-                        m_unlockSound->play();
+                        if (m_model.UnlockElement(results[i]))
+                        {
+                            m_unlockSound->play();
+                        }
+
                         if (m_model.AllUnlocked()) {
                             m_view.ShowGameOverMessage(L"Хароош! Все элементы открыл!");
                         }

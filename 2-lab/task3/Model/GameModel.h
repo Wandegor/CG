@@ -77,7 +77,7 @@ public:
 //             elem.unlocked = (i < elementData.capacity()-1);
             elem.unlocked = (i < 4);
 
-            std::string path = "D:/Projects/6-SEM/CG/2-lab/task3/Resources/" + filename;
+            std::string path = "Resources/" + filename;
             if (!elem.texture.loadFromFile(path))
             {
                 std::cerr << "Failed to load texture " << path
@@ -175,15 +175,18 @@ public:
         return false;
     }
 
-    void UnlockElement(int libIndex)
+    bool UnlockElement(int libIndex)
     {
-        if (libIndex < 0 || libIndex >= m_library.size()) return;
+        if (libIndex < 0 || libIndex >= m_library.size()) return false;
 
         if (!m_library[libIndex].unlocked)
         {
             m_library[libIndex].unlocked = true;
             m_unlockedIndices.push_back(libIndex);
+            return true;
         }
+
+        return false;
     }
 
     void SortIndices()

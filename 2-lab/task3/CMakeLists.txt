@@ -29,6 +29,13 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMENT "Copying font to executable directory"
 )
 
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/Resources
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources
+        COMMENT "Copying /Resources to executable directory"
+)
+
 target_link_libraries(${PROJECT_NAME}
         SFML::Graphics
         SFML::Window

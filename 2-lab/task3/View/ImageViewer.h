@@ -44,7 +44,7 @@ public:
         : m_window(window), m_manager(document),
           m_hiddenFieldIndex(-1), m_iconSize(80.f)
     {
-        if (!m_backgroundMusic.openFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/Sounds/LumierExpedition.mp3"))
+        if (!m_backgroundMusic.openFromFile("Resources/Sounds/LumierExpedition.mp3"))
         {
             std::cerr << "Failed to load background music" << std::endl;
         }
@@ -65,7 +65,7 @@ public:
             [this]() { m_manager.NotifyListeners(EventType::SortLibrary); }
         );
 
-        if (!m_crossTexture.loadFromFile("D:/Projects/6-SEM/CG/2-lab/task3/Resources/removeElementCross.png"))
+        if (!m_crossTexture.loadFromFile("Resources/removeElementCross.png"))
         {
             std::cerr << "Error loading removeElementCross.png" << std::endl;
         }
