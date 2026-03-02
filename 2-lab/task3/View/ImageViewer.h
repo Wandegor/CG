@@ -353,6 +353,8 @@ public:
                     ));
                 }
 
+                m_musicMenu->SetPosition(sf::Vector2f(static_cast<float>(m_window.getSize().x) - 20 - 100, 20));
+                
                 m_leftPanelWidth = leftPanelWidth;
 
                 if (!m_lastLibrary.empty() && !m_lastUnlockedIndices.empty()) {
