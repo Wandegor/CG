@@ -109,6 +109,13 @@ public:
         m_musicMenu->AddItem("ZIzazay", [this]() {
             ToggleMusic("Resources/Sounds/zyi-zai-zui-zai-zy.mp3");
         });
+
+        sf::Image icon;
+        if (!icon.loadFromFile("Resources/game-icon.png")) {
+            std::cerr << "Не удалось загрузить иконку 'icon.png'" << std::endl;
+        } else {
+            m_window.setIcon(icon);
+        }
     }
 
     void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
