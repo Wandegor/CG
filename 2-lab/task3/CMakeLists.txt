@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
         main.cpp
         ViewComponents/Button.h
+        ViewComponents/Menu.h
         View/ImageViewer.h
         Model/GameModel.h
         Presenter/ImagePresenter.h

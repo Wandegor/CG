@@ -4,6 +4,7 @@
 #include <SFML/Audio.hpp>
 
 #include "../ViewComponents/Button.h"
+#include "../ViewComponents/Menu.h"
 #include "IView.h"
 #include "../Listeners/EventManager.h"
 #include "../Listeners/EventType.h"
@@ -21,7 +22,9 @@ private:
     std::vector<int> m_lastUnlockedIndices;
     std::vector<FieldElement> m_lastFieldElements;
 
+    std::unique_ptr<Menu> m_musicMenu;
     sf::Music m_backgroundMusic;
+    std::string m_currentMusicPath;
 
     float m_leftPanelWidth;
 
@@ -52,12 +55,16 @@ public:
         : m_window(window), m_manager(document),
           m_hiddenFieldIndex(-1), m_iconSize(80.f), m_baseSize(1200.f, 800.f)
     {
-        if (!m_backgroundMusic.openFromFile("Resources/Sounds/LumierExpedition.mp3"))
+        if (m_backgroundMusic.openFromFile("Resources/Sounds/LumierExpedition.mp3"))
+        {
+            m_backgroundMusic.setLooping(true);
+            m_backgroundMusic.setVolume(6.f);
+            m_currentMusicPath = "Resources/Sounds/LumierExpedition.mp3";
+        }
+        else
         {
             std::cerr << "Failed to load background music" << std::endl;
         }
-        m_backgroundMusic.setLooping(true);
-        m_backgroundMusic.setVolume(6.f);
 
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -88,6 +95,20 @@ public:
 
         m_uiView.setSize(sf::Vector2f(window.getSize()));
         m_uiView.setCenter(sf::Vector2f(window.getSize()) / 2.f);
+
+        m_musicMenu = std::make_unique<Menu>(
+                m_font,
+                "Music",
+                sf::Vector2f(static_cast<float>(m_window.getSize().x) - 20 - 100, 20),
+                sf::Vector2f(100, 40));
+
+        m_musicMenu->AddItem("Lumier", [this]() {
+            ToggleMusic("Resources/Sounds/LumierExpedition.mp3");
+        });
+
+        m_musicMenu->AddItem("ZIzazay", [this]() {
+            ToggleMusic("Resources/Sounds/zyi-zai-zui-zai-zy.mp3");
+        });
     }
 
     void SetLibrary(const std::vector<LibraryElement>& library, const std::vector<int>& unlockedIndices) override
@@ -316,10 +337,10 @@ public:
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
             else if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-                sf::Vector2u newSize = m_window.getSize();
+                sf::Vector2f newSize = sf::Vector2f(m_window.getSize());
 
-                m_uiView.setSize(sf::Vector2f(newSize));
-                m_uiView.setCenter(sf::Vector2f(newSize) / 2.f);
+                m_uiView.setSize(newSize);
+                m_uiView.setCenter(newSize / 2.f);
 
                 float leftPanelWidth = newSize.x * 0.4f;
 
@@ -341,6 +362,8 @@ public:
                     SetFieldElements(m_lastFieldElements, m_lastLibrary);
                 }
             }
+
+            m_musicMenu->HandleEvent(*event, m_window);
         }
     }
 
@@ -380,6 +403,7 @@ public:
         if (m_draggedText.has_value())
             m_window.draw(*m_draggedText);
 
+        m_musicMenu->Draw(m_window);
         if (m_gameOverText.has_value()) {
             m_window.draw(*m_gameOverText);
             if (m_gameOverClock.getElapsedTime().asSeconds() > 4.0f) {
@@ -407,5 +431,33 @@ public:
             static_cast<float>(m_window.getSize().x)/2,
             static_cast<float>(m_window.getSize().y)/2});
         m_gameOverClock.restart();
+    }
+
+private:
+    void ToggleMusic(const std::string& path)
+    {
+        if (m_currentMusicPath == path)
+        {
+            // Тот же трек – переключаем паузу
+            if (m_backgroundMusic.getStatus() == sf::Music::Status::Playing)
+                m_backgroundMusic.pause();
+            else
+                m_backgroundMusic.play();
+        }
+        else
+        {
+            // Другой трек – загружаем и запускаем
+            if (m_backgroundMusic.openFromFile(path))
+            {
+                m_backgroundMusic.setLooping(true);
+                m_backgroundMusic.setVolume(6.f);
+                m_backgroundMusic.play();
+                m_currentMusicPath = path;
+            }
+            else
+            {
+                std::cerr << "Failed to load " << path << std::endl;
+            }
+        }
     }
 };
