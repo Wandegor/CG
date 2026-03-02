@@ -77,7 +77,7 @@ private:
     void OnOpenFile()
     {
         auto selection = pfd::open_file("Choose an image", ".",
-                                        {"Image Files", "*.jpg *.jpeg"});
+                                        {"Image Files", "*.png *.jpg *.jpeg *.bmp"});
         if (!selection.result().empty())
         {
             std::string filename = selection.result()[0];
@@ -97,7 +97,7 @@ private:
         }
 
         auto selection = pfd::save_file("Save image", ".",
-                                    {"Image Files", "*.jpg *.jpeg"});
+                                    {"Image Files", "*.png *.jpg *.jpeg *.bmp"});
 
         if (!selection.result().empty())
         {
@@ -163,6 +163,8 @@ private:
         {
             const sf::Texture& strokeTexture = m_view.FinishTemporaryStroke();
             m_model.UpdateTexture(strokeTexture);
+            m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
+            m_view.ClearTemporary();
             m_isDrawing = false;
         }
     }

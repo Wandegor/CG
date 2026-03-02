@@ -11,5 +11,7 @@ public:
     virtual void AddTemporaryPoint(sf::Vector2i from, sf::Vector2i to) = 0;
     virtual const sf::Texture& FinishTemporaryStroke() = 0;
 
+    virtual void ClearTemporary() = 0;
+
     [[nodiscard]] virtual sf::Vector2f GetSpritePosition() const = 0;
 };

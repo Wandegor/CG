@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <SFML/Graphics.hpp>
@@ -59,9 +60,24 @@ public:
         return m_image.getSize().x > 0;
     }
 
-    void UpdateTexture(const sf::Texture& newTexture)
+    void UpdateTexture(const sf::Texture &newTexture)
     {
-        m_image = newTexture.copyToImage();
-        m_texture.update(newTexture);
+        sf::Vector2u size = m_texture.getSize();
+        if (size.x == 0 || size.y == 0) return;
+
+        sf::RenderTexture canvas;
+        if (!canvas.resize(size))
+        {
+            std::cerr << "Failed to create canvas" << std::endl;
+            return;
+        }
+
+        canvas.clear(sf::Color::Transparent);
+        canvas.draw(sf::Sprite(m_texture), sf::RenderStates(sf::BlendNone));
+        canvas.draw(sf::Sprite(newTexture));
+        canvas.display();
+
+        m_image = canvas.getTexture().copyToImage();
+        m_texture.loadFromImage(m_image);
     }
 };

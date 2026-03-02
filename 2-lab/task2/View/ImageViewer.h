@@ -68,19 +68,28 @@ public:
             {
                 m_tempLayer.clear(sf::Color::Transparent);
                 m_tempLayer.display();
-                m_tempLayerExist = true;
+                m_tempLayerExist = false;
             }
         }
     }
 
-    void StartTemporaryStroke(sf::Vector2i startPoint) override
-    {
-        if (!m_tempLayerExist || !m_sprite.has_value()) return;
-        m_tempLayer.clear(sf::Color::Transparent);
-        sf::Sprite background(m_sprite->getTexture());
-        background.setPosition({0, 0});
-        m_tempLayer.draw(background);
+    void StartTemporaryStroke(sf::Vector2i startPoint) override {
+        if (!m_sprite.has_value()) return;
 
+        sf::Vector2u texSize = m_sprite->getTexture().getSize();
+        if (texSize.x == 0 || texSize.y == 0) return;
+
+        if (m_tempLayer.getSize() != texSize) {
+            if (!m_tempLayer.resize(texSize)) {
+                std::cerr << "Failed to resize temporary layer" << std::endl;
+                return;
+            }
+        }
+
+        m_tempLayerExist = true;
+        m_tempLayer.clear(sf::Color::Transparent);
+
+        // Рисуем начальную точку
         sf::Vertex point(sf::Vector2f(startPoint), sf::Color::Black);
         m_tempLayer.draw(&point, 1, sf::PrimitiveType::Points);
         m_tempLayer.display();
@@ -100,6 +109,10 @@ public:
     const sf::Texture& FinishTemporaryStroke() override
     {
         return m_tempLayer.getTexture();
+    }
+
+    void ClearTemporary() override {
+        m_tempLayerExist = false;
     }
 
     sf::Vector2f GetSpritePosition() const override {
