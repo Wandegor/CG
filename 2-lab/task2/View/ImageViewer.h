@@ -134,6 +134,11 @@ public:
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
             }
+            else if (const auto* resized = event->getIf<sf::Event::Resized>())
+            {
+                sf::FloatRect visibleArea({0.f, 0.f}, sf::Vector2f(resized->size));
+                m_window.setView(sf::View(visibleArea));
+            }
 
             m_fileMenu->HandleEvent(*event, m_window);
         }

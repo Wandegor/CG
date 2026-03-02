@@ -91,6 +91,17 @@ public:
         return false;
     }
 
+    void SetPosition(const sf::Vector2f position)
+    {
+        m_button.setPosition(position);
+
+        sf::Vector2f buttonCenter = {
+                position.x + m_button.getSize().x / 2.0f,
+                position.y + m_button.getSize().y / 2.0f
+        };
+        m_text.setPosition(buttonCenter);
+    }
+
     sf::Vector2f GetPosition() const
     {
         return m_button.getPosition();

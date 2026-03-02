@@ -31,6 +31,16 @@ public:
         m_items.push_back(item);
     }
 
+    void SetPosition(sf::Vector2f pos) {
+        float dx = pos.x - m_headerButton.GetPosition().x;
+        float dy = pos.y - m_headerButton.GetPosition().y;
+        m_headerButton.SetPosition(pos);
+
+        for (auto& item : m_items) {
+            item.SetPosition(item.GetPosition() + sf::Vector2f(dx, dy));
+        }
+    }
+
     void Draw(sf::RenderWindow &window)
     {
         m_headerButton.DrawTo(window);
