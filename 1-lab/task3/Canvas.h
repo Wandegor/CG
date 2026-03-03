@@ -99,6 +99,7 @@ class Canvas
             float intensity1 = 1.0f - fraction; // основной
             float intensity2 = fraction; // дополнительный
 
+            // (x, y)
             DrawPixel(xc + x, yc + y, color, intensity1);
             DrawPixel(xc + x, yc + y + 1, color, intensity2);
 
@@ -110,18 +111,23 @@ class Canvas
             DrawPixel(xc - x, yc + y, color, intensity1);
             DrawPixel(xc - x, yc + y + 1, color, intensity2);
 
+            // (-y, x)
             DrawPixel(xc - y, yc + x, color, intensity1);
             DrawPixel(xc - y - 1, yc + x, color, intensity2);
 
+            // (x, -y)
             DrawPixel(xc + x, yc - y, color, intensity1);
             DrawPixel(xc + x, yc - y - 1, color, intensity2);
 
+            // (y, -x)
             DrawPixel(xc + y, yc - x, color, intensity1);
             DrawPixel(xc + y + 1, yc - x, color, intensity2);
 
+            // (-x, -y)
             DrawPixel(xc - x, yc - y, color, intensity1);
             DrawPixel(xc - x, yc - y - 1, color, intensity2);
 
+            // (-y, -x)
             DrawPixel(xc - y, yc - x, color, intensity1);
             DrawPixel(xc - y - 1, yc - x, color, intensity2);
 
@@ -140,10 +146,12 @@ class Canvas
         int outR = radius + halfThickness;
         int inR = std::max(0, radius - halfThickness);
 
+        if (circle.GetOutThickness() > 1)
+        {
+            FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
+        }
 
         DrawCircleWu(xc, yc, outR, circle.GetOutlineColor());
-
-        FillBetweenCircles(xc, yc, inR, outR, circle.GetOutlineColor(), circle.GetFillColor());
 
         if (inR > 0)
         {
