@@ -21,6 +21,11 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
+            else if (const auto* resized = event->getIf<sf::Event::Resized>())
+            {
+                sf::View view(sf::FloatRect({0.f, 0.f}, sf::Vector2f(resized->size)));
+                window.setView(view);
+            }
         }
 
         canvas.Draw(circle);
