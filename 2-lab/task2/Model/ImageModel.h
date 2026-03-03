@@ -78,6 +78,6 @@ public:
         canvas.display();
 
         m_image = canvas.getTexture().copyToImage();
-        m_texture.loadFromImage(m_image);
+        if(!m_texture.loadFromImage(m_image)){};
     }
 };

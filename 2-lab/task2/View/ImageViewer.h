@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
@@ -25,7 +26,7 @@ private:
 
 public:
     ImageViewer(sf::RenderWindow &window, EventManager &document)
-        : m_window(window), m_manager(document), m_sprite(std::nullopt)
+            : m_window(window), m_manager(document), m_sprite(std::nullopt)
     {
         if (!m_font.openFromFile("ArialRegular.ttf"))
         {
@@ -73,14 +74,17 @@ public:
         }
     }
 
-    void StartTemporaryStroke(sf::Vector2i startPoint) override {
+    void StartTemporaryStroke(sf::Vector2i startPoint) override
+    {
         if (!m_sprite.has_value()) return;
 
         sf::Vector2u texSize = m_sprite->getTexture().getSize();
         if (texSize.x == 0 || texSize.y == 0) return;
 
-        if (m_tempLayer.getSize() != texSize) {
-            if (!m_tempLayer.resize(texSize)) {
+        if (m_tempLayer.getSize() != texSize)
+        {
+            if (!m_tempLayer.resize(texSize))
+            {
                 std::cerr << "Failed to resize temporary layer" << std::endl;
                 return;
             }
@@ -89,7 +93,6 @@ public:
         m_tempLayerExist = true;
         m_tempLayer.clear(sf::Color::Transparent);
 
-        // Рисуем начальную точку
         sf::Vertex point(sf::Vector2f(startPoint), sf::Color::Black);
         m_tempLayer.draw(&point, 1, sf::PrimitiveType::Points);
         m_tempLayer.display();
@@ -99,26 +102,36 @@ public:
     {
         if (!m_tempLayerExist) return;
         sf::Vertex line[] = {
-            sf::Vertex(sf::Vector2f(from), sf::Color::Black),
-            sf::Vertex(sf::Vector2f(to), sf::Color::Black)
+                sf::Vertex(sf::Vector2f(from), sf::Color::Black),
+                sf::Vertex(sf::Vector2f(to), sf::Color::Black)
         };
         m_tempLayer.draw(line, 2, sf::PrimitiveType::Lines);
         m_tempLayer.display();
     }
 
-    const sf::Texture& FinishTemporaryStroke() override
+    const sf::Texture &FinishTemporaryStroke() override
     {
         return m_tempLayer.getTexture();
     }
 
-    void ClearTemporary() override {
+    void DrawPoint(sf::Vector2i pos) override
+    {
+        if (!m_tempLayerExist) return;
+        sf::Vertex point(sf::Vector2f(pos), sf::Color::Black);
+        m_tempLayer.draw(&point, 1, sf::PrimitiveType::Points);
+        m_tempLayer.display();
+    }
+
+    void ClearTemporary() override
+    {
         m_tempLayerExist = false;
     }
 
-    sf::Vector2f GetSpritePosition() const override {
+    sf::Vector2f GetSpritePosition() const override
+    {
         return m_sprite.has_value()
-            ? m_sprite->getPosition()
-            : sf::Vector2f(0,0);
+               ? m_sprite->getPosition()
+               : sf::Vector2f(0, 0);
     }
 
     void ProcessEvents()
@@ -146,8 +159,7 @@ public:
             } else if (event->getIf<sf::Event::MouseButtonReleased>())
             {
                 m_manager.NotifyListeners(EventType::MouseReleased, event);
-            }
-            else if (const auto* resized = event->getIf<sf::Event::Resized>())
+            } else if (const auto *resized = event->getIf<sf::Event::Resized>())
             {
                 sf::FloatRect visibleArea({0.f, 0.f}, sf::Vector2f(resized->size));
                 m_window.setView(sf::View(visibleArea));
@@ -163,7 +175,8 @@ public:
         if (m_sprite.has_value())
             m_window.draw(m_sprite.value());
 
-        if (m_tempLayerExist) {
+        if (m_tempLayerExist)
+        {
             sf::Sprite tempSprite(m_tempLayer.getTexture());
             tempSprite.setPosition(m_sprite->getPosition());
             m_window.draw(tempSprite);

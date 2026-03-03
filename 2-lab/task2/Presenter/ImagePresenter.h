@@ -15,13 +15,15 @@ private:
     ImageModel &m_model;
     EventManager &m_manager;
 
+    bool m_lastPointInside;
+
     bool m_isDrawing;
     sf::Vector2i m_lastDrawPosition;
 
 public:
 
     ImagePresenter(IView &view, ImageModel &model, EventManager &document)
-            : m_view(view), m_model(model), m_manager(document), m_isDrawing(false)
+            : m_view(view), m_model(model), m_manager(document), m_isDrawing(false), m_lastPointInside(false)
     {
         m_manager.Subscribe(EventType::NewFile, *this);
         m_manager.Subscribe(EventType::OpenFile, *this);
@@ -47,22 +49,22 @@ public:
         {
             case EventType::NewFile:
                 OnNewFile();
-            break;
+                break;
             case EventType::OpenFile:
                 OnOpenFile();
-            break;
+                break;
             case EventType::SaveFile:
                 OnSaveFile();
-            break;
+                break;
             case EventType::MousePressed:
                 OnMousePressed(event.value());
-            break;
+                break;
             case EventType::MouseMoved:
                 OnMouseMoved(event.value());
-            break;
+                break;
             case EventType::MouseReleased:
                 OnMouseReleased(event.value());
-            break;
+                break;
         }
     }
 
@@ -97,7 +99,7 @@ private:
         }
 
         auto selection = pfd::save_file("Save image", ".",
-                                    {"Image Files", "*.png *.jpg *.jpeg *.bmp"});
+                                        {"Image Files", "*.png *.jpg *.jpeg *.bmp"});
 
         if (!selection.result().empty())
         {
@@ -109,7 +111,7 @@ private:
         }
     }
 
-    void OnMousePressed(const sf::Event& event)
+    void OnMousePressed(const sf::Event &event)
     {
         auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
         if (!mousePressed) return;
@@ -119,8 +121,8 @@ private:
 
         sf::Vector2f picturePos = m_view.GetSpritePosition();
         sf::Vector2i onImagePos(
-            mousePressed->position.x - static_cast<int>(picturePos.x),
-            mousePressed->position.y - static_cast<int>(picturePos.y)
+                mousePressed->position.x - static_cast<int>(picturePos.x),
+                mousePressed->position.y - static_cast<int>(picturePos.y)
         );
 
         // Проверка на попадание по картинке
@@ -130,38 +132,52 @@ private:
         {
             m_isDrawing = true;
             m_lastDrawPosition = onImagePos;
+            m_lastPointInside = true;
             m_view.StartTemporaryStroke(onImagePos);
         }
     }
 
-    void OnMouseMoved(const sf::Event& event)
+    void OnMouseMoved(const sf::Event &event)
     {
         auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
         if (!mouseMoved || !m_isDrawing || !m_model.HasImage()) return;
 
         sf::Vector2f picturePos = m_view.GetSpritePosition();
         sf::Vector2i onImagePos(
-            mouseMoved->position.x - static_cast<int>(picturePos.x),
-            mouseMoved->position.y - static_cast<int>(picturePos.y)
+                mouseMoved->position.x - static_cast<int>(picturePos.x),
+                mouseMoved->position.y - static_cast<int>(picturePos.y)
         );
 
-        if (onImagePos.x >= 0 && onImagePos.y >= 0
-            && onImagePos.x < m_model.GetTexture().getSize().x
-            && onImagePos.y < m_model.GetTexture().getSize().y)
+        bool isInside = (onImagePos.x >= 0 && onImagePos.y >= 0
+                         && onImagePos.x < m_model.GetTexture().getSize().x
+                         && onImagePos.y < m_model.GetTexture().getSize().y);
+
+        if (isInside)
         {
-            m_view.AddTemporaryPoint(m_lastDrawPosition, onImagePos);
+            if (m_lastPointInside)
+            {
+                m_view.AddTemporaryPoint(m_lastDrawPosition, onImagePos);
+            }
+            else
+            {
+                m_view.DrawPoint(onImagePos);
+            }
             m_lastDrawPosition = onImagePos;
+            m_lastPointInside = true;
+        } else
+        {
+            m_lastPointInside = false;
         }
     }
 
-    void OnMouseReleased(const sf::Event& event)
+    void OnMouseReleased(const sf::Event &event)
     {
         auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
         if (!mouseReleased) return;
 
         if (mouseReleased->button == sf::Mouse::Button::Left && m_isDrawing)
         {
-            const sf::Texture& strokeTexture = m_view.FinishTemporaryStroke();
+            const sf::Texture &strokeTexture = m_view.FinishTemporaryStroke();
             m_model.UpdateTexture(strokeTexture);
             m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
             m_view.ClearTemporary();
