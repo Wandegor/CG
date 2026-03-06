@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
-        main.cpp)
+        main.cpp
+        Common/Point.h)
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})
