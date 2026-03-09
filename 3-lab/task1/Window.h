@@ -12,6 +12,12 @@ private:
     static void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     {
         glViewport(0, 0, width, height);
+        Window* newWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+        if (newWindow)
+            {
+            newWindow->m_width = width;
+            newWindow->m_height = height;
+        }
     }
 
 public:
@@ -35,6 +41,7 @@ public:
             exit(-1);
         }
         glfwMakeContextCurrent(m_window);
+        glfwSetWindowUserPointer(m_window, this); // Сохраняем указатель на объект для использования в колбэках
         glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
     }
 
