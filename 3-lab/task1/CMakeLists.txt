@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
         main.cpp
-        Common/Point.h)
+        Common/Point.h
+        Application.h
+        Bezier.h)
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})

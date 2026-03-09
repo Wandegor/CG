@@ -4,80 +4,8 @@
 #include <vector>
 #include <cmath>
 
+#include "Bezier.h"
 #include "Common/Point.h"
-
-// Контрольные точки кубической кривой Безье
-
-Point ControlPoints[4] = {
-    {-0.7f, -0.5f}, // P0 – начальная точка
-    {-0.3f, 0.7f}, // P1 – первая контрольная
-    {0.5f, 0.7f}, // P2 – вторая контрольная
-    {0.7f, -0.5f} // P3 – конечная точка
-};
-
-const int SEGMENTS = 10; // количество отрезков для аппроксимации кривой
-const float POINT_SIZE = 10.0f; // размер контрольных точек
-
-// Вычисление точки на кривой Безье при параметре t (0..1)
-Point BezierPoint(float t)
-{
-    float u = 1.0f - t;
-    float tt = t * t;
-    float uu = u * u;
-    float uuu = uu * u;
-    float ttt = tt * t;
-
-    return {
-        uuu * ControlPoints[0].x + 3.0f * uu * t * ControlPoints[1].x + 3.0f * u * tt * ControlPoints[2].x + ttt *
-        ControlPoints[3].x,
-        uuu * ControlPoints[0].y + 3.0f * uu * t * ControlPoints[1].y + 3.0f * u * tt * ControlPoints[2].y + ttt *
-        ControlPoints[3].y
-    };
-}
-
-// Генерация точек кривой (ломаная линия)
-std::vector<Point> GenerateCurvePoints()
-{
-    std::vector<Point> points;
-    for (int i = 0; i <= SEGMENTS; ++i)
-    {
-        float t = static_cast<float>(i) / SEGMENTS;
-        points.push_back(BezierPoint(t));
-    }
-    return points;
-}
-
-// Генерация пунктирных линий между контрольными точками
-std::vector<Point> GenerateDashedLines()
-{
-    std::vector<Point> vertices;
-    const int dashCount = 20; // количество штрихов на один отрезок
-    const float dashLength = 0.5f; // доля отрезка, занятая штрихом (0..1)
-
-    // Для каждой пары контрольных точек
-    for (int pair = 0; pair < 3; ++pair)
-    {
-        Point p1 = ControlPoints[pair];
-        Point p2 = ControlPoints[pair + 1];
-
-        for (int i = 0; i < dashCount; ++i)
-        {
-            float start = static_cast<float>(i) / dashCount;
-            float end = start + dashLength / dashCount; // длина штриха в параметрическом пространстве
-
-            // Если конец штриха выходит за пределы, обрезаем
-            if (end > 1.0f) end = 1.0f;
-
-            // Линейная интерполяция
-            Point a = {p1.x + start * (p2.x - p1.x), p1.y + start * (p2.y - p1.y)};
-            Point b = {p1.x + end * (p2.x - p1.x), p1.y + end * (p2.y - p1.y)};
-
-            vertices.push_back(a);
-            vertices.push_back(b);
-        }
-    }
-    return vertices;
-}
 
 // Выход по Escape
 void ProcessInput(GLFWwindow* window)
@@ -120,6 +48,7 @@ void CheckProgramLinking(unsigned int program)
 
 int main()
 {
+    Bezier bezier;
     // Инициализация GLFW
     if (!glfwInit())
     {
@@ -152,8 +81,8 @@ int main()
 
     glViewport(0, 0, 1600, 1000);
 
-    auto curvePoints = GenerateCurvePoints();
-    auto dashPoints = GenerateDashedLines();
+    auto curvePoints = bezier.GenerateCurvePoints();
+    auto dashPoints = bezier.GenerateDashedLines();
 
     // Позиция
     const char* vertexShaderSource = R"glsl(
@@ -197,31 +126,31 @@ int main()
     // Получаем location uniform-переменной
     int colorLocation = glGetUniformLocation(shaderProgram, "uColor");
 
-    // VAO и VBO для кривой (линия)
-    unsigned int curveVAO, curveVBO;
+    // Кривая
+    GLuint curveVAO, curveVBO;
     glGenVertexArrays(1, &curveVAO);
     glGenBuffers(1, &curveVBO);
     glBindVertexArray(curveVAO);
     glBindBuffer(GL_ARRAY_BUFFER, curveVBO);
     glBufferData(GL_ARRAY_BUFFER, curvePoints.size() * sizeof(Point), curvePoints.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), nullptr);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // VAO и VBO для контрольных точек (точки)
-    unsigned int pointsVAO, pointsVBO;
+    // Контрольные точки
+    GLuint pointsVAO, pointsVBO;
     glGenVertexArrays(1, &pointsVAO);
     glGenBuffers(1, &pointsVBO);
     glBindVertexArray(pointsVAO);
     glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(ControlPoints), ControlPoints, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(bezier.ControlPoints), bezier.ControlPoints, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), nullptr);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // VAO и VBO для пунктирных линий (отрезки)
+    // Пунктир
     unsigned int dashVAO, dashVBO;
     glGenVertexArrays(1, &dashVAO);
     glGenBuffers(1, &dashVBO);
@@ -233,11 +162,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Настройки для точек (размер и сглаживание)
-    glPointSize(POINT_SIZE);
+    // Размер точек
+    glPointSize(bezier.GetPointSize());
     glEnable(GL_PROGRAM_POINT_SIZE);
-    // если хотим, чтобы размер можно было менять в шейдере, но здесь просто фиксированный
-    // Включаем сглаживание точек и линий (для красоты)
+    // Сглаживание
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_MULTISAMPLE);
 
@@ -246,7 +174,7 @@ int main()
     {
         ProcessInput(window);
 
-        // Очистка экрана (белый фон)
+        // Очистка экрана
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
