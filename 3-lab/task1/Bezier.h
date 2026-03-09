@@ -7,13 +7,12 @@ class Bezier
 {
 private:
     const int SEGMENTS = 10;
-    const float POINT_SIZE = 10.0f; // размер контрольных точек
+    const float POINT_SIZE = 10.0f;
 
-    const int DASH_COUNT = 20; // количество штрихов на один отрезок
-    const float DASH_LENGTH = 0.5f; // доля отрезка, занятая штрихом (0..1)
+    const int DASH_COUNT = 20;
+    const float DASH_LENGTH = 0.5f;
 
 public:
-    // Контрольные точки кубической кривой Безье
     Point ControlPoints[4] = {
         {-0.7f, -0.5f},
         {-0.3f, 0.7f},
@@ -21,7 +20,6 @@ public:
         {0.7f, -0.5f}
     };
 
-    // Вычисление точки на кривой Безье при параметре t (0..1)
     Point BezierPoint(float t)
     {
         float u = 1.0f - t;
@@ -38,7 +36,6 @@ public:
         };
     }
 
-    // Генерация точек кривой (ломаная линия)
     std::vector<Point> GenerateCurvePoints()
     {
         std::vector<Point> points;
@@ -50,13 +47,10 @@ public:
         return points;
     }
 
-    // Генерация пунктирных линий между контрольными точками
     std::vector<Point> GenerateDashedLines()
     {
         std::vector<Point> vertices;
 
-
-        // Для каждой пары контрольных точек
         for (int pair = 0; pair < 3; ++pair)
         {
             Point p1 = ControlPoints[pair];
@@ -65,9 +59,8 @@ public:
             for (int i = 0; i < DASH_COUNT; ++i)
             {
                 float start = static_cast<float>(i) / DASH_COUNT;
-                float end = start + DASH_LENGTH / DASH_COUNT; // длина штриха в параметрическом пространстве
+                float end = start + DASH_LENGTH / DASH_COUNT; // длина штриха
 
-                // Если конец штриха выходит за пределы, обрезаем
                 if (end > 1.0f) end = 1.0f;
 
                 // Линейная интерполяция

@@ -43,7 +43,6 @@ class Shader
         glDeleteShader(shader);
     }
 
-    // Проверка линковки программы
     static void CheckProgramLinking(unsigned int program)
     {
         int success;
