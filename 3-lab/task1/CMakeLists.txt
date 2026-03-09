@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
         Bezier.h
         Shaders/Shader.h
         Window.h
+        BezierRenderer.h
 )
 
 file(COPY Shaders/shader.vs Shaders/shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
