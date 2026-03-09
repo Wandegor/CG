@@ -3,9 +3,64 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cstring>
+#include <fstream>
 
 #include "Bezier.h"
 #include "Common/Point.h"
+
+bool ReadFile(const char* fileName, std::string& outFile)
+{
+    std::ifstream file(fileName);
+
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open file: " << fileName << std::endl;
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        outFile += line + '\n';
+    }
+    file.close();
+    return true;
+}
+
+static void AddShader(GLuint shaderProgram, const char* pShaderText, GLenum shaderType)
+{
+    GLuint shader = glCreateShader(shaderType);
+
+    if (shader == 0)
+    {
+        fprintf(stderr, "Error creating shader%d\n", shaderType);
+        exit(0);
+    }
+
+    const GLchar* p[1];
+    p[0] = pShaderText;
+
+    GLint Length[1];
+    Length[0] = std::strlen(pShaderText);
+
+    glShaderSource(shader, 1, p, Length);
+    glCompileShader(shader);
+
+    GLint success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+    if (!success)
+    {
+        GLchar infoLog[1024];
+        glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
+        fprintf(stderr, "Error compiling shader type %d:\n%s\n", shaderType, infoLog);
+        exit(1);
+    }
+
+    glAttachShader(shaderProgram, shader);
+    glDeleteShader(shader);
+}
 
 // Выход по Escape
 void ProcessInput(GLFWwindow* window)
@@ -39,10 +94,20 @@ void CheckProgramLinking(unsigned int program)
     int success;
     char infoLog[512];
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success)
+    if (success == 0)
     {
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        std::cerr << "Error linking shader program\n" << infoLog << std::endl;
+        exit(1);
+    }
+
+    glValidateProgram(program);
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
+    if (success == 0)
+    {
+        glGetProgramInfoLog(program, 512, nullptr, infoLog);
+        std::cerr << "Error validating shader program\n" << infoLog << std::endl;
+        exit(1);
     }
 }
 
@@ -84,44 +149,19 @@ int main()
     auto curvePoints = bezier.GenerateCurvePoints();
     auto dashPoints = bezier.GenerateDashedLines();
 
-    // Позиция
-    const char* vertexShaderSource = R"glsl(
-        #version 330 core
-        layout (location = 0) in vec2 aPos;
-        void main() {
-            gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-        }
-    )glsl";
-
-    // Цветом
-    const char* fragmentShaderSource = R"glsl(
-        #version 330 core
-        uniform vec4 uColor;
-        out vec4 FragColor;
-        void main() {
-            FragColor = uColor;
-        }
-    )glsl";
-
     // Шейдеры
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-    CheckShaderCompilation(vertexShader, "VERTEX");
-
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-    CheckShaderCompilation(fragmentShader, "FRAGMENT");
+    std::string vs, fs;
 
     unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
+
+    if (!ReadFile("shader.vs", vs)) exit(1);
+    AddShader(shaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+
+    if (!ReadFile("shader.fs", fs)) exit(1);
+    AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+
     glLinkProgram(shaderProgram);
     CheckProgramLinking(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 
     // Получаем location uniform-переменной
     int colorLocation = glGetUniformLocation(shaderProgram, "uColor");

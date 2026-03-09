@@ -10,6 +10,8 @@ add_executable(${PROJECT_NAME}
         Application.h
         Bezier.h)
 
+file(COPY shader.vs shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})
 
