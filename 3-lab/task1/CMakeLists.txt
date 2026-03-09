@@ -7,8 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
         main.cpp
         Common/Point.h
+        Common/Util.h
         Application.h
-        Bezier.h)
+        Bezier.h
+        Shader.h
+)
 
 file(COPY shader.vs shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
