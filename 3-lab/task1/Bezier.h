@@ -63,7 +63,6 @@ public:
 
                 if (end > 1.0f) end = 1.0f;
 
-                // Линейная интерполяция
                 Point a = {p1.x + start * (p2.x - p1.x), p1.y + start * (p2.y - p1.y)};
                 Point b = {p1.x + end * (p2.x - p1.x), p1.y + end * (p2.y - p1.y)};
 

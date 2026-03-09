@@ -65,6 +65,24 @@ public:
             glfwSetWindowShouldClose(m_window, true);
     }
 
+    bool IsMouseButtonPressed(int button) const
+    {
+        return glfwGetMouseButton(m_window, button) == GLFW_PRESS;
+    }
+
+    void GetMousePos(double& x, double& y) const
+    {
+        glfwGetCursorPos(m_window, &x, &y);
+    }
+
+    void GetNormalizedMousePos(double& nx, double& ny) const
+    {
+        double x, y;
+        glfwGetCursorPos(m_window, &x, &y);
+        nx = (x / m_width) * 2.0 - 1.0;
+        ny = 1.0 - (y / m_height) * 2.0;
+    }
+
     [[nodiscard]] int GetWidth() const { return m_width; }
     [[nodiscard]] int GetHeight() const { return m_height; }
 };

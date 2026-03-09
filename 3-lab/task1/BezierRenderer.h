@@ -19,8 +19,8 @@ private:
         glGenBuffers(1, &VBO);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(Point), points.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)0);
+        glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(Point), points.data(), GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)nullptr);
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -32,8 +32,8 @@ private:
         glGenBuffers(1, &VBO);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(Point), points, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)0);
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(Point), points, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)nullptr);
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -50,16 +50,6 @@ public:
         CreateBuffer(curvePoints, curveVAO, curveVBO);
         CreateBufferFixed(bezier.ControlPoints, 4, pointsVAO, pointsVBO);
         CreateBuffer(dashPoints, dashVAO, dashVBO);
-    }
-
-    ~BezierRenderer()
-    {
-        glDeleteVertexArrays(1, &curveVAO);
-        glDeleteBuffers(1, &curveVBO);
-        glDeleteVertexArrays(1, &pointsVAO);
-        glDeleteBuffers(1, &pointsVBO);
-        glDeleteVertexArrays(1, &dashVAO);
-        glDeleteBuffers(1, &dashVBO);
     }
 
     void DrawDashes(GLint colorLoc) const
@@ -84,5 +74,35 @@ public:
         glDrawArrays(GL_POINTS, 1, 1);
         glDrawArrays(GL_POINTS, 2, 1);
         glDrawArrays(GL_POINTS, 3, 1);
+    }
+
+    void UpdateCurve(const std::vector<Point>& points) {
+        curveCount = points.size();
+        glBindBuffer(GL_ARRAY_BUFFER, curveVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, points.size() * sizeof(Point), points.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    void UpdateDashes(const std::vector<Point>& points) {
+        dashCount = points.size();
+        glBindBuffer(GL_ARRAY_BUFFER, dashVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, points.size() * sizeof(Point), points.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    void UpdatePoints(const Point* points, size_t count) {
+        glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Point), points);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    ~BezierRenderer()
+    {
+        glDeleteVertexArrays(1, &curveVAO);
+        glDeleteBuffers(1, &curveVBO);
+        glDeleteVertexArrays(1, &pointsVAO);
+        glDeleteBuffers(1, &pointsVBO);
+        glDeleteVertexArrays(1, &dashVAO);
+        glDeleteBuffers(1, &dashVBO);
     }
 };
