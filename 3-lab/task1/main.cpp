@@ -5,7 +5,8 @@
 #include <cmath>
 #include <fstream>
 #include "Bezier.h"
-#include "Shader.h"
+#include "Window.h"
+#include "Shaders/Shader.h"
 #include "Common/Point.h"
 
 const char* pVSFileName = "shader.vs";
@@ -34,22 +35,7 @@ int main()
         return -1;
     }
 
-    // Настройки OpenGL 3.3 Core Profile
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
-
-    // Создание окна
-    GLFWwindow* window = glfwCreateWindow(1600, 1000, "Cubic Bezier Curve", nullptr, nullptr);
-    if (!window)
-    {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, Framebuffer_size_callback);
+    Window window(1600, 1000, "Bezier");
 
     if (!gladLoadGL(glfwGetProcAddress))
     {
@@ -65,7 +51,7 @@ int main()
     // Шейдеры
     Shader shader(pVSFileName, pFSFileName);
     GLuint shaderProgram = shader.GetProgram();
-    // Получаем location uniform-переменной
+    // location uniform-переменной
     int colorLocation = glGetUniformLocation(shaderProgram, "uColor");
 
     // Кривая
@@ -112,9 +98,9 @@ int main()
     glEnable(GL_MULTISAMPLE);
 
     // Главный цикл
-    while (!glfwWindowShouldClose(window))
+    while (!window.ShouldClose())
     {
-        ProcessInput(window);
+        window.ProcessInput();
 
         // Очистка экрана
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -144,8 +130,8 @@ int main()
         glBindVertexArray(0);
 
         // Обмен буферов и обработка событий
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        window.SwapBuffers();
+        window.PollEvents();
     }
 
     // Очистка ресурсов
@@ -157,6 +143,5 @@ int main()
     glDeleteBuffers(1, &dashVBO);
     glDeleteProgram(shaderProgram);
 
-    glfwTerminate();
     return 0;
 }

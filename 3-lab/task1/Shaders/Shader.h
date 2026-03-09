@@ -3,7 +3,7 @@
 #include <string>
 #include <cstring>
 #include <glad/gl.h>
-#include "Common/Util.h"
+#include "../Common/Util.h"
 
 class Shader
 {

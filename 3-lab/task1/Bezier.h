@@ -81,5 +81,5 @@ public:
         return vertices;
     }
 
-    float GetPointSize() const { return POINT_SIZE; }
+    [[nodiscard]] float GetPointSize() const { return POINT_SIZE; }
 };
