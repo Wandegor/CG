@@ -1,5 +1,6 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 
@@ -41,7 +42,7 @@ int main()
     glEnable(GL_MULTISAMPLE);
 
     float crankLen = 0.17f;
-    // ---- Создаём геометрию в локальных координатах ----
+
     Rectangle cylinderBlock(0.3f, 0.8f); // блок цилиндров
     Rectangle piston(0.25f, 0.3f); // поршень
     Circle flywheel(crankLen); // маховик
@@ -49,11 +50,11 @@ int main()
     // Шатун – линия от поршня к коленвалу (локально)
     std::vector<Point> rodLocal = {
         {0.0f, 0.0f},
-        {crankLen, -0.45f}
+        {0.0f, -0.45f}
     };
     LineStrip connectingRod(rodLocal);
 
-    // Коленвал – ломаная линия (зададим в локальных координатах)
+    // Коленвал
     std::vector<Point> crankLocal = {
         {0.0f, 0.0f},
         {crankLen, 0}
@@ -103,6 +104,13 @@ int main()
         {0, 0, 0, 1}
     });
 
+    float angle = 0.0f;
+
+    float crankRadius = crankLen; // радиус коленвала
+    float rodLen = 0.45f; // длина шатуна
+    float crankCenterY = -0.6f;
+
+    glLineWidth(4.0f);
     while (!window.ShouldClose())
     {
         window.ProcessInput();
@@ -111,7 +119,21 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        glLineWidth(4.0f);
+        angle += 0.02f;
+        float crankX = crankRadius * std::cos(angle);
+        float crankY = crankCenterY + crankRadius * std::sin(angle);
+        float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);
+
+        objects[2].model = Mat3::translation(0.0f, pistonY);        // piston
+        objects[3].model = Mat3::translation(0.0f, pistonY);        // rod
+        objects[4].model = Mat3::translation(0.0f, crankCenterY) *
+                           Mat3::rotation(angle);
+
+        float rodAngle = atan2(crankY - pistonY, crankX);
+
+        objects[3].model =
+            Mat3::translation(0.0f, pistonY) *
+            Mat3::rotation(rodAngle);
         for (const auto& obj: objects)
         {
             glUniformMatrix3fv(modelLoc, 1, GL_TRUE, obj.model.data);
