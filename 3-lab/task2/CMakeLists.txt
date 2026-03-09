@@ -6,6 +6,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
         main.cpp
+        Common/Point.h
+        Common/Util.h
+        Shaders/Shader.h
+        Window.h
+        Shapes/Rectangle.h
+        Shapes/Drawable.h
+        Shapes/Circle.h
+        Shapes/LineStrip.h
+        Mat3.h
 )
 
 file(COPY Shaders/shader.vs Shaders/shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

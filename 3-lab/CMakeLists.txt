@@ -23,5 +23,5 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 FetchContent_MakeAvailable(glfw)
 
 add_subdirectory(task1)
-# add_subdirectory(task2)
+add_subdirectory(task2)
 # add_subdirectory(task3)
