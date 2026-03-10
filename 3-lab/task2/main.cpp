@@ -1,9 +1,6 @@
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <cmath>
 #include <iostream>
-#include <fstream>
-
 #include "Mat3.h"
 #include "../task1/Window.h"
 #include "Shaders/Shader.h"
@@ -26,7 +23,7 @@ int main()
 {
     Window window(1000, 1000, "Engine Cutaway (Static)");
 
-    if (!gladLoadGL(glfwGetProcAddress))
+    if (!gladLoadGL())
     {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
@@ -47,7 +44,7 @@ int main()
     Rectangle piston(0.25f, 0.3f); // поршень
     Circle flywheel(crankLen); // маховик
 
-    // Шатун – линия от поршня к коленвалу (локально)
+    // Шатун
     std::vector<Point> rodLocal = {
         {0.0f, 0.0f},
         {0.0f, -0.45f}
@@ -66,7 +63,6 @@ int main()
     // Свеча
     Circle sparkPlug(0.02f);
 
-    // ---- Определяем мировые положения через матрицы ----
     std::vector<GameObject> objects;
 
     // Блок цилиндра
@@ -129,7 +125,7 @@ int main()
         objects[4].model = Mat3::translation(0.0f, crankCenterY) *
                            Mat3::rotation(angle);
 
-        float rodAngle = atan2(crankY - pistonY, crankX);
+        float rodAngle = std::atan2(crankX, pistonY - crankY);
 
         objects[3].model =
             Mat3::translation(0.0f, pistonY) *

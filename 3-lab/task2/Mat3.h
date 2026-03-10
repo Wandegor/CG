@@ -1,3 +1,5 @@
+#include <cmath>
+
 #pragma once
 struct Mat3
 {
@@ -15,10 +17,10 @@ struct Mat3
 
     static Mat3 rotation(float angle)
     {
-        Mat3 r;
+        Mat3 r{};
 
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = std::cos(angle);
+        float s = std::sin(angle);
 
         r.data[0] = c;
         r.data[1] = -s;
@@ -36,7 +38,7 @@ struct Mat3
     }
     Mat3 operator*(const Mat3& other) const
     {
-        Mat3 result;
+        Mat3 result{};
 
         for (int row = 0; row < 3; row++)
         {
