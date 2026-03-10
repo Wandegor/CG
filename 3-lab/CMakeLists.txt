@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(GLAD_INCLUDE_DIR D:/GLAD/include)
-set(GLAD_SOURCE D:/GLAD/src/gl.c)
+set(GLAD_SOURCE D:/GLAD/src/glad.c)
 
 include(FetchContent)
 
