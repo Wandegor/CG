@@ -11,15 +11,15 @@
 
 struct GameObject
 {
-    Drawable* drawable;
+    Drawable *drawable;
     Mat3 model;
     float color[4];
 };
 
-const char* pVSFileName = "shader.vs";
-const char* pFSFileName = "shader.fs";
+const char *pVSFileName = "shader.vs";
+const char *pFSFileName = "shader.fs";
 
-float lastTime = (float)glfwGetTime();
+float lastTime = (float) glfwGetTime();
 float angularSpeed = 2.0f;
 
 int main()
@@ -47,17 +47,20 @@ int main()
     Rectangle piston(0.25f, 0.2f); // поршень
     Circle flywheel(crankLen); // маховик
 
+    Circle flywheelBack(crankLen + 0.1f);
+    Rectangle cylinderBlockBack(0.4f, 0.65f);
+
     // Шатун
     std::vector<Point> rodLocal = {
-        {0.0f, 0.0f},
-        {0.0f, -0.45f}
+            {0.0f, 0.0f},
+            {0.0f, -0.45f}
     };
     LineStrip connectingRod(rodLocal);
 
     // Коленвал
     std::vector<Point> crankLocal = {
-        {0.0f, 0.0f},
-        {crankLen, 0}
+            {0.0f,     0.0f},
+            {crankLen, 0}
     };
     LineStrip crankshaft(crankLocal);
 
@@ -68,40 +71,53 @@ int main()
 
     std::vector<GameObject> objects;
 
+    // Блок цилиндра ФОН
+    objects.push_back({
+                              &cylinderBlockBack,
+                              Mat3::translation(0.0f, -0.15f),
+                              {0.25f, 0.25f, 0.25f, 1}
+                      });
+
+    // Маховик ФОН
+    objects.push_back({
+                              &flywheelBack,
+                              Mat3::translation(0.0f, -0.6f),
+                              {0.25f, 0.25f, 0.25f, 1}
+                      });
     // Блок цилиндра
     objects.push_back({
-        &cylinderBlock,
-        Mat3::translation(0.0f, -0.15f),
-        {0.55f, 0.55f, 0.55f, 1}
-    });
+                              &cylinderBlock,
+                              Mat3::translation(0.0f, -0.15f),
+                              {0.55f, 0.55f, 0.55f, 1}
+                      });
 
     // Маховик
     objects.push_back({
-        &flywheel,
-        Mat3::translation(0.0f, -0.6f),
-        {0.2f, 0.2f, 0.8f, 1}
-    });
+                              &flywheel,
+                              Mat3::translation(0.0f, -0.6f),
+                              {0.2f, 0.2f, 0.8f, 1}
+                      });
 
     // Поршень
     objects.push_back({
-        &piston,
-        Mat3::translation(0.0f, 0.0f),
-        {0.8f, 0.2f, 0.2f, 1}
-    });
+                              &piston,
+                              Mat3::translation(0.0f, 0.0f),
+                              {0.8f, 0.2f, 0.2f, 1}
+                      });
 
     // Шатун
     objects.push_back({
-        &connectingRod,
-        Mat3::translation(0.0f, 0.0f),
-        {0, 0, 0, 1}
-    });
+                              &connectingRod,
+                              Mat3::translation(0.0f, 0.0f),
+                              {0, 0, 0, 1}
+                      });
 
     // Коленвал
     objects.push_back({
-        &crankshaft,
-        Mat3::translation(0.0f, -0.6f),
-        {0, 0, 0, 1}
-    });
+                              &crankshaft,
+                              Mat3::translation(0.0f, -0.6f),
+                              {0, 0, 0, 1}
+                      });
 
     float angle = 0.0f;
 
@@ -109,7 +125,7 @@ int main()
     float rodLen = 0.45f; // длина шатуна
     float crankCenterY = -0.6f;
 
-    glLineWidth(4.0f);
+    glLineWidth(6.0f);
     while (!window.ShouldClose())
     {
         window.ProcessInput();
@@ -127,17 +143,17 @@ int main()
         float crankY = crankCenterY + crankRadius * std::sin(angle);
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);
 
-        objects[2].model = Mat3::translation(0.0f, pistonY);        // piston
-        objects[3].model = Mat3::translation(0.0f, pistonY);        // rod
-        objects[4].model = Mat3::translation(0.0f, crankCenterY) *
-                           Mat3::rotation(angle);
+        objects[2 + 2].model = Mat3::translation(0.0f, pistonY);        // piston
+        objects[3 + 2].model = Mat3::translation(0.0f, pistonY);        // rod
+        objects[4 + 2].model = Mat3::translation(0.0f, crankCenterY) *
+                               Mat3::rotation(angle);
 
         float rodAngle = std::atan2(crankX, pistonY - crankY);
 
-        objects[3].model =
-            Mat3::translation(0.0f, pistonY) *
-            Mat3::rotation(rodAngle);
-        for (const auto& obj: objects)
+        objects[3 + 2].model =
+                Mat3::translation(0.0f, pistonY) *
+                Mat3::rotation(rodAngle);
+        for (const auto &obj: objects)
         {
             glUniformMatrix3fv(modelLoc, 1, GL_TRUE, obj.model.data);
             glUniform4fv(colorLoc, 1, obj.color);
