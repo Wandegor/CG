@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
         Shapes/Circle.h
         Shapes/LineStrip.h
         Mat3.h
+        SceneRenderer.h
 )
 
 file(COPY Shaders/shader.vs Shaders/shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
