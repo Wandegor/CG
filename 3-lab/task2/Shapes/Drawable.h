@@ -11,7 +11,7 @@ protected:
     GLenum primitiveType;
 
 public:
-    Drawable(GLenum primitive = GL_TRIANGLES) : VAO(0), VBO(0), vertexCount(0), primitiveType(primitive) {}
+    explicit Drawable(GLenum primitive = GL_TRIANGLES) : VAO(0), VBO(0), vertexCount(0), primitiveType(primitive) {}
 
     virtual ~Drawable()
     {
