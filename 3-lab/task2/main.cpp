@@ -19,6 +19,9 @@ struct GameObject
 const char* pVSFileName = "shader.vs";
 const char* pFSFileName = "shader.fs";
 
+float lastTime = (float)glfwGetTime();
+float angularSpeed = 2.0f;
+
 int main()
 {
     Window window(1000, 1000, "Engine Cutaway (Static)");
@@ -40,8 +43,8 @@ int main()
 
     float crankLen = 0.17f;
 
-    Rectangle cylinderBlock(0.3f, 0.8f); // блок цилиндров
-    Rectangle piston(0.25f, 0.3f); // поршень
+    Rectangle cylinderBlock(0.3f, 0.55f); // блок цилиндров
+    Rectangle piston(0.25f, 0.2f); // поршень
     Circle flywheel(crankLen); // маховик
 
     // Шатун
@@ -68,7 +71,7 @@ int main()
     // Блок цилиндра
     objects.push_back({
         &cylinderBlock,
-        Mat3::translation(0.0f, 0.0f),
+        Mat3::translation(0.0f, -0.15f),
         {0.55f, 0.55f, 0.55f, 1}
     });
 
@@ -82,14 +85,14 @@ int main()
     // Поршень
     objects.push_back({
         &piston,
-        Mat3::translation(0.0f, -0.15f),
+        Mat3::translation(0.0f, 0.0f),
         {0.8f, 0.2f, 0.2f, 1}
     });
 
     // Шатун
     objects.push_back({
         &connectingRod,
-        Mat3::translation(0.0f, -0.15f),
+        Mat3::translation(0.0f, 0.0f),
         {0, 0, 0, 1}
     });
 
@@ -115,7 +118,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        angle += 0.02f;
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        angle += angularSpeed * deltaTime;
         float crankX = crankRadius * std::cos(angle);
         float crankY = crankCenterY + crankRadius * std::sin(angle);
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);

@@ -5,7 +5,6 @@
 class Rectangle : public Drawable
 {
 public:
-    // центр в 0 0
     Rectangle(float w, float h)
     {
         std::vector<Point> vertices = {
