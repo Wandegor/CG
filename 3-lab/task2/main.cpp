@@ -64,10 +64,8 @@ int main()
     };
     LineStrip crankshaft(crankLocal);
 
-    // Выхлопная труба
-    Rectangle exhaust(0.3f, 0.1f);
     // Свеча
-    Circle sparkPlug(0.02f);
+    Rectangle sparkPlug(0.08f, 0.15f);
 
     std::vector<GameObject> objects;
 
@@ -116,6 +114,13 @@ int main()
     objects.push_back({
                               &crankshaft,
                               Mat3::translation(0.0f, -0.6f),
+                              {0, 0, 0, 1}
+                      });
+
+    // Свеча
+    objects.push_back({
+                              &sparkPlug,
+                              Mat3::translation(0.0f, 0.16f),
                               {0, 0, 0, 1}
                       });
 
