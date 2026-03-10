@@ -65,7 +65,10 @@ int main()
     LineStrip crankshaft(crankLocal);
 
     // Свеча
-    Rectangle sparkPlug(0.08f, 0.15f);
+    Rectangle sparkPlug(0.06f, 0.15f);
+
+    // Вспышка на свече
+    Circle sparkFlash(0.04f);
 
     std::vector<GameObject> objects;
 
@@ -124,6 +127,14 @@ int main()
                               {0, 0, 0, 1}
                       });
 
+    // Вспышка на свече
+    objects.push_back({
+                              &sparkFlash,
+                              Mat3::translation(0.0f, 0.1f),
+                              {1.0f, 1.0f, 0.0f, 1.0f}
+                      });
+    int flashIndex = objects.size() - 1;
+
     float angle = 0.0f;
 
     float crankRadius = crankLen; // радиус коленвала
@@ -144,6 +155,11 @@ int main()
         lastTime = currentTime;
 
         angle += angularSpeed * deltaTime;
+
+        float flashIntensity = std::max(0.0f, std::sin(angle) * 1.2f);
+        float flashScale = flashIntensity ;
+        objects[flashIndex].model =Mat3::translation(0.0f, 0.1f) * Mat3::scale(flashScale, flashScale);
+
         float crankX = crankRadius * std::cos(angle);
         float crankY = crankCenterY + crankRadius * std::sin(angle);
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);

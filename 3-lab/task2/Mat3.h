@@ -1,6 +1,7 @@
 #include <cmath>
 
 #pragma once
+
 struct Mat3
 {
     float data[9];
@@ -36,7 +37,13 @@ struct Mat3
 
         return r;
     }
-    Mat3 operator*(const Mat3& other) const
+
+    static Mat3 scale(float sx, float sy)
+    {
+        return Mat3{sx, 0, 0, 0, sy, 0, 0, 0, 1};
+    }
+
+    Mat3 operator*(const Mat3 &other) const
     {
         Mat3 result{};
 
@@ -45,9 +52,9 @@ struct Mat3
             for (int col = 0; col < 3; col++)
             {
                 result.data[row * 3 + col] =
-                    data[row * 3 + 0] * other.data[0 * 3 + col] +
-                    data[row * 3 + 1] * other.data[1 * 3 + col] +
-                    data[row * 3 + 2] * other.data[2 * 3 + col];
+                        data[row * 3 + 0] * other.data[0 * 3 + col] +
+                        data[row * 3 + 1] * other.data[1 * 3 + col] +
+                        data[row * 3 + 2] * other.data[2 * 3 + col];
             }
         }
 
