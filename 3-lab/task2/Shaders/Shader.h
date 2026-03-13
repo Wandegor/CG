@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include "../Common/Util.h"
 
 class Shader

@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include "Window.h"
 #include "SceneRenderer.h"
 #include "Shaders/Shader.h"
@@ -10,7 +10,7 @@ int main()
 {
     Window window(1000, 1000, "Engine Cutaway");
 
-    if (!gladLoadGL())
+    if (!gladLoadGL(glfwGetProcAddress))
         return -1;
 
     Shader shader("shader.vs", "shader.fs");

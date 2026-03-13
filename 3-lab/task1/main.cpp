@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
@@ -20,7 +20,7 @@ int main()
 
     Window window(1600, 1000, "Bezier");
 
-    if (!gladLoadGL())
+    if (!gladLoadGL(glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;

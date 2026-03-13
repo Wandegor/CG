@@ -1,5 +1,5 @@
 #pragma once
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <vector>
 #include "Bezier.h"
 #include "Common/Point.h"
