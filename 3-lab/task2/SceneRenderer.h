@@ -171,18 +171,21 @@ public:
                     Mat3::scale(flashScale, flashScale);
         }
 
-        float crankX = crankRadius * std::cos(angle);
-        float crankY = crankCenterY + crankRadius * std::sin(angle);
+        float crankX = crankRadius * std::cos(angle); // x = R·cos(angle),
+        float crankY = crankCenterY + crankRadius * std::sin(angle); // y = y0 + R·sin(angle).
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);
 
+        // поршень
         m_objects[4].model = Mat3::translation(0.0f, pistonY);
 
         float rodAngle = std::atan2(crankX, pistonY - crankY);
 
+        // шатун
         m_objects[5].model =
                 Mat3::translation(0.0f, pistonY) *
                 Mat3::rotation(rodAngle);
 
+        // коленвал
         m_objects[6].model =
                 Mat3::translation(0.0f, crankCenterY) *
                 Mat3::rotation(angle);
