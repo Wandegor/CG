@@ -176,15 +176,6 @@ public:
 
         angle += angularSpeed * deltaTime;
 
-        float flashIntensity = std::max(0.0f, std::cos(angle-0.5f) * 1.2f);
-
-        if (flashIndex >= 0)
-        {
-            m_objects[flashIndex].model =
-                    Mat3::translation(0.0f, 0.1f) *
-                    Mat3::scale(flashIntensity, flashIntensity);
-        }
-
         float crankX = crankRadius * -std::sin(angle); // x = R·sin(angle),
         float crankY = crankCenterY + crankRadius * std::cos(angle); // y = y0 + R·sin(angle).
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);
@@ -231,6 +222,25 @@ public:
         // клапаны
         m_objects[8].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
         m_objects[9].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
+
+        // вспышка
+        float flashIntensity = 0.0f;
+
+        float nearestInt = std::round(revolutions);
+        float distance = std::abs(angle - nearestInt * 2.0f * M_PI);
+        float epsilon = 0.4f;
+
+        if (distance < epsilon && static_cast<int>(nearestInt) % 2 == 1)
+        {
+            flashIntensity = 1.0f;
+        }
+
+        if (flashIndex >= 0)
+        {
+            m_objects[flashIndex].model =
+                    Mat3::translation(0.0f, 0.1f) *
+                    Mat3::scale(flashIntensity, flashIntensity);
+        }
     }
 
     void SetAspect(float aspect) { m_aspect = aspect; }
