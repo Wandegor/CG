@@ -1,6 +1,5 @@
-#include <cmath>
-
 #pragma once
+#include <cmath>
 
 struct Mat3
 {
@@ -15,24 +14,12 @@ struct Mat3
 
     static Mat3 rotation(float angle)
     {
-        Mat3 r{};
+        float cos = std::cos(angle);
+        float sin = std::sin(angle);
 
-        float c = std::cos(angle);
-        float s = std::sin(angle);
-
-        r.data[0] = c;
-        r.data[1] = -s;
-        r.data[2] = 0.0f;
-
-        r.data[3] = s;
-        r.data[4] = c;
-        r.data[5] = 0.0f;
-
-        r.data[6] = 0.0f;
-        r.data[7] = 0.0f;
-        r.data[8] = 1.0f;
-
-        return r;
+        return Mat3{cos, -sin, 0,
+                    sin, cos, 0,
+                    0, 0, 1};
     }
 
     static Mat3 scale(float sx, float sy)
