@@ -52,8 +52,9 @@ private:
     Rectangle sparkPlug{0.06f, 0.15f};
     Circle sparkFlash{0.04f};
 
-    Circle exhaustGas{0.03f};
-    int exhaustIndex = -1;
+    std::vector<Circle> exhaustParticles;
+    std::vector<int> exhaustIndices;
+    int particleCount = 4;
 
 public:
     explicit SceneRenderer(Shader* shader, float aspect)
@@ -144,11 +145,16 @@ public:
         });
 
         // вых газ
-        m_objects.push_back({
-            &exhaustGas,
-            Mat3::translation(0.1f, 0.15f) * Mat3::scale(0.0f, 0.0f),
-            {0.5f, 0.5f, 0.5f, 1.0f}
-        });
+        exhaustParticles.resize(particleCount, Circle(0.03f));
+        for (int i = 0; i < particleCount; ++i)
+        {
+            m_objects.push_back({
+                &exhaustParticles[i],
+                Mat3::translation(0.1f, 0.15f) * Mat3::scale(0.0f, 0.0f),
+                {0.5f, 0.5f, 0.5f, 1.0f}
+            });
+            exhaustIndices.push_back(m_objects.size() - 1);
+        }
 
         // Вспышка на свече
         m_objects.push_back({
@@ -157,7 +163,6 @@ public:
             {1.0f, 1.0f, 0.0f, 1.0f}
         });
 
-        exhaustIndex = m_objects.size() - 2;
         flashIndex = m_objects.size() - 1;
     }
 
@@ -235,21 +240,30 @@ public:
         m_objects[9].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
 
         // Выпуск газов
-        float exhaustIntensity = 0.0f;
-        if (rightActive) {
-            float threshold = 0.95f;
-            if (liftRight > threshold) {
-                exhaustIntensity = (liftRight - threshold) / (1.0f - threshold);
+        float baseX = 0.1f;
+        float baseY = 0.15f;
+        float globalPhaseShift = -0.7f;
+
+        for (int i = 0; i < particleCount; ++i)
+        {
+            float intensity = 0.0f;
+            if (rightActive)
+            {
+                float phaseShift = globalPhaseShift + i * 0.3f; // сдвиг каждого
+                float shiftedLift = std::max(0.0f, std::sin(angle + float(M_PI) + phaseShift));
+                float threshold = 0.93f; // порог
+                if (shiftedLift > threshold)
+                {
+                    intensity = (shiftedLift - threshold) / (1.0f - threshold);
+                }
             }
-        }
-        if (exhaustIndex >= 0) {
-            // Масштабируем газ пропорционально интенсивности
-            // Можно также менять прозрачность, если включено смешивание
-            m_objects[exhaustIndex].model =
-                Mat3::translation(0.1f, 0.15f) *
-                Mat3::scale(exhaustIntensity, exhaustIntensity);
-            // Если включено смешивание, можно менять альфу:
-            // m_objects[exhaustIndex].color[3] = exhaustIntensity;
+            if (exhaustIndices[i] >= 0)
+            {
+                float yOffset = i * 0.03f;
+                m_objects[exhaustIndices[i]].model =
+                        Mat3::translation(baseX, baseY + 0.17f - yOffset) *
+                        Mat3::scale(intensity, intensity);
+            }
         }
 
         // вспышка
