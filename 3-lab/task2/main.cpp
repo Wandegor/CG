@@ -3,19 +3,20 @@
 #include "SceneRenderer.h"
 #include "Shaders/Shader.h"
 
-const char *pVSFileName = "shader.vs";
-const char *pFSFileName = "shader.fs";
-
 int main()
 {
-    Window window(1000, 1000, "Engine Cutaway");
+
+    int SCR_WIDTH = 1000;
+    int SCR_HEIGHT = 1000;
+
+    Window window(SCR_WIDTH, SCR_HEIGHT, "Engine");
 
     if (!gladLoadGL(glfwGetProcAddress))
         return -1;
 
-    Shader shader("shader.vs", "shader.fs");
+    Shader shader("shader2.vs", "shader2.fs");
 
-    SceneRenderer renderer(&shader);
+    SceneRenderer renderer(&shader, static_cast<float>(SCR_HEIGHT)/static_cast<float>(SCR_WIDTH));
 
     float lastTime = glfwGetTime();
 
@@ -26,6 +27,9 @@ int main()
         lastTime = currentTime;
 
         window.ProcessInput();
+
+        float aspect = static_cast<float>(window.GetHeight()) / static_cast<float>(window.GetWidth());
+        renderer.SetAspect(aspect);
 
         glClearColor(0.9f,0.9f,0.9f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);

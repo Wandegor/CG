@@ -11,7 +11,7 @@
 
 struct GameObject
 {
-    Drawable *drawable;
+    Drawable* drawable;
     Mat3 model;
     float color[4];
 };
@@ -21,7 +21,8 @@ class SceneRenderer
 private:
     std::vector<GameObject> m_objects;
 
-    Shader *shader;
+    Shader* shader;
+    float m_aspect;
 
     GLint colorLoc;
     GLint modelLoc;
@@ -49,16 +50,16 @@ private:
     Circle sparkFlash{0.04f};
 
 public:
-    explicit SceneRenderer(Shader *shader)
-            : shader(shader),
-              connectingRod(std::vector<Point>{
-                      {0.0f, 0.0f},
-                      {0.0f, -0.45f}
-              }),
-              crankshaft(std::vector<Point>{
-                      {0.0f,       0.0f},
-                      {m_crankLen, 0}
-              })
+    explicit SceneRenderer(Shader* shader, float aspect)
+        : shader(shader), m_aspect(aspect),
+          connectingRod(std::vector<Point>{
+              {0.0f, 0.0f},
+              {0.0f, -0.45f}
+          }),
+          crankshaft(std::vector<Point>{
+              {0.0f, 0.0f},
+              {m_crankLen, 0}
+          })
     {
         GLuint program = shader->GetProgram();
 
@@ -71,65 +72,65 @@ public:
 
         // Блок цилиндра ФОН
         m_objects.push_back({
-                                    &cylinderBlockBack,
-                                    Mat3::translation(0.0f, -0.15f),
-                                    {0.25f, 0.25f, 0.25f, 1}
-                            });
+            &cylinderBlockBack,
+            Mat3::translation(0.0f, -0.15f),
+            {0.25f, 0.25f, 0.25f, 1}
+        });
 
         // Маховик ФОН
         m_objects.push_back({
-                                    &flywheelBack,
-                                    Mat3::translation(0.0f, -0.6f),
-                                    {0.25f, 0.25f, 0.25f, 1}
-                            });
+            &flywheelBack,
+            Mat3::translation(0.0f, -0.6f),
+            {0.25f, 0.25f, 0.25f, 1}
+        });
         // Блок цилиндра
         m_objects.push_back({
-                                    &cylinderBlock,
-                                    Mat3::translation(0.0f, -0.15f),
-                                    {0.55f, 0.55f, 0.55f, 1}
-                            });
+            &cylinderBlock,
+            Mat3::translation(0.0f, -0.15f),
+            {0.55f, 0.55f, 0.55f, 1}
+        });
 
         // Маховик
         m_objects.push_back({
-                                    &flywheel,
-                                    Mat3::translation(0.0f, -0.6f),
-                                    {0.2f, 0.2f, 0.8f, 1}
-                            });
+            &flywheel,
+            Mat3::translation(0.0f, -0.6f),
+            {0.2f, 0.2f, 0.8f, 1}
+        });
 
         // Поршень
         m_objects.push_back({
-                                    &piston,
-                                    Mat3::translation(0.0f, 0.0f),
-                                    {0.8f, 0.2f, 0.2f, 1}
-                            });
+            &piston,
+            Mat3::translation(0.0f, 0.0f),
+            {0.8f, 0.2f, 0.2f, 1}
+        });
 
         // Шатун
         m_objects.push_back({
-                                    &connectingRod,
-                                    Mat3::translation(0.0f, 0.0f),
-                                    {0, 0, 0, 1}
-                            });
+            &connectingRod,
+            Mat3::translation(0.0f, 0.0f),
+            {0, 0, 0, 1}
+        });
 
         // Коленвал
         m_objects.push_back({
-                                    &crankshaft,
-                                    Mat3::translation(0.0f, -0.6f),
-                                    {0, 0, 0, 1}
-                            });
+            &crankshaft,
+            Mat3::translation(0.0f, -0.6f),
+            {0, 0, 0, 1}
+        });
 
         // Свеча
         m_objects.push_back({
-                                    &sparkPlug,
-                                    Mat3::translation(0.0f, 0.16f),
-                                    {0, 0, 0, 1}
-                            });
+            &sparkPlug,
+            Mat3::translation(0.0f, 0.16f),
+            {0, 0, 0, 1}
+        });
 
         // Вспышка на свече
         m_objects.push_back({
-                                    &sparkFlash,
-                                    Mat3::translation(0.0f, 0.1f),
-                                    {1.0f, 1.0f, 0.0f, 1.0f}
-                            });
+            &sparkFlash,
+            Mat3::translation(0.0f, 0.1f),
+            {1.0f, 1.0f, 0.0f, 1.0f}
+        });
 
         flashIndex = m_objects.size() - 1;
     }
@@ -140,9 +141,12 @@ public:
 
         glUseProgram(program);
 
+        int uni_loc = glGetUniformLocation(program, "scr_aspect");
+        glUniform1f(uni_loc, m_aspect); // пропорции картинки относительно окна
+
         glLineWidth(6.0f);
 
-        for (const auto &obj: m_objects)
+        for (const auto& obj: m_objects)
         {
             glUniformMatrix3fv(modelLoc, 1, GL_TRUE, obj.model.data);
             glUniform4fv(colorLoc, 1, obj.color);
@@ -153,7 +157,7 @@ public:
 
     void Update(float deltaTime)
     {
-        float angularSpeed = 2.0f;
+        float angularSpeed = 3.0f;
 
         angle += angularSpeed * deltaTime;
 
@@ -183,4 +187,6 @@ public:
                 Mat3::translation(0.0f, crankCenterY) *
                 Mat3::rotation(angle);
     }
+
+    void SetAspect(float aspect) { m_aspect = aspect; }
 };

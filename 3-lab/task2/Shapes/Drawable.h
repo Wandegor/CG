@@ -29,7 +29,7 @@ public:
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Point), vertices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), (void *)nullptr);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), nullptr);
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -38,6 +38,6 @@ public:
     void Draw() const
     {
         glBindVertexArray(VAO);
-        glDrawArrays(primitiveType, 0, vertexCount);
+        glDrawArrays(primitiveType, 0, static_cast<int>(vertexCount));
     }
 };

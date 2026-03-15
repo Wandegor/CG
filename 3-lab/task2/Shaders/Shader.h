@@ -68,6 +68,7 @@ class Shader
 
 public:
     ~Shader() { glDeleteProgram(program); }
+
     Shader(const char* vsFile, const char* fsFile)
     {
         program = glCreateProgram();
