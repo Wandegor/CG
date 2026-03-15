@@ -176,14 +176,13 @@ public:
 
         angle += angularSpeed * deltaTime;
 
-        float flashIntensity = std::max(0.0f, std::sin(angle - 0.4f) * 1.2f);
-        float flashScale = flashIntensity;
+        float flashIntensity = std::max(0.0f, std::cos(angle-0.5f) * 1.2f);
 
         if (flashIndex >= 0)
         {
             m_objects[flashIndex].model =
                     Mat3::translation(0.0f, 0.1f) *
-                    Mat3::scale(flashScale, flashScale);
+                    Mat3::scale(flashIntensity, flashIntensity);
         }
 
         float crankX = crankRadius * -std::sin(angle); // x = R·sin(angle),
