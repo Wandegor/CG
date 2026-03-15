@@ -61,7 +61,7 @@ public:
           }),
           crankshaft(std::vector<Point>{
               {0.0f, 0.0f},
-              {m_crankLen, 0}
+              {0, m_crankLen}
           })
     {
         GLuint program = shader->GetProgram();
@@ -172,7 +172,7 @@ public:
 
     void Update(float deltaTime)
     {
-        float angularSpeed = 3.0f;
+        float angularSpeed = 2.0f;
 
         angle += angularSpeed * deltaTime;
 
@@ -186,8 +186,8 @@ public:
                     Mat3::scale(flashScale, flashScale);
         }
 
-        float crankX = crankRadius * std::cos(angle); // x = R·cos(angle),
-        float crankY = crankCenterY + crankRadius * std::sin(angle); // y = y0 + R·sin(angle).
+        float crankX = crankRadius * -std::sin(angle); // x = R·sin(angle),
+        float crankY = crankCenterY + crankRadius * std::cos(angle); // y = y0 + R·sin(angle).
         float pistonY = crankY + std::sqrt(rodLen * rodLen - crankX * crankX);
 
         // поршень
@@ -204,6 +204,14 @@ public:
         m_objects[6].model =
                 Mat3::translation(0.0f, crankCenterY) *
                 Mat3::rotation(angle);
+
+        float maxLift = 0.04f;
+        float liftLeft = std::max(0.0f, std::sin(angle));
+        float liftRight = std::max(0.0f, -std::sin(angle));
+
+        // клапаны
+        m_objects[8].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
+        m_objects[9].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
     }
 
     void SetAspect(float aspect) { m_aspect = aspect; }
