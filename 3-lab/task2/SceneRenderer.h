@@ -52,6 +52,9 @@ private:
     Rectangle sparkPlug{0.06f, 0.15f};
     Circle sparkFlash{0.04f};
 
+    Circle exhaustGas{0.03f};
+    int exhaustIndex = -1;
+
 public:
     explicit SceneRenderer(Shader* shader, float aspect)
         : shader(shader), m_aspect(aspect),
@@ -140,6 +143,13 @@ public:
             {0.2f, 0.2f, 0.5f, 1}
         });
 
+        // вых газ
+        m_objects.push_back({
+            &exhaustGas,
+            Mat3::translation(0.1f, 0.15f) * Mat3::scale(0.0f, 0.0f),
+            {0.5f, 0.5f, 0.5f, 1.0f}
+        });
+
         // Вспышка на свече
         m_objects.push_back({
             &sparkFlash,
@@ -147,6 +157,7 @@ public:
             {1.0f, 1.0f, 0.0f, 1.0f}
         });
 
+        exhaustIndex = m_objects.size() - 2;
         flashIndex = m_objects.size() - 1;
     }
 
@@ -222,6 +233,24 @@ public:
         // клапаны
         m_objects[8].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
         m_objects[9].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
+
+        // Выпуск газов
+        float exhaustIntensity = 0.0f;
+        if (rightActive) {
+            float threshold = 0.95f;
+            if (liftRight > threshold) {
+                exhaustIntensity = (liftRight - threshold) / (1.0f - threshold);
+            }
+        }
+        if (exhaustIndex >= 0) {
+            // Масштабируем газ пропорционально интенсивности
+            // Можно также менять прозрачность, если включено смешивание
+            m_objects[exhaustIndex].model =
+                Mat3::translation(0.1f, 0.15f) *
+                Mat3::scale(exhaustIntensity, exhaustIntensity);
+            // Если включено смешивание, можно менять альфу:
+            // m_objects[exhaustIndex].color[3] = exhaustIntensity;
+        }
 
         // вспышка
         float flashIntensity = 0.0f;
