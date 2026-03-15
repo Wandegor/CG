@@ -48,6 +48,8 @@ private:
 
     Rectangle valveLeft{0.06f, 0.02f};
     Rectangle valveRight{0.06f, 0.02f};
+    Rectangle valveLeftCylinder{0.06f, 0.1f};
+    Rectangle valveRightCylinder{0.06f, 0.1f};
 
     Rectangle sparkPlug{0.06f, 0.15f};
     Circle sparkFlash{0.04f};
@@ -130,6 +132,18 @@ public:
             &sparkPlug,
             Mat3::translation(0.0f, 0.16f),
             {0, 0, 0, 1}
+        });
+
+        // Трубы клапанов
+        m_objects.push_back({
+            &valveLeftCylinder,
+            Mat3::translation(-0.1f, 0.17f),
+            {0.8f, 0.6f, 0.8f, 1}
+        });
+        m_objects.push_back({
+            &valveRightCylinder,
+            Mat3::translation(0.1f, 0.17f),
+            {0.6f, 0.8f, 0.8f, 1}
         });
 
         // клапаны
@@ -232,12 +246,12 @@ public:
         if (rightActive)
         {
             liftLeft = 0.0f;
-            liftRight = std::max(0.0f, std::sin(angle + float(M_PI)));
+            liftRight = std::max(0.0f, std::sin(angle + float(M_PI)*1.15f));
         }
 
         // клапаны
-        m_objects[8].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
-        m_objects[9].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
+        m_objects[10].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
+        m_objects[11].model = Mat3::translation(0.1f, 0.12f - liftRight * maxLift);
 
         // Выпуск газов
         float baseX = 0.1f;
