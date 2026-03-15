@@ -205,8 +205,28 @@ public:
                 Mat3::rotation(angle);
 
         float maxLift = 0.04f;
-        float liftLeft = std::max(0.0f, std::sin(angle));
-        float liftRight = std::max(0.0f, -std::sin(angle));
+
+        float revolutions = angle / (2.0f * M_PI);
+        int turnNumber = static_cast<int>(std::floor(revolutions));
+
+
+        bool leftActive = (turnNumber % 2 == 0);
+        bool rightActive = !leftActive;
+
+        float liftLeft;
+        float liftRight;
+
+        if (leftActive)
+        {
+            liftLeft = std::max(0.0f, std::sin(angle));
+            liftRight = 0.0f;
+        }
+
+        if (rightActive)
+        {
+            liftLeft = 0.0f;
+            liftRight = std::max(0.0f, std::sin(angle + float(M_PI)));
+        }
 
         // клапаны
         m_objects[8].model = Mat3::translation(-0.1f, 0.12f - liftLeft * maxLift);
