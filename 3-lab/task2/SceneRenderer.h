@@ -46,6 +46,9 @@ private:
     LineStrip connectingRod;
     LineStrip crankshaft;
 
+    Rectangle valveLeft{0.06f, 0.02f};
+    Rectangle valveRight{0.06f, 0.02f};
+
     Rectangle sparkPlug{0.06f, 0.15f};
     Circle sparkFlash{0.04f};
 
@@ -123,6 +126,18 @@ public:
             &sparkPlug,
             Mat3::translation(0.0f, 0.16f),
             {0, 0, 0, 1}
+        });
+
+        // клапаны
+        m_objects.push_back({
+            &valveLeft,
+            Mat3::translation(-0.1f, 0.12f),
+            {0.2f, 0.2f, 0.5f, 1}
+        });
+        m_objects.push_back({
+            &valveRight,
+            Mat3::translation(0.1f, 0.12f),
+            {0.2f, 0.2f, 0.5f, 1}
         });
 
         // Вспышка на свече
