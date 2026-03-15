@@ -36,12 +36,12 @@ private:
 
     int flashIndex = -1;
 
-    Rectangle cylinderBlock{0.3f, 0.55f};
-    Rectangle piston{0.25f, 0.2f};
-    Circle flywheel{m_crankLen};
+    Rectangle cylinderBlock{0.28f, 0.55f};
+    Rectangle piston{0.28f, 0.2f};
+    Circle flywheel{0.225f};
 
     Circle flywheelBack{m_crankLen + 0.1f};
-    Rectangle cylinderBlockBack{0.4f, 0.65f};
+    Rectangle cylinderBlockBack{0.37f, 0.65f};
 
     LineStrip connectingRod;
     LineStrip crankshaft;
@@ -94,7 +94,7 @@ public:
         m_objects.push_back({
             &flywheel,
             Mat3::translation(0.0f, -0.6f),
-            {0.2f, 0.2f, 0.8f, 1}
+            {0.55f, 0.55f, 0.55f, 1}
         });
 
         // Поршень
