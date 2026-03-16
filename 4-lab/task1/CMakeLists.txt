@@ -28,6 +28,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 if (WIN32)
     target_link_libraries(task1 PRIVATE opengl32)
 endif()
