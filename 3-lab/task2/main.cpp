@@ -27,7 +27,6 @@ int main()
         lastTime = currentTime;
 
         window.ProcessInput();
-
         float aspect = static_cast<float>(window.GetHeight()) / static_cast<float>(window.GetWidth());
         renderer.SetAspect(aspect);
 
