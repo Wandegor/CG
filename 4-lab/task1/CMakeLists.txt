@@ -8,14 +8,15 @@ add_executable(${PROJECT_NAME}
         main.cpp
         Common/Point.h
         Common/Util.h
-        Shaders/Shader.h
-        Window.h
-        Shapes/Rectangle.h
-        Shapes/Drawable.h
-        Shapes/Circle.h
-        Shapes/LineStrip.h
-        Mat3.h
-        SceneRenderer.h
+        pch.cpp
+        pch.h
+        BaseWindow.cpp
+        BaseWindow.h
+        Cube.cpp
+        Cube.h
+        GLFWInitializer.cpp
+        GLFWInitializer.h
+        Window.cpp
 )
 
 file(COPY Shaders/shader2.vs Shaders/shader2.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
