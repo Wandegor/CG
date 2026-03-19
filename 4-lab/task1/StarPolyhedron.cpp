@@ -25,72 +25,63 @@ void StarPolyhedron::SetSideColor(int faceIndex, GLubyte r, GLubyte g, GLubyte b
 void StarPolyhedron::Draw() const
 {
     // Золотое сечение
-    constexpr  float PHI = (1.0f + sqrtf(5.0f)) / 2.0f;
-    constexpr  float INV_PHI = 1.0f / PHI;
+    constexpr float phi = (1.0f + sqrtf(5.0f)) / 2.0f;
 
-    static constexpr float vertices[20][3] = {
-        // (±1, ±1, ±1)
-        {-1, -1, -1}, { 1, -1, -1}, { 1,  1, -1}, {-1,  1, -1}, // 0-3
-        {-1, -1,  1}, { 1, -1,  1}, { 1,  1,  1}, {-1,  1,  1}, // 4-7
-        // (0, ±1/phi, ±phi)
-        {0, -INV_PHI, -PHI}, {0,  INV_PHI, -PHI}, {0, -INV_PHI,  PHI}, {0,  INV_PHI,  PHI}, // 8-11
-        // (±1/phi, ±phi, 0)
-        {-INV_PHI, -PHI, 0}, { INV_PHI, -PHI, 0}, {-INV_PHI,  PHI, 0}, { INV_PHI,  PHI, 0}, // 12-15
-        // (±phi, 0, ±1/phi)
-        {-PHI, 0, -INV_PHI}, { PHI, 0, -INV_PHI}, {-PHI, 0,  INV_PHI}, { PHI, 0,  INV_PHI}  // 16-19
+    // 1. База: 12 вершин Икосаэдра
+    static constexpr float vert[12][3] = {
+        {-1,  phi, 0}, { 1,  phi, 0}, {-1, -phi, 0}, { 1, -phi, 0},
+        {0, -1,  phi}, {0,  1,  phi}, {0, -1, -phi}, {0,  1, -phi},
+        { phi, 0, -1}, { phi, 0,  1}, {-phi, 0, -1}, {-phi, 0,  1}
     };
 
-    static constexpr unsigned char faces[12][5] = {
-        { 6, 15, 14,  7, 11}, // Верх
-        { 4, 12, 13,  5, 10}, // Низ
-        { 7, 14,  3, 16, 18}, // Левая сторона
-        { 6, 11, 10,  5, 19}, // Передняя-правая
-        { 7, 11, 10,  4, 18}, // Передняя-левая
-        { 6, 19, 17,  2, 15}, // Правая-верхняя
-        { 5, 19, 17,  1, 13}, // Правая-нижняя
-        { 3, 16,  0,  8,  9}, // Задняя-левая
-        { 2, 17,  1,  8,  9}, // Задняя-правая
-        { 0, 16, 18,  4, 12}, // Нижняя-левая
-        { 3, 14, 15,  2,  9}, // Верхняя-задняя
-        { 0, 12, 13,  1,  8}  // Нижняя-задняя
+    // 2. База: 20 граней Икосаэдра (индексы вершин)
+    static constexpr int faces[20][3] = {
+        {0, 11, 5}, {0, 5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11},
+        {1, 5, 9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6}, {7, 1, 8},
+        {3, 9, 4}, {3, 4, 2}, {3, 2, 6}, {3, 6, 8}, {3, 8, 9},
+        {4, 9, 5}, {2, 4, 11}, {6, 2, 10}, {8, 6, 7}, {9, 8, 1}
     };
-    static size_t const faceCount = sizeof(faces) / sizeof(*faces);
 
     glPushMatrix();
-    glScalef(m_size * 0.5f, m_size * 0.5f, m_size * 0.5f);
+    // Немного уменьшим масштаб, так как шипы сильно выдаются вперед
+    glScalef(m_size * 0.3f, m_size * 0.3f, m_size * 0.3f);
 
     glBegin(GL_TRIANGLES);
     {
-        for (int f = 0; f < 12; ++f) {
-            // 1. Вычисляем центр грани (средняя точка 5 вершин)
-            glm::vec3 center(0.0f);
-            for (int i = 0; i < 5; ++i) {
-                center += glm::make_vec3(vertices[faces[f][i]]);
-            }
-            center /= 5.0f;
+        // Проходим по всем 20 треугольникам базового икосаэдра
+        for (int i = 0; i < 20; ++i) {
 
-            // 2. Вычисляем нормаль (для освещения)
-            // Берем три точки звезды (например, центр и две вершины)
-            glm::vec3 v1 = glm::make_vec3(vertices[faces[f][0]]);
-            glm::vec3 v2 = glm::make_vec3(vertices[faces[f][1]]);
-            glm::vec3 normal = glm::normalize(glm::cross(v1 - center, v2 - center));
-            glNormal3fv(&normal[0]);
+            // Получаем 3 вершины текущего треугольника
+            glm::vec3 v0 = glm::make_vec3(vert[faces[i][0]]);
+            glm::vec3 v1 = glm::make_vec3(vert[faces[i][1]]);
+            glm::vec3 v2 = glm::make_vec3(vert[faces[i][2]]);
 
-            // 3. Задаем цвет грани (из нашего массива цветов)
-            glColor4ubv(m_sideColors[f]);
+            // Находим центр этого треугольника
+            glm::vec3 center = (v0 + v1 + v2) / 3.0f;
 
-            // 4. Рисуем 5 треугольников, образующих пентаграмму
-            for (int i = 0; i < 5; ++i) {
-                int next = (i + 1) % 5;
-                // Вершина 1: Центр звезды
-                glVertex3fv(&center[0]);
-                // Вершина 2: Текущий луч
-                glVertex3fv(vertices[faces[f][i]]);
-                // Вершина 3: Следующий луч (соединяем их «змейкой» для звезды)
-                // ВАЖНО: для звездчатой формы соединяем i и (i+2)%5, чтобы получить перекрестия
-                int starNext = (i + 2) % 5;
-                glVertex3fv(vertices[faces[f][starNext]]);
-            }
+            // МАГИЯ: Вытягиваем центр наружу, чтобы получить острие шипа
+            // Коэффициент 3/phi математически точно формирует Большой звездчатый додекаэдр
+            glm::vec3 peak = center * phi * phi;
+
+            // Красим каждый шип. Используем остаток от деления, чтобы уложиться в 12 твоих цветов
+            glColor4ubv(m_sideColors[i % 12]);
+
+            // Теперь рисуем 3 треугольника, которые образуют боковые стенки этого шипа (пирамиды)
+
+            // Стенка 1 (v0, v1, peak)
+            glm::vec3 n1 = glm::normalize(glm::cross(v1 - v0, peak - v0));
+            glNormal3fv(&n1[0]);
+            glVertex3fv(&v0[0]); glVertex3fv(&v1[0]); glVertex3fv(&peak[0]);
+
+            // Стенка 2 (v1, v2, peak)
+            glm::vec3 n2 = glm::normalize(glm::cross(v2 - v1, peak - v1));
+            glNormal3fv(&n2[0]);
+            glVertex3fv(&v1[0]); glVertex3fv(&v2[0]); glVertex3fv(&peak[0]);
+
+            // Стенка 3 (v2, v0, peak)
+            glm::vec3 n3 = glm::normalize(glm::cross(v0 - v2, peak - v2));
+            glNormal3fv(&n3[0]);
+            glVertex3fv(&v2[0]); glVertex3fv(&v0[0]); glVertex3fv(&peak[0]);
         }
     }
     glEnd();
