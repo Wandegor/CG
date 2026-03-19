@@ -92,7 +92,7 @@ void Window::OnRunStart()
 
 void Window::Draw(int width, int height)
 {
-	glClearColor(1,1,1,255);
+	glClearColor(0.67f,0.67f,0.67f,255);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);

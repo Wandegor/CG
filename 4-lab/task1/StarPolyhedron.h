@@ -14,4 +14,7 @@ private:
 
     std::vector<glm::vec3> m_vertices;
     std::vector<GLuint> m_indices;
+
+    float phi = (1.0f + sqrtf(5.0f)) / 2.0f;
+    float spike_factor = phi * phi;
 };

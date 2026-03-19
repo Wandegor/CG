@@ -14,9 +14,6 @@ StarPolyhedron::StarPolyhedron(float size)
 
 void StarPolyhedron::GenerateGeometry()
 {
-    constexpr float phi = (1.0f + sqrtf(5.0f)) / 2.0f;
-    constexpr float spike_factor = phi * phi;
-
     // 12 вершин Икосаэдра
     const glm::vec3 base_verts[12] = {
         {-1, phi, 0}, {1, phi, 0}, {-1, -phi, 0}, {1, -phi, 0},
@@ -36,7 +33,8 @@ void StarPolyhedron::GenerateGeometry()
     m_indices.clear();
 
     // Сохраняем вершины икосаэдра
-    for (int i = 0; i < 12; ++i) m_vertices.push_back(base_verts[i] * m_size);
+    for (int i = 0; i < 12; ++i)
+        m_vertices.push_back(base_verts[i] * m_size);
 
     // Считаем пики шипов
     for (int i = 0; i < 20; ++i)
