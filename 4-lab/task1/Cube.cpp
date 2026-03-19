@@ -33,7 +33,6 @@ void Cube::Draw() const
     |    |/
 	4----5
 	*/
-	// ������ ��������� ������
 	static constexpr float vertices[8][3] = {
 		{ -1, -1, -1 }, // 0
 		{ +1, -1, -1 }, // 1
@@ -45,10 +44,6 @@ void Cube::Draw() const
 		{ -1, +1, +1 }, // 7
 	};
 
-	// ������ ��������� ������ (� �������, ����������� �
-	// �������� ���������� �� � ������� ������)
-	// ������� ������ ������ ������������� � ������� �� ������
-	// ������ ������� ������� (���� �������� �� ����� �������)
 	static constexpr unsigned char faces[6][4] = {
 		{ 4, 7, 3, 0 }, // ����� x<0
 		{ 5, 1, 2, 6 }, // ����� x>0
@@ -59,20 +54,15 @@ void Cube::Draw() const
 	};
 	static size_t const faceCount = sizeof(faces) / sizeof(*faces);
 
-	// ��������� ������� ������� �������������-���� � ����� ������
-	// �.�. ��������� ������� ��� ����� �������������� ��� ������ glScale
 	glPushMatrix();
-	// ������ ��������������� ������ ������
 	glScalef(m_size * 0.5f, m_size * 0.5f, m_size * 0.5f);
 
 	glBegin(GL_QUADS);
 	{
 		for (size_t face = 0; face < faceCount; ++face)
 		{
-			// ������������� ���� �����
 			glColor4ubv(m_sideColors[face]);
 
-			// ������ ��������������� �����, ���������� �� �������
 			for (size_t i = 0; i < 4; ++i)
 			{
 				size_t vertexIndex = faces[face][i];
@@ -82,7 +72,6 @@ void Cube::Draw() const
 	}
 	glEnd();
 
-	// ��������������� ������� ������������� ���� �� ����� ������
 	glPopMatrix();
 }
 

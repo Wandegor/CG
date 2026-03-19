@@ -1,28 +1,26 @@
 #pragma once
-
 enum class CubeSide
 {
-	NEGATIVE_X,
-	POSITIVE_X,
-	NEGATIVE_Y,
-	POSITIVE_Y,
-	NEGATIVE_Z,
-	POSITIVE_Z,
+    NEGATIVE_X,
+    POSITIVE_X,
+    NEGATIVE_Y,
+    POSITIVE_Y,
+    NEGATIVE_Z,
+    POSITIVE_Z,
 };
-
 class Cube
 {
 public:
-	// Создаем куб с заданной длиной стороны
-	explicit Cube(float size = 1);
-	// Рисуем куб
-	void Draw() const;
-	// Задаем цвет стороны куба
-	void SetSideColor(CubeSide side, GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255);
-
+    // РЎРѕР·РґР°РµРј РєСѓР± СЃ Р·Р°РґР°РЅРЅРѕР№ РґР»РёРЅРѕР№ СЃС‚РѕСЂРѕРЅС‹
+    explicit Cube(float size = 1);
+    // Р РёСЃСѓРµРј РєСѓР±
+    void Draw()const;
+    // Р—Р°РґР°РµРј С†РІРµС‚ СЃС‚РѕСЂРѕРЅС‹ РєСѓР±Р°
+    void SetSideColor(
+        CubeSide side, GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255);
 private:
-	float m_size;
+    float m_size;
 
-	// Цвета сторон куба
-	GLubyte m_sideColors[6][4];
+    // Р¦РІРµС‚Р° СЃС‚РѕСЂРѕРЅ РєСѓР±Р°
+    GLubyte m_sideColors[6][4];
 };
