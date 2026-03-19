@@ -16,6 +16,9 @@ public:
 
 	glm::dvec2 GetCursorPos() const;
 
+protected: // только наследники могу использовать
+	GLFWwindow* GetWindow() const { return m_window; }
+
 private:
 	static BaseWindow* GetBaseWindow(GLFWwindow* window);
 

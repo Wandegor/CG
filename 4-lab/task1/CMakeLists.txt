@@ -12,8 +12,8 @@ add_executable(${PROJECT_NAME}
         pch.h
         BaseWindow.cpp
         BaseWindow.h
-        Cube.cpp
-        Cube.h
+        StarPolyhedron.cpp
+        StarPolyhedron.h
         GLFWInitializer.cpp
         GLFWInitializer.h
         Window.cpp
