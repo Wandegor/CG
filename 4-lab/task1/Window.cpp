@@ -35,13 +35,13 @@ Window::Window(int w, int h, const char* title)
 	m_star.SetSideColor(1, 0, 255, 0);      // Зеленый
 	m_star.SetSideColor(2, 0, 0, 255);      // Синий
 	m_star.SetSideColor(3, 255, 255, 0);    // Желтый
-	m_star.SetSideColor(4, 255, 0, 255);    // Пурпурный
+	m_star.SetSideColor(4, 255, 120, 100);    // Пурпурный
 	m_star.SetSideColor(5, 0, 255, 255);    // Циан
 	m_star.SetSideColor(6, 255, 128, 0);    // Оранжевый
-	m_star.SetSideColor(7, 128, 0, 255);    // Фиолетовый
+	m_star.SetSideColor(7, 128, 0, 123);    // Фиолетовый
 	m_star.SetSideColor(8, 0, 128, 128);    // Морская волна
 	m_star.SetSideColor(9, 128, 128, 0);    // Оливковый
-	m_star.SetSideColor(10, 255, 192, 203); // Розовый
+	m_star.SetSideColor(10, 20, 192, 203); // Розовый
 	m_star.SetSideColor(11, 128, 128, 128); // Серый
 }
 
