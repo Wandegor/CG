@@ -30,18 +30,26 @@ Window::Window(int w, int h, const char* title)
     : BaseWindow(w, h, title)
       , m_star(STAR_SIZE)
 {
-    m_star.SetSideColor(0, 255, 0, 0); // Красный
-    m_star.SetSideColor(1, 0, 255, 0); // Зеленый
-    m_star.SetSideColor(2, 0, 0, 255); // Синий
-    m_star.SetSideColor(3, 255, 255, 0); // Желтый
-    m_star.SetSideColor(4, 255, 120, 100); // Пурпурный
-    m_star.SetSideColor(5, 0, 255, 255); // Циан
-    m_star.SetSideColor(6, 255, 128, 0); // Оранжевый
-    m_star.SetSideColor(7, 128, 0, 123); // Фиолетовый
-    m_star.SetSideColor(8, 0, 128, 128); // Морская волна
-    m_star.SetSideColor(9, 128, 128, 0); // Оливковый
-    m_star.SetSideColor(10, 20, 192, 203); // Розовый
-    m_star.SetSideColor(11, 128, 128, 128); // Серый
+    m_star.SetSideColor(0, 255, 0, 0);     // Красный
+    m_star.SetSideColor(1, 0, 255, 0);     // Зеленый
+    m_star.SetSideColor(2, 0, 0, 255);     // Синий
+    m_star.SetSideColor(3, 255, 255, 0);   // Желтый
+    m_star.SetSideColor(4, 255, 120, 100); // Коралловый
+    m_star.SetSideColor(5, 0, 255, 255);   // Циан
+    m_star.SetSideColor(6, 255, 128, 0);   // Оранжевый
+    m_star.SetSideColor(7, 128, 0, 123);   // Фиолетовый
+    m_star.SetSideColor(8, 200, 128, 128);   // Морская волна
+    m_star.SetSideColor(9, 128, 128, 64);   // Оливковый
+    m_star.SetSideColor(10, 20, 192, 203); // Ярко-розовый
+    m_star.SetSideColor(11, 128, 128, 128);// Серый
+    m_star.SetSideColor(12, 139, 69, 19);   // Коричневый (Седло)
+    m_star.SetSideColor(13, 255, 20, 147);  // Глубокий розовый
+    m_star.SetSideColor(14, 0, 0, 128);     // Темно-синий (Navy)
+    m_star.SetSideColor(15, 173, 255, 47);  // Зелено-желтый (Лайм)
+    m_star.SetSideColor(16, 218, 112, 214); // Орхидея
+    m_star.SetSideColor(17, 230, 209, 204);  // Средний бирюзовый
+    m_star.SetSideColor(18, 255, 215, 0);   // Золотой
+    m_star.SetSideColor(19, 106, 143, 205);  // Грифельно-синий
 }
 
 void Window::OnMouseButton(int button, int action, int mods)
@@ -107,16 +115,4 @@ void Window::Draw(int width, int height)
     glLoadMatrixd(&mat[0][0]);
 
     m_star.Draw();
-}
-
-void Window::SetupProjectionMatrix(int width, int height)
-{
-    glViewport(0, 0, width, height);
-
-    // Вычисляем соотношение сторон клиентской области окна
-    double aspect = double(width) / double(height);
-
-    glMatrixMode(GL_PROJECTION);
-    const auto projMat = glm::perspective(60.0 * M_PI / 180.0, aspect, 0.1, 10.0);
-    glLoadMatrixd(&projMat[0][0]);
 }

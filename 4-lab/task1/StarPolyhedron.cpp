@@ -61,7 +61,7 @@ void StarPolyhedron::GenerateGeometry()
 
 void StarPolyhedron::SetSideColor(int faceIndex, GLubyte r, GLubyte g, GLubyte b, GLubyte a)
 {
-    if (faceIndex >= 0 && faceIndex < 12)
+    if (faceIndex >= 0 && faceIndex < 20)
     {
         m_sideColors[faceIndex][0] = r;
         m_sideColors[faceIndex][1] = g;
@@ -90,7 +90,7 @@ void StarPolyhedron::Draw() const
             // Красим шипы (каждые 3 треугольника — один шип)
             if (i % 3 == 0)
             {
-                glColor4ubv(m_sideColors[(i / 3) % 12]);
+                glColor4ubv(m_sideColors[(i / 3) % 20]);
             }
             // Получаем 3 вершины треугольника по их индексам
             const glm::vec3& v0 = m_vertices[m_indices[i * 3 + 0]];

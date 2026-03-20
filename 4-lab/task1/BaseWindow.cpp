@@ -85,7 +85,7 @@ glm::dvec2 BaseWindow::GetCursorPos() const
 
 BaseWindow* BaseWindow::GetBaseWindow(GLFWwindow* window)
 {
-    return reinterpret_cast<BaseWindow *>(glfwGetWindowUserPointer(window));
+    return static_cast<BaseWindow *>(glfwGetWindowUserPointer(window));
 }
 
 GLFWwindow* BaseWindow::MakeWindow(int w, int h, const char* title)

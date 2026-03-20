@@ -18,8 +18,6 @@ private:
 
 	void Draw(int width, int height) override;
 
-	static void SetupProjectionMatrix(int width, int height);
-
 	StarPolyhedron m_star;
 	bool m_leftMouseButtonPressed = false;
 	double m_lastMouseX = 0, m_lastMouseY = 0;
