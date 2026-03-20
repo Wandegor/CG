@@ -11,6 +11,7 @@ private:
 	void OnMouseButton(int button, int action, int mods) override;
 
 	void OnMouseMove(double x, double y) override;
+	void RotateCamera(double xAngleRadians, double yAngleRadians);
 
 	void OnResize(int width, int height) override;
 
@@ -18,8 +19,12 @@ private:
 
 	void Draw(int width, int height) override;
 
+
 	StarPolyhedron m_star;
+
 	bool m_leftMouseButtonPressed = false;
-	double m_lastMouseX = 0, m_lastMouseY = 0;
-	double m_rotateX = 0, m_rotateY = 0;
+	glm::dvec2 m_lastMousePos{};
+
+	static constexpr double DISTANCE_TO_ORIGIN = 3;
+	glm::dmat4x4 m_cameraMatrix;
 };

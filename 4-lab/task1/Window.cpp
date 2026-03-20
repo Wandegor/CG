@@ -30,6 +30,11 @@ Window::Window(int w, int h, const char* title)
     : BaseWindow(w, h, title)
       , m_star(STAR_SIZE)
 {
+    m_cameraMatrix = glm::lookAt(
+        glm::dvec3{ 0.0, 0.0, DISTANCE_TO_ORIGIN },
+        glm::dvec3{ 0.0, 0.0, 0.0 },
+        glm::dvec3{ 0.0, 1.0, 0.0 });
+    
     m_star.SetSideColor(0, 255, 0, 0);     // Красный
     m_star.SetSideColor(1, 0, 255, 0);     // Зеленый
     m_star.SetSideColor(2, 0, 0, 255);     // Синий
@@ -58,22 +63,44 @@ void Window::OnMouseButton(int button, int action, int mods)
     {
         m_leftMouseButtonPressed = (action == GLFW_PRESS);
         // Запоминаем позицию в момент нажатия, чтобы не было прыжка
-        glfwGetCursorPos(GetWindow(), &m_lastMouseX, &m_lastMouseY);
+        glfwGetCursorPos(GetWindow(), &m_lastMousePos.x, &m_lastMousePos.y);
     }
 }
 
 void Window::OnMouseMove(double x, double y)
 {
+    const glm::dvec2 mousePos{ x, y };
+
     if (m_leftMouseButtonPressed)
     {
-        // Вычисляем, насколько сместилась мышь
-        m_rotateY += static_cast<float>(x - m_lastMouseX) * 0.5f; // Чувствительность
-        m_rotateX += static_cast<float>(y - m_lastMouseY) * 0.5f;
+        const auto windowSize = GetFramebufferSize();
+
+        const auto mouseDelta = mousePos - m_lastMousePos;
+        const double xAngle = mouseDelta.y * M_PI / windowSize.y;
+        const double yAngle = mouseDelta.x * M_PI / windowSize.x;
+        RotateCamera(xAngle, yAngle);
     }
-    m_lastMouseX = x;
-    m_lastMouseY = y;
+    m_lastMousePos = mousePos;
 }
 
+// Вращаем камеру вокруг начала координат
+void Window::RotateCamera(double xAngleRadians, double yAngleRadians)
+{
+    // Извлекаем из 1 и 2 строки матрицы камеры направления осей вращения,
+    // совпадающих с экранными осями X и Y.
+    // Строго говоря, для этого надо извлекать столбцы их обратной матрицы камеры, но так как
+    // матрица камеры ортонормированная, достаточно транспонировать её подматрицу 3*3
+    const glm::dvec3 xAxis{
+        m_cameraMatrix[0][0], m_cameraMatrix[1][0], m_cameraMatrix[2][0]
+    };
+    const glm::dvec3 yAxis{
+        m_cameraMatrix[0][1], m_cameraMatrix[1][1], m_cameraMatrix[2][1]
+    };
+    m_cameraMatrix = glm::rotate(m_cameraMatrix, xAngleRadians, xAxis);
+    m_cameraMatrix = glm::rotate(m_cameraMatrix, yAngleRadians, yAxis);
+
+    m_cameraMatrix = Orthonormalize(m_cameraMatrix);
+}
 void Window::OnResize(int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -107,12 +134,7 @@ void Window::Draw(int width, int height)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
-    glm::dmat4 mat = glm::lookAt(glm::dvec3{0, 0, 3}, {0, 0, 0}, {0, 1, 0});
-
-    mat = glm::rotate(mat, glm::radians(m_rotateX), glm::dvec3{1, 0, 0});
-    mat = glm::rotate(mat, glm::radians(m_rotateY), glm::dvec3{0, 1, 0});
-
-    glLoadMatrixd(&mat[0][0]);
+    glLoadMatrixd(&m_cameraMatrix[0][0]);
 
     m_star.Draw();
 }
