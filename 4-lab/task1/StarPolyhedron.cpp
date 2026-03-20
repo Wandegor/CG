@@ -21,7 +21,7 @@ void StarPolyhedron::GenerateGeometry()
         {phi, 0, -1}, {phi, 0, 1}, {-phi, 0, -1}, {-phi, 0, 1}
     };
 
-    // 20 граней Икосаэдра (индексы вершин пирамид)
+    // 20 граней Икосаэдра (основание пирамид)
     static constexpr int faces[20][3] = {
         {0, 11, 5}, {0, 5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11},
         {1, 5, 9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6}, {7, 1, 8},
@@ -42,7 +42,7 @@ void StarPolyhedron::GenerateGeometry()
         glm::vec3 v0 = base_verts[faces[i][0]];
         glm::vec3 v1 = base_verts[faces[i][1]];
         glm::vec3 v2 = base_verts[faces[i][2]];
-        glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+        glm::vec3 center = (v0 + v1 + v2) / 3.0f; // пик пирамиды
         m_vertices.push_back(center * spike_factor * m_size);
 
         // Заполняем индексы сразу
