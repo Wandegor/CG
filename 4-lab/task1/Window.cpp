@@ -116,16 +116,30 @@ void Window::OnResize(int width, int height)
 
 void Window::OnRunStart()
 {
-    // // Включаем режим отбраковки граней
-    // glEnable(GL_CULL_FACE);
-    // // Отбраковываться будут нелицевые стороны граней
-    // glCullFace(GL_BACK);
-    // // Сторона примитива считается лицевой, если при ее рисовании
-    // // обход верших осуществляется против часовой стрелки
-    // glFrontFace(GL_CCW);
-    //
-    // // Включаем тест глубины для удаления невидимых линий и поверхностей
+    // Включаем тест глубины для удаления невидимых линий и поверхностей
     glEnable(GL_DEPTH_TEST);
+
+    SetupLighting();
+}
+
+void Window::SetupLighting()
+{
+    glEnable(GL_NORMALIZE);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    const GLfloat globalAmbient[] = {0.20f, 0.20f, 0.20f, 1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
+    const GLfloat lightAmbient[]  = {0.20f, 0.20f, 0.20f, 1.0f};
+    const GLfloat lightDiffuse[]  = {0.95f, 0.95f, 0.95f, 1.0f};
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 }
 
 void Window::Draw(int width, int height)
@@ -135,6 +149,9 @@ void Window::Draw(int width, int height)
 
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixd(&m_cameraMatrix[0][0]);
+
+    const GLfloat lightPosition[] = {2.5f, 2.0f, 3.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     m_star.Draw();
 }

@@ -97,7 +97,7 @@ void StarPolyhedron::Draw() const
             const glm::vec3& v1 = m_vertices[m_indices[i * 3 + 1]];
             const glm::vec3& peak = m_vertices[m_indices[i * 3 + 2]];
 
-            // Расчет нормали для Fill (свет)
+            // Расчет нормали света
             glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, peak - v0));
             glNormal3fv(&normal[0]);
 
@@ -125,7 +125,9 @@ void StarPolyhedron::Draw() const
     }
     glEnd();
 
+    glEnable(GL_LIGHTING);
     // Восстанавливаем состояние
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     // glEnable(GL_LIGHTING);
+    glPopMatrix();
 }
