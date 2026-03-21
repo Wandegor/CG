@@ -74,13 +74,43 @@ void StarPolyhedron::SetSideColor(int faceIndex, GLubyte r, GLubyte g, GLubyte b
 
 void StarPolyhedron::Draw() const
 {
-    // Включаем смещение для граней
+    // ребра
+    DrawEdges();
+    DrawFaces();
+}
+
+void StarPolyhedron::DrawEdges() const
+{
+    glPushMatrix();
+
+    glDisable(GL_LIGHTING); // чтобы были монотонно черные
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(3.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    glBegin(GL_TRIANGLES); {
+        for (unsigned int idx: m_indices)
+        {
+            glVertex3fv(&m_vertices[idx][0]);
+        }
+    }
+    glEnd();
+
+    // Восстанавливаем состояние
+    glEnable(GL_LIGHTING);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    glPopMatrix();
+}
+
+void StarPolyhedron::DrawFaces() const
+{
+    // Включаем смещение для граней, чтобы чуть чуть проваливались за ребра
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1.0f, 1.0f);
 
     glPushMatrix();
-    // Уменьшение масштаба
-    glScalef(m_size * 0.3f, m_size * 0.3f, m_size * 0.3f);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_TRIANGLES); {
@@ -110,24 +140,6 @@ void StarPolyhedron::Draw() const
 
     glDisable(GL_POLYGON_OFFSET_FILL);
 
-    // ребра
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glLineWidth(3.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
-    // glDisable(GL_LIGHTING); // Важно для четких линий
-
-    glBegin(GL_TRIANGLES); {
-        // Рисуем ту же самую последовательность индексов!
-        for (unsigned int idx: m_indices)
-        {
-            glVertex3fv(&m_vertices[idx][0]);
-        }
-    }
-    glEnd();
-
-    glEnable(GL_LIGHTING);
-    // Восстанавливаем состояние
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    // glEnable(GL_LIGHTING);
     glPopMatrix();
+
 }

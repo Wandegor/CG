@@ -8,6 +8,9 @@ public:
 
 private:
     void GenerateGeometry();
+    void DrawEdges() const;
+    void DrawFaces() const;
+
     float m_size;
 
     GLubyte m_sideColors[20][4]{};
