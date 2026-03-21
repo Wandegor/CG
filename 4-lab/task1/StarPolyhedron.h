@@ -3,13 +3,13 @@ class StarPolyhedron
 {
 public:
     explicit StarPolyhedron(float size = 1);
-    void Draw()const;
     void SetSideColor(int faceIndex, GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255);
+
+    void DrawEdges() const;
+    void DrawFaces(const glm::dmat4& cameraMatrix) const;
 
 private:
     void GenerateGeometry();
-    void DrawEdges() const;
-    void DrawFaces() const;
 
     float m_size;
 

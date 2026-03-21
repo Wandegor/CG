@@ -11,6 +11,9 @@ namespace
     constexpr double Z_NEAR = 0.1;
     constexpr double Z_FAR = 10;
 
+    // Прозрачность звезды
+    constexpr GLubyte ALTHA = 100;
+
     // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
     glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
     {
@@ -35,27 +38,26 @@ Window::Window(int w, int h, const char* title)
         glm::dvec3{ 0.0, 0.0, 0.0 },
         glm::dvec3{ 0.0, 1.0, 0.0 });
 
-    GLubyte altha = 120;
-    m_star.SetSideColor(0, 255, 0, 0, altha);     // Красный
-    m_star.SetSideColor(1, 0, 255, 0, altha);     // Зеленый
-    m_star.SetSideColor(2, 0, 0, 255, altha);     // Синий
-    m_star.SetSideColor(3, 255, 255, 0, altha);   // Желтый
-    m_star.SetSideColor(4, 255, 120, 100, altha); // Коралловый
-    m_star.SetSideColor(5, 0, 255, 255, altha);   // Циан
-    m_star.SetSideColor(6, 255, 128, 0, altha);   // Оранжевый
-    m_star.SetSideColor(7, 128, 0, 123, altha);   // Фиолетовый
-    m_star.SetSideColor(8, 200, 128, 128, altha);   // Морская волна
-    m_star.SetSideColor(9, 128, 128, 64, altha);   // Оливковый
-    m_star.SetSideColor(10, 20, 192, 203, altha); // Ярко-розовый
-    m_star.SetSideColor(11, 128, 128, 128, altha);// Серый
-    m_star.SetSideColor(12, 139, 69, 19, altha);   // Коричневый (Седло)
-    m_star.SetSideColor(13, 255, 20, 147, altha);  // Глубокий розовый
-    m_star.SetSideColor(14, 0, 0, 128, altha);     // Темно-синий (Navy)
-    m_star.SetSideColor(15, 173, 255, 47, altha);  // Зелено-желтый (Лайм)
-    m_star.SetSideColor(16, 218, 112, 214, altha); // Орхидея
-    m_star.SetSideColor(17, 230, 209, 204, altha);  // Средний бирюзовый
-    m_star.SetSideColor(18, 255, 215, 0, altha);   // Золотой
-    m_star.SetSideColor(19, 106, 143, 205, altha);  // Грифельно-синий
+    m_star.SetSideColor(0, 255, 0, 0, ALTHA);     // Красный
+    m_star.SetSideColor(1, 0, 255, 0, ALTHA);     // Зеленый
+    m_star.SetSideColor(2, 0, 0, 255, ALTHA);     // Синий
+    m_star.SetSideColor(3, 255, 255, 0, ALTHA);   // Желтый
+    m_star.SetSideColor(4, 255, 120, 100, ALTHA); // Коралловый
+    m_star.SetSideColor(5, 0, 255, 255, ALTHA);   // Циан
+    m_star.SetSideColor(6, 255, 128, 0, ALTHA);   // Оранжевый
+    m_star.SetSideColor(7, 128, 0, 123, ALTHA);   // Фиолетовый
+    m_star.SetSideColor(8, 200, 128, 128, ALTHA);   // Морская волна
+    m_star.SetSideColor(9, 128, 128, 64, ALTHA);   // Оливковый
+    m_star.SetSideColor(10, 20, 192, 203, ALTHA); // Ярко-розовый
+    m_star.SetSideColor(11, 128, 128, 128, ALTHA);// Серый
+    m_star.SetSideColor(12, 139, 69, 19, ALTHA);   // Коричневый (Седло)
+    m_star.SetSideColor(13, 255, 20, 147, ALTHA);  // Глубокий розовый
+    m_star.SetSideColor(14, 0, 0, 128, ALTHA);     // Темно-синий (Navy)
+    m_star.SetSideColor(15, 173, 255, 47, ALTHA);  // Зелено-желтый (Лайм)
+    m_star.SetSideColor(16, 218, 112, 214, ALTHA); // Орхидея
+    m_star.SetSideColor(17, 230, 209, 204, ALTHA);  // Средний бирюзовый
+    m_star.SetSideColor(18, 255, 215, 0, ALTHA);   // Золотой
+    m_star.SetSideColor(19, 106, 143, 205, ALTHA);  // Грифельно-синий
 }
 
 void Window::OnMouseButton(int button, int action, int mods)
@@ -158,5 +160,14 @@ void Window::Draw(int width, int height)
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glDepthMask(GL_TRUE);
-    m_star.Draw();
+    m_star.DrawEdges();         // ребра
+    glDepthMask(GL_FALSE);
+
+    glDepthMask(GL_FALSE);
+    glDisable(GL_CULL_FACE);
+    m_star.DrawFaces(m_cameraMatrix);
+    glDepthMask(GL_TRUE);
+
+    glDisable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
 }

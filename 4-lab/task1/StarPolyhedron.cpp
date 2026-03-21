@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "StarPolyhedron.h"
+#include <vector>
 
 StarPolyhedron::StarPolyhedron(float size)
     : m_size(size)
@@ -70,15 +71,6 @@ void StarPolyhedron::SetSideColor(int faceIndex, GLubyte r, GLubyte g, GLubyte b
     }
 }
 
-#include <vector>
-
-void StarPolyhedron::Draw() const
-{
-    // ребра
-    DrawEdges();
-    DrawFaces();
-}
-
 void StarPolyhedron::DrawEdges() const
 {
     glPushMatrix();
@@ -104,42 +96,66 @@ void StarPolyhedron::DrawEdges() const
     glPopMatrix();
 }
 
-void StarPolyhedron::DrawFaces() const
+void StarPolyhedron::DrawFaces(const glm::dmat4& cameraMatrix) const
 {
+    struct Triangle
+    {
+        GLuint i0, i1, ipeak;
+        int faceIndex;
+        double viewZ;
+    };
+
+    std::vector<Triangle> tris;
+    tris.reserve(m_indices.size() / 3);
+
+    for (size_t t = 0; t < m_indices.size() / 3; ++t)
+    {
+        GLuint i0 = m_indices[t * 3 + 0];
+        GLuint i1 = m_indices[t * 3 + 1];
+        GLuint ipeak = m_indices[t * 3 + 2];
+
+        glm::dvec3 center =
+        (glm::dvec3(m_vertices[i0]) +
+         glm::dvec3(m_vertices[i1]) +
+         glm::dvec3(m_vertices[ipeak])) / 3.0;
+
+        glm::dvec4 viewPos = cameraMatrix * glm::dvec4(center, 1.0);
+
+        tris.push_back({
+            i0, i1, ipeak,
+            static_cast<int>(t / 3),
+            viewPos.z});
+    }
+
+    std::sort(tris.begin(), tris.end(),
+        [](const Triangle& a, const Triangle& b)
+        {
+            return a.viewZ < b.viewZ; // дальше -> ближе
+        });
+
     // Включаем смещение для граней, чтобы чуть чуть проваливались за ребра
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1.0f, 1.0f);
 
-    glPushMatrix();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBegin(GL_TRIANGLES); {
-        // Проходим по всем 60 треугольникам (каждые 3 индекса)
-        for (size_t i = 0; i < m_indices.size() / 3; ++i)
-        {
-            // Красим шипы (каждые 3 треугольника — один шип)
-            if (i % 3 == 0)
-            {
-                glColor4ubv(m_sideColors[(i / 3) % 20]);
-            }
-            // Получаем 3 вершины треугольника по их индексам
-            const glm::vec3& v0 = m_vertices[m_indices[i * 3 + 0]];
-            const glm::vec3& v1 = m_vertices[m_indices[i * 3 + 1]];
-            const glm::vec3& peak = m_vertices[m_indices[i * 3 + 2]];
+    glBegin(GL_TRIANGLES);
+    for (const auto& tri : tris)
+    {
+        glColor4ubv(m_sideColors[tri.faceIndex]);
 
-            // Расчет нормали света
-            glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, peak - v0));
-            glNormal3fv(&normal[0]);
+        const glm::vec3& v0 = m_vertices[tri.i0];
+        const glm::vec3& v1 = m_vertices[tri.i1];
+        const glm::vec3& v2 = m_vertices[tri.ipeak];
 
-            glVertex3fv(&v0[0]);
-            glVertex3fv(&v1[0]);
-            glVertex3fv(&peak[0]);
-        }
+        glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+        glNormal3fv(&normal[0]);
+
+        glVertex3fv(&v0[0]);
+        glVertex3fv(&v1[0]);
+        glVertex3fv(&v2[0]);
     }
     glEnd();
 
     glDisable(GL_POLYGON_OFFSET_FILL);
-
-    glPopMatrix();
-
 }
