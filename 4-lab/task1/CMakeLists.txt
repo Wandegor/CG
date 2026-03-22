@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
         main.cpp
-        Common/Point.h
-        Common/Util.h
         pch.cpp
         pch.h
         BaseWindow.cpp
@@ -18,8 +16,6 @@ add_executable(${PROJECT_NAME}
         GLFWInitializer.h
         Window.cpp
 )
-
-file(COPY Shaders/shader2.vs Shaders/shader2.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})
