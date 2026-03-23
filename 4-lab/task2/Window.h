@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseWindow.h"
+#include "MoebiusStrip.h"
 
 class Window : public BaseWindow
 {
@@ -21,12 +22,10 @@ private:
 
 	void SetupCameraMatrix();
 
-	static constexpr double DISTANCE_TO_ORIGIN = 3;
+	MoebiusStrip m_strip;
+
 
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
-	glm::dmat4x4 m_cameraMatrix = glm::lookAt(
-		glm::dvec3{ 0.0, 0.0, DISTANCE_TO_ORIGIN },
-		glm::dvec3{ 0.0, 0.0, 0.0 },
-		glm::dvec3{ 0.0, 1.0, 0.0 });
+	glm::dmat4x4 m_cameraMatrix;
 };

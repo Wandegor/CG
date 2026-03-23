@@ -31,5 +31,4 @@ protected:
 public:
     explicit MoebiusStrip(int columns, int rows)
         : Surface(columns, rows, 0.f, float(2.0 * M_PI), -1.0f, 1.0f) {}
-
 };

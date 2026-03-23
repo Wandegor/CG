@@ -77,7 +77,6 @@ public:
                     glNormal3f(v0.normal.x, v0.normal.y, v0.normal.z);
                     glVertex3f(v0.position.x, v0.position.y, v0.position.z);
 
-                    glColor4f(0.5, 0, v0.color.z, v0.color.w);
                     // задаем нормаль и координаты вершины на нечетной позиции
                     glNormal3f(v1.normal.x, v1.normal.y, v1.normal.z);
                     glVertex3f(v1.position.x, v1.position.y, v1.position.z);
