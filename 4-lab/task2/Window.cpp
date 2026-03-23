@@ -136,6 +136,9 @@ void Window::Draw(int width, int height)
 
     SetupCameraMatrix();
 
+    const GLfloat lightPosition[] = {2.0f, 2.0f, 3.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     m_strip.Draw();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

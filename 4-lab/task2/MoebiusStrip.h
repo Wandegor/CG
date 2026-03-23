@@ -3,8 +3,6 @@
 
 class MoebiusStrip : public Surface
 {
-private:
-    float m_size;
 
 protected:
     Vertex CalculateVertex(double u, double v) const override
