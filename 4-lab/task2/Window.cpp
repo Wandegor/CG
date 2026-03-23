@@ -121,11 +121,11 @@ void Window::SetupLighting()
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
-    const GLfloat globalAmbient[] = {0.20f, 0.20f, 0.20f, 1.0f};
+    const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
-    const GLfloat lightAmbient[]  = {0.20f, 0.20f, 0.20f, 1.0f};
-    const GLfloat lightDiffuse[]  = {0.20f, 0.20f, 0.20f, 1.0f};
+    const GLfloat lightAmbient[]  = {0.05f, 0.05f, 0.05f, 1.0f};
+    const GLfloat lightDiffuse[]  = {0.60f, 0.60f, 0.60f, 1.0f};
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
