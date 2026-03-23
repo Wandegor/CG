@@ -106,15 +106,37 @@ void Window::OnRunStart()
 
     // Включаем тест глубины для удаления невидимых линий и поверхностей
     glEnable(GL_DEPTH_TEST);
+
+    SetupLighting();
 }
 
+void Window::SetupLighting()
+{
+    glEnable(GL_NORMALIZE);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    const GLfloat globalAmbient[] = {0.20f, 0.20f, 0.20f, 1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
+    const GLfloat lightAmbient[]  = {0.20f, 0.20f, 0.20f, 1.0f};
+    const GLfloat lightDiffuse[]  = {0.20f, 0.20f, 0.20f, 1.0f};
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+}
 void Window::Draw(int width, int height)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     SetupCameraMatrix();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     m_strip.Draw();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

@@ -20,11 +20,25 @@ protected:
         const double y = a * su;
         const double z = (v / 2.0) * su2;
 
+        // Нормали
+        const double dxdu = -(v / 4.0) * su2 * cu - a * su;
+        const double dydu = -(v / 4.0) * su2 * su + a * cu;
+        const double dzdu =  (v / 4.0) * cu2;
+
+        const double dxdv = 0.5 * cu2 * cu;
+        const double dydv = 0.5 * cu2 * su;
+        const double dzdv = 0.5 * su2;
+
+        glm::dvec3 du(dxdu, dydu, dzdu);
+        glm::dvec3 dv(dxdv, dydv, dzdv);
+
+        glm::dvec3 n = glm::normalize(glm::cross(du, dv));
+
         return Vertex
         {
             {float(x), float(y), float(z)},
             {0, 1, 1, 1},
-            {0.0f, 0.0f, 1.0f}
+            {float(n.x), float(n.y), float(n.z)}
         };
     }
 

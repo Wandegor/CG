@@ -19,6 +19,7 @@ private:
 	void OnRunStart() override;
 
 	void Draw(int width, int height) override;
+	void SetupLighting();
 
 	void SetupCameraMatrix();
 
