@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Window.h"
 
+#include "MoebiusStrip.h"
 #include "Surface.h"
 
 namespace
@@ -8,7 +9,7 @@ namespace
 // Угол обзора по вертикали
 constexpr double FIELD_OF_VIEW = 60 * M_PI / 180.0;
 // Размер стороны куба
-constexpr double CUBE_SIZE = 1;
+// constexpr double CUBE_SIZE = 1;
 
 constexpr double Z_NEAR = 0.1;
 constexpr double Z_FAR = 10;
@@ -31,7 +32,6 @@ glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
 
 Window::Window(int w, int h, const char* title)
 	: BaseWindow(w, h, title)
-	, m_cube(CUBE_SIZE)
 {
 }
 
@@ -104,7 +104,7 @@ void Window::OnRunStart()
 	glEnable(GL_DEPTH_TEST);
 }
 
-Surface surface{50, 50, -2.0f, 2.0f, -2.0f, 2.0f};
+MoebiusStrip strip(150, 30);
 
 void Window::Draw(int width, int height)
 {
@@ -112,10 +112,8 @@ void Window::Draw(int width, int height)
 
 	SetupCameraMatrix();
 
-	// m_cube.Draw();
-
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	surface.Draw();
+	strip.Draw();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 

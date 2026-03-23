@@ -14,11 +14,8 @@ add_executable(${PROJECT_NAME}
         GLFWInitializer.h
         Window.cpp
         Window.h
-        Cube.h
-        Cube.cpp
         Vertex.h
-        Mesh.h
-        EllipticParaboloid.h
+        MoebiusStrip.h
         Surface.h
 )
 

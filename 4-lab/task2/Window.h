@@ -1,6 +1,5 @@
 #pragma once
 #include "BaseWindow.h"
-#include "Cube.h"
 
 class Window : public BaseWindow
 {
@@ -22,7 +21,6 @@ private:
 
 	void SetupCameraMatrix();
 
-	Cube m_cube;
 	static constexpr double DISTANCE_TO_ORIGIN = 3;
 
 	bool m_leftButtonPressed = false;
