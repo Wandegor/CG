@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "Window.h"
 
+#include "Surface.h"
+
 namespace
 {
 // Угол обзора по вертикали
@@ -91,9 +93,9 @@ void Window::OnResize(int width, int height)
 void Window::OnRunStart()
 {
 	// Включаем режим отбраковки граней
-	glEnable(GL_CULL_FACE);
+	// glEnable(GL_CULL_FACE);
 	// Отбраковываться будут нелицевые стороны граней
-	glCullFace(GL_BACK);
+	// glCullFace(GL_BACK);
 	// Сторона примитива считается лицевой, если при ее рисовании
 	// обход верших осуществляется против часовой стрелки
 	glFrontFace(GL_CCW);
@@ -102,13 +104,19 @@ void Window::OnRunStart()
 	glEnable(GL_DEPTH_TEST);
 }
 
+Surface surface{50, 50, -2.0f, 2.0f, -2.0f, 2.0f};
+
 void Window::Draw(int width, int height)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	SetupCameraMatrix();
 
-	m_cube.Draw();
+	// m_cube.Draw();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	surface.Draw();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Window::SetupCameraMatrix()

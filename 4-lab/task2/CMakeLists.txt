@@ -18,6 +18,8 @@ add_executable(${PROJECT_NAME}
         Cube.cpp
         Vertex.h
         Mesh.h
+        EllipticParaboloid.h
+        Surface.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})

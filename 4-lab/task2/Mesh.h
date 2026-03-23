@@ -1,11 +1,6 @@
 #pragma once
 #include "pch.h"
-
-struct Vertex
-{
-	glm::vec3 position;
-	glm::u8vec4 color;
-};
+#include "Vertex.h"
 
 class Mesh
 {

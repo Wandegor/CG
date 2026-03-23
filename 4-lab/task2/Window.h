@@ -23,7 +23,7 @@ private:
 	void SetupCameraMatrix();
 
 	Cube m_cube;
-	static constexpr double DISTANCE_TO_ORIGIN = 2;
+	static constexpr double DISTANCE_TO_ORIGIN = 3;
 
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
