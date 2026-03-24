@@ -116,6 +116,8 @@ void Window::SetupLighting()
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
+    // узнать что делает эта штука
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_COLOR_MATERIAL);
