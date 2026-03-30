@@ -74,7 +74,12 @@ public:
 
                     glColor4f(v0.color.x, v0.color.y, v0.color.z, v0.color.w);
                     // задаем нормаль и координаты вершины на четной позиции
+                    auto nor = v0.normal * -1;
+
                     glNormal3f(v0.normal.x, v0.normal.y, v0.normal.z);
+                    // доделать с 2 сторон свет
+//                    glNormal3f(nor.x, nor.y, nor.z);
+
                     glVertex3f(v0.position.x, v0.position.y, v0.position.z);
 
                     // задаем нормаль и координаты вершины на нечетной позиции

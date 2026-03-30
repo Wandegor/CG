@@ -12,7 +12,7 @@ namespace
     constexpr double Z_FAR = 10;
 
     // Прозрачность звезды
-    constexpr GLubyte ALTHA = 100;
+    constexpr GLubyte ALTHA = 150;
 
     // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
     glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
@@ -38,12 +38,12 @@ Window::Window(int w, int h, const char* title)
         glm::dvec3{ 0.0, 0.0, 0.0 },
         glm::dvec3{ 0.0, 1.0, 0.0 });
 
-    m_star.SetSideColor(0, 255, 0, 0, ALTHA);     // Красный
-    m_star.SetSideColor(1, 0, 255, 0, ALTHA);     // Зеленый
-    m_star.SetSideColor(2, 0, 0, 255, ALTHA);     // Синий
-    m_star.SetSideColor(3, 255, 255, 0, ALTHA);   // Желтый
-    m_star.SetSideColor(4, 255, 120, 100, ALTHA); // Коралловый
-    m_star.SetSideColor(5, 0, 255, 255, ALTHA);   // Циан
+    m_star.SetSideColor(0, 255, 0, 0, 255);     // Красный
+    m_star.SetSideColor(1, 0, 255, 0, 255);     // Зеленый
+    m_star.SetSideColor(2, 0, 0, 255, 255);     // Синий
+    m_star.SetSideColor(3, 255, 255, 0, 255);   // Желтый
+    m_star.SetSideColor(4, 255, 120, 100, 255); // Коралловый
+    m_star.SetSideColor(5, 0, 255, 255, 255);   // Циан
     m_star.SetSideColor(6, 255, 128, 0, ALTHA);   // Оранжевый
     m_star.SetSideColor(7, 128, 0, 123, ALTHA);   // Фиолетовый
     m_star.SetSideColor(8, 200, 128, 128, ALTHA);   // Морская волна

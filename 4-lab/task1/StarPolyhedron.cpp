@@ -33,11 +33,9 @@ void StarPolyhedron::GenerateGeometry()
     m_vertices.clear();
     m_indices.clear();
 
-    // Сохраняем вершины икосаэдра
     for (int i = 0; i < 12; ++i)
         m_vertices.push_back(base_verts[i] * m_size);
 
-    // Считаем пики шипов
     for (int i = 0; i < 20; ++i)
     {
         glm::vec3 v0 = base_verts[faces[i][0]];
@@ -46,7 +44,7 @@ void StarPolyhedron::GenerateGeometry()
         glm::vec3 center = (v0 + v1 + v2) / 3.0f; // пик пирамиды
         m_vertices.push_back(center * spike_factor * m_size);
 
-        // Заполняем индексы сразу
+        // Индексы
         int peak_idx = 12 + i;
         m_indices.push_back(faces[i][0]);
         m_indices.push_back(faces[i][1]);
