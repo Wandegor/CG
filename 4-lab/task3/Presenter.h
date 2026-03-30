@@ -36,7 +36,7 @@ private:
 public:
     Presenter(int mazeW, int mazeH)
         : m_model(mazeW, mazeH),
-          m_cameraPos(5.0, 0.5, 5.0),
+          m_cameraPos(5.0, 2.5, 5.0),
           m_yaw(-M_PI / 2.0),
           m_pitch(0.0)
     {

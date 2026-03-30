@@ -158,7 +158,7 @@ void Window::SetupLighting()
     glEnable(GL_LIGHT0);
 
     // Расчет света для обоих сторон полигона
-    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -189,7 +189,7 @@ void Window::Draw(int width, int height)
     const GLfloat lightPosition[] = {2.0f, 2.0f, 3.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     RenderMaze(m_presenter.GetModel());
 

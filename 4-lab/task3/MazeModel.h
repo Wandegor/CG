@@ -6,20 +6,29 @@ class MazeModel
 private:
     int m_width;
     int m_height;
-    std::vector<std::vector<bool> > m_grid;
+    std::vector<std::vector<bool>> m_grid;
 
 public:
     MazeModel(int width, int height) : m_width(width), m_height(height)
     {
         m_grid.resize(width, std::vector<bool>(height, false));
+        int map[10][10] = {
+            {1,1,1,1,1,1,1,1,1,1},
+            {1,0,0,0,1,0,0,0,0,1},
+            {1,0,1,0,1,0,1,1,0,1},
+            {1,0,1,0,0,0,0,1,0,1},
+            {1,0,1,1,1,1,0,1,0,1},
+            {1,0,0,0,0,1,0,0,0,1},
+            {1,1,1,1,0,1,1,1,0,1},
+            {1,0,0,0,0,0,0,1,0,1},
+            {1,0,1,1,1,1,0,0,0,1},
+            {1,1,1,1,1,1,1,1,1,1}
+        };
 
-        // Простые стены по периметру
-        for (int x = 0; x < width; ++x)
-        {
-            for (int z = 0; z < height; ++z)
-            {
-                if (x == 0 || x == width - 1 || z == 0 || z == height - 1)
-                {
+        for (int z = 0; z < height; ++z) {
+            for (int x = 0; x < width; ++x) {
+                // Если в массиве 1 — ставим стену
+                if (map[z][x] == 1) {
                     m_grid[x][z] = true;
                 }
             }
