@@ -36,7 +36,7 @@ private:
 public:
     Presenter(int mazeW, int mazeH)
         : m_model(mazeW, mazeH),
-          m_cameraPos(5.0, 2.5, 5.0),
+          m_cameraPos(1.5, 0.5, 1.5),
           m_yaw(-M_PI / 2.0),
           m_pitch(0.0)
     {
@@ -57,12 +57,31 @@ public:
         glm::dvec3 rightHor = glm::normalize(glm::dvec3(m_right.x, 0.0, m_right.z));
 
         glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
-        m_cameraPos += deltaWorld;
+
+        // Коллизии
+        double radius = 0.1;
+
+        // левый и правый край игрока
+        double nextX = m_cameraPos.x + deltaWorld.x;
+        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
+            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
+        {
+            m_cameraPos.x = nextX;
+        }
+
+        // передний и задний край
+        double nextZ = m_cameraPos.z + deltaWorld.z;
+        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
+            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
+        {
+            m_cameraPos.z = nextZ;
+        }
     }
 
     void OnKey(int key, int action)
     {
-        if (key >= 0 && key <= GLFW_KEY_LAST) {
+        if (key >= 0 && key <= GLFW_KEY_LAST)
+        {
             if (action == GLFW_PRESS) m_keys[key] = true;
             else if (action == GLFW_RELEASE) m_keys[key] = false;
         }
@@ -70,7 +89,8 @@ public:
 
     void OnMouseButton(int button, int action)
     {
-        if (button == GLFW_MOUSE_BUTTON_1) {
+        if (button == GLFW_MOUSE_BUTTON_1)
+        {
             m_leftButtonPressed = (action & GLFW_PRESS) != 0;
         }
     }
