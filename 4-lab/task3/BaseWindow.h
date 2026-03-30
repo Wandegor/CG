@@ -46,7 +46,7 @@ public:
         glfwDestroyWindow(m_window);
     }
 
-    glm::ivec2 GetFramebufferSize() const
+    [[nodiscard]] glm::ivec2 GetFramebufferSize() const
     {
         int w, h;
         glfwGetFramebufferSize(m_window, &w, &h);
@@ -86,7 +86,7 @@ public:
         OnRunEnd();
     }
 
-    glm::dvec2 GetCursorPos() const
+    [[nodiscard]] glm::dvec2 GetCursorPos() const
     {
         double x, y;
         glfwGetCursorPos(m_window, &x, &y);

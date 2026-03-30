@@ -102,11 +102,11 @@ void Window::OnMouseMove(double x, double y)
     {
         const glm::dvec2 delta = mousePos - m_mousePos;
 
-        // Изменяем углы с учётом чувствительности
+        // Углы поворотов от чувствительности
         m_yaw   += delta.x * m_mouseSensitivity;
         m_pitch -= delta.y * m_mouseSensitivity;
 
-        // Ограничиваем pitch, чтобы не переворачиваться (от -89° до +89°)
+        // Ограничение pitch (от -89° до +89°)
         const double maxPitch = M_PI / 2.0 - 0.01;
         if (m_pitch > maxPitch) m_pitch = maxPitch;
         if (m_pitch < -maxPitch) m_pitch = -maxPitch;
