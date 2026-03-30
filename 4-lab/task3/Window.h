@@ -9,7 +9,7 @@ public:
 
 private:
 	GLuint m_wallDisplayList = 0;
-	void InitWallDisplayList();
+	void BuildMazeDisplayList(const MazeModel& model);
 	void RenderMaze(const MazeModel& model);
 
     void OnKey(int key, int scancode, int action, int mods) override;

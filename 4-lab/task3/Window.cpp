@@ -28,70 +28,77 @@ Window::Window(int w, int h, const char* title, Presenter& presenter)
     : BaseWindow(w, h, title), m_presenter(presenter),
       m_lastTime(glfwGetTime()) {}
 
-void Window::InitWallDisplayList()
+void Window::BuildMazeDisplayList(const MazeModel& model)
 {
-    if (m_wallDisplayList != 0) return;
+    if (m_wallDisplayList != 0)
+    {
+        glDeleteLists(m_wallDisplayList, 1);
+    }
+
     m_wallDisplayList = glGenLists(1);
     glNewList(m_wallDisplayList, GL_COMPILE);
 
     glBegin(GL_QUADS);
-    // Передняя грань (-Z)
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
+    for (int x = 0; x < model.GetWidth(); ++x)
+    {
+        for (int z = 0; z < model.GetHeight(); ++z)
+        {
+            if (!model.IsWall(x, z)) continue;
 
-    // Задняя грань (+Z)
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(1.0f, 0.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
-    glVertex3f(0.0f, 1.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
+            // Приводим индексы к float для координат
+            auto fx = static_cast<float>(x);
+            auto fz = static_cast<float>(z);
 
-    // Левая грань (-X)
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 1.0f, 1.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
+            // 1. ПЕРЕДНЯЯ ГРАНЬ (Z-)
+            if (!model.IsWall(x, z - 1)) {
+                glNormal3f(0, 0, -1);
+                glVertex3f(fx,     0, fz);
+                glVertex3f(fx,     1, fz);
+                glVertex3f(fx + 1, 1, fz);
+                glVertex3f(fx + 1, 0, fz);
+            }
 
-    // Правая грань (+X)
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
-    glVertex3f(1.0f, 0.0f, 1.0f);
+            // 2. ЗАДНЯЯ ГРАНЬ (Z+)
+            if (!model.IsWall(x, z + 1)) {
+                glNormal3f(0, 0, 1);
+                glVertex3f(fx + 1, 0, fz + 1);
+                glVertex3f(fx + 1, 1, fz + 1);
+                glVertex3f(fx,     1, fz + 1);
+                glVertex3f(fx,     0, fz + 1);
+            }
 
-    // Верхняя грань (+Y) - потолок
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
+            // 3. ЛЕВАЯ ГРАНЬ (X-)
+            if (!model.IsWall(x - 1, z)) {
+                glNormal3f(-1, 0, 0);
+                glVertex3f(fx, 0, fz + 1);
+                glVertex3f(fx, 1, fz + 1);
+                glVertex3f(fx, 1, fz);
+                glVertex3f(fx, 0, fz);
+            }
+
+            // 4. ПРАВАЯ ГРАНЬ (X+)
+            if (!model.IsWall(x + 1, z)) {
+                glNormal3f(1, 0, 0);
+                glVertex3f(fx + 1, 0, fz);
+                glVertex3f(fx + 1, 1, fz);
+                glVertex3f(fx + 1, 1, fz + 1);
+                glVertex3f(fx + 1, 0, fz + 1);
+            }
+        }
+    }
     glEnd();
-
     glEndList();
 }
 
 void Window::RenderMaze(const MazeModel& model)
 {
-    InitWallDisplayList();
-    glColor3f(0.6f, 0.6f, 0.6f); // Цвет стен
-
-    for (int x = 0; x < model.GetWidth(); ++x)
+    if (m_wallDisplayList == 0)
     {
-        for (int z = 0; z < model.GetHeight(); ++z)
-        {
-            if (model.IsWall(x, z))
-            {
-                glPushMatrix();
-                glTranslatef(x, 0.0f, z);
-                glCallList(m_wallDisplayList);
-                glPopMatrix();
-            }
-        }
+        BuildMazeDisplayList(model);
     }
+
+    glColor3f(0.6f, 0.2f, 0.6f);
+    glCallList(m_wallDisplayList);
 }
 
 void Window::OnKey(int key, int scancode, int action, int mods)
@@ -113,7 +120,6 @@ void Window::OnMouseMove(double x, double y)
 {
     m_presenter.OnMouseMove(x, y);
 }
-
 
 void Window::OnResize(int width, int height)
 {
@@ -150,7 +156,9 @@ void Window::SetupLighting()
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+    // Расчет света для обоих сторон полигона
+    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -181,13 +189,11 @@ void Window::Draw(int width, int height)
     const GLfloat lightPosition[] = {2.0f, 2.0f, 3.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    for (int x = -2; x <= 2; ++x)
-    {
-        // m_wall.Draw(x, 5.0f);
-    }
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
+
     RenderMaze(m_presenter.GetModel());
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Window::SetupCameraMatrix()
