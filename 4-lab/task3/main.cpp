@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "GLFWInitializer.h"
-#include "Window.h"
+#include "View/Window.h"
 
 int main()
 {

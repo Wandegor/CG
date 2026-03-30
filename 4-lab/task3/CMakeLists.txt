@@ -7,13 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
         main.cpp
         pch.h
-        BaseWindow.h
+        View/BaseWindow.h
         GLFWInitializer.h
-        Window.cpp
-        Window.h
+        View/Window.h
         Vertex.h
-        MoebiusStrip.h
-        Surface.h
+        Model/MazeModel.h
+        Presenter/GamePresenter.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
