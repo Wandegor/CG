@@ -12,8 +12,8 @@ add_executable(${PROJECT_NAME}
         Window.cpp
         Window.h
         Vertex.h
-        MoebiusStrip.h
-        Surface.h
+        MazeModel.h
+        Presenter.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})

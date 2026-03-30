@@ -6,120 +6,114 @@ namespace
     // Угол обзора по вертикали
     constexpr double FIELD_OF_VIEW = 60 * M_PI / 180.0;
 
-    constexpr double DISTANCE_TO_ORIGIN = 3;
-
     constexpr double Z_NEAR = 0.1;
-    constexpr double Z_FAR = 10;
+    constexpr double Z_FAR = 50;
 
     // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
-    glm::dmat4x4 Orthonormalize(const glm::dmat4x4 &m)
+    glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
     {
         // Извлекаем подматрицу 3*3 из матрицы m и ортонормируем её
         const auto normalizedMatrix = glm::orthonormalize(glm::dmat3x3{m});
         // Заменяем 3 столбца исходной матрицы
         return {
-                glm::dvec4{normalizedMatrix[0], 0.0},
-                glm::dvec4{normalizedMatrix[1], 0.0},
-                glm::dvec4{normalizedMatrix[2], 0.0},
-                m[3]
+            glm::dvec4{normalizedMatrix[0], 0.0},
+            glm::dvec4{normalizedMatrix[1], 0.0},
+            glm::dvec4{normalizedMatrix[2], 0.0},
+            m[3]
         };
     }
 } // namespace
 
-Window::Window(int w, int h, const char *title)
-        : BaseWindow(w, h, title),
-          m_strip(100, 15),
-          m_cameraPos(0.0, 0., 5.0),
-          m_yaw(-M_PI / 2.0),
-          m_pitch(0.0),
-          m_lastTime(glfwGetTime())
+Window::Window(int w, int h, const char* title, Presenter& presenter)
+    : BaseWindow(w, h, title), m_presenter(presenter),
+      m_lastTime(glfwGetTime()) {}
+
+void Window::InitWallDisplayList()
 {
-    UpdateCameraVectors();
+    if (m_wallDisplayList != 0) return;
+    m_wallDisplayList = glGenLists(1);
+    glNewList(m_wallDisplayList, GL_COMPILE);
+
+    glBegin(GL_QUADS);
+    // Передняя грань (-Z)
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+
+    // Задняя грань (+Z)
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(1.0f, 0.0f, 1.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(0.0f, 1.0f, 1.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+
+    // Левая грань (-X)
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 1.0f, 1.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+
+    // Правая грань (+X)
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(1.0f, 0.0f, 1.0f);
+
+    // Верхняя грань (+Y) - потолок
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 1.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    glEnd();
+
+    glEndList();
 }
 
-void Window::UpdateCameraVectors()
+void Window::RenderMaze(const MazeModel& model)
 {
-    // Направление взгляда (front)
-    glm::dvec3 front;
-    front.x = cos(m_yaw) * cos(m_pitch);
-    front.y = sin(m_pitch);
-    front.z = sin(m_yaw) * cos(m_pitch);
-    m_front = glm::normalize(front);
+    InitWallDisplayList();
+    glColor3f(0.6f, 0.6f, 0.6f); // Цвет стен
 
-    // Правый вектор (перпендикулярен front и мировому up)
-    m_right = glm::normalize(glm::cross(m_front, glm::dvec3(0.0, 1.0, 0.0)));
-    // Вектор вверх (перпендикулярен front и right)
-    m_up = glm::normalize(glm::cross(m_right, m_front));
-}
-
-void Window::UpdateMovement(float deltaTime)
-{
-    float speed = m_moveSpeed * deltaTime;
-    glm::dvec3 move(0.0);
-
-    if (m_keys[GLFW_KEY_W]) move.z += speed; // тк Z смотрит в обратную
-    if (m_keys[GLFW_KEY_S]) move.z -= speed;
-    if (m_keys[GLFW_KEY_A]) move.x -= speed;
-    if (m_keys[GLFW_KEY_D]) move.x += speed;
-
-    glm::dvec3 forwardHor = glm::normalize(glm::dvec3(m_front.x, 0.0, m_front.z));
-    glm::dvec3 rightHor  = glm::normalize(glm::dvec3(m_right.x, 0.0, m_right.z));
-
-    // Смещение в мировых координатах (только XZ)
-    glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
-    m_cameraPos += deltaWorld;
+    for (int x = 0; x < model.GetWidth(); ++x)
+    {
+        for (int z = 0; z < model.GetHeight(); ++z)
+        {
+            if (model.IsWall(x, z))
+            {
+                glPushMatrix();
+                glTranslatef(x, 0.0f, z);
+                glCallList(m_wallDisplayList);
+                glPopMatrix();
+            }
+        }
+    }
 }
 
 void Window::OnKey(int key, int scancode, int action, int mods)
 {
-    if (key >= 0 && key <= GLFW_KEY_LAST)
-    {
-        if (action == GLFW_PRESS)
-            m_keys[key] = true;
-        else if (action == GLFW_RELEASE)
-            m_keys[key] = false;
-    }
-
-    // ESC
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(GetWindow(), GLFW_TRUE);
     }
+
+    m_presenter.OnKey(key, action);
 }
 
 void Window::OnMouseButton(int button, int action, int mods)
 {
-    if (button == GLFW_MOUSE_BUTTON_1)
-    {
-        m_leftButtonPressed = (action & GLFW_PRESS) != 0;
-    }
+    m_presenter.OnMouseButton(button, action);
 }
 
 void Window::OnMouseMove(double x, double y)
 {
-    const glm::dvec2 mousePos{x, y};
-    if (m_leftButtonPressed)
-    {
-        const glm::dvec2 delta = mousePos - m_mousePos;
-
-        // Углы поворотов от чувствительности
-        m_yaw   += delta.x * m_mouseSensitivity;
-        m_pitch -= delta.y * m_mouseSensitivity;
-
-        // Ограничение pitch (от -89° до +89°)
-        const double maxPitch = M_PI / 2.0 - 0.01;
-        if (m_pitch > maxPitch) m_pitch = maxPitch;
-        if (m_pitch < -maxPitch) m_pitch = -maxPitch;
-
-        UpdateCameraVectors();
-    }
-    m_mousePos = mousePos;
+    m_presenter.OnMouseMove(x, y);
 }
 
-// Вращаем камеру вокруг начала координат
-void Window::RotateCamera(double xAngleRadians, double yAngleRadians)
-{
-}
 
 void Window::OnResize(int width, int height)
 {
@@ -177,8 +171,9 @@ void Window::Draw(int width, int height)
     float deltaTime = static_cast<float>(currentTime - m_lastTime);
     m_lastTime = currentTime;
 
-    UpdateMovement(deltaTime);
+    m_presenter.UpdateMovement(deltaTime);
 
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     SetupCameraMatrix();
@@ -187,13 +182,22 @@ void Window::Draw(int width, int height)
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    m_strip.Draw();
+    for (int x = -2; x <= 2; ++x)
+    {
+        // m_wall.Draw(x, 5.0f);
+    }
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    RenderMaze(m_presenter.GetModel());
 }
 
 void Window::SetupCameraMatrix()
 {
     glMatrixMode(GL_MODELVIEW);
-    glm::dmat4 view = glm::lookAt(m_cameraPos, m_cameraPos + m_front, m_up);
+
+    glm::dvec3 pos = m_presenter.GetCameraPos();
+    glm::dvec3 front = m_presenter.GetCameraFront();
+    glm::dvec3 up = m_presenter.GetCameraUp();
+
+    glm::dmat4 view = glm::lookAt(pos, pos + front, up);
     glLoadMatrixd(&view[0][0]);
 }
