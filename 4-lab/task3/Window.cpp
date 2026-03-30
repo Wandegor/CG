@@ -1,15 +1,10 @@
 ﻿#include "pch.h"
 #include "Window.h"
 
-#include "MoebiusStrip.h"
-#include "Surface.h"
-
 namespace
 {
     // Угол обзора по вертикали
     constexpr double FIELD_OF_VIEW = 60 * M_PI / 180.0;
-    // Размер стороны куба
-    // constexpr double CUBE_SIZE = 1;
 
     constexpr double DISTANCE_TO_ORIGIN = 3;
 
@@ -34,34 +29,45 @@ namespace
 Window::Window(int w, int h, const char *title)
         : BaseWindow(w, h, title),
           m_strip(100, 15),
-          m_cameraMatrix(glm::lookAt(
-                  glm::dvec3{0.0, 0.0, DISTANCE_TO_ORIGIN},
-                  glm::dvec3{0.0, 0.0, 0.0},
-                  glm::dvec3{0.0, 1.0, 0.0})),
+          m_cameraPos(0.0, 0., 5.0),
+          m_yaw(-M_PI / 2.0),
+          m_pitch(0.0),
           m_lastTime(glfwGetTime())
-{}
+{
+    UpdateCameraVectors();
+}
+
+void Window::UpdateCameraVectors()
+{
+    // Направление взгляда (front)
+    glm::dvec3 front;
+    front.x = cos(m_yaw) * cos(m_pitch);
+    front.y = sin(m_pitch);
+    front.z = sin(m_yaw) * cos(m_pitch);
+    m_front = glm::normalize(front);
+
+    // Правый вектор (перпендикулярен front и мировому up)
+    m_right = glm::normalize(glm::cross(m_front, glm::dvec3(0.0, 1.0, 0.0)));
+    // Вектор вверх (перпендикулярен front и right)
+    m_up = glm::normalize(glm::cross(m_right, m_front));
+}
 
 void Window::UpdateMovement(float deltaTime)
 {
     float speed = m_moveSpeed * deltaTime;
     glm::dvec3 move(0.0);
 
-    if (m_keys[GLFW_KEY_W]) move.z -= speed; // тк Z смотрит в обратную
-    if (m_keys[GLFW_KEY_S]) move.z += speed;
+    if (m_keys[GLFW_KEY_W]) move.z += speed; // тк Z смотрит в обратную
+    if (m_keys[GLFW_KEY_S]) move.z -= speed;
     if (m_keys[GLFW_KEY_A]) move.x -= speed;
     if (m_keys[GLFW_KEY_D]) move.x += speed;
 
-    if (move.x == 0.0 && move.z == 0.0) return;
+    glm::dvec3 forwardHor = glm::normalize(glm::dvec3(m_front.x, 0.0, m_front.z));
+    glm::dvec3 rightHor  = glm::normalize(glm::dvec3(m_right.x, 0.0, m_right.z));
 
-    // Локальные оси камеры в мировых координатах
-    glm::dvec3 right(m_cameraMatrix[0][0], m_cameraMatrix[1][0], m_cameraMatrix[2][0]); // X
-    glm::dvec3 forward(m_cameraMatrix[0][2], m_cameraMatrix[1][2], m_cameraMatrix[2][2]);// Z
-
-    // Смещение в мировых координатах
-    glm::dvec3 deltaWorld = right * move.x + forward * move.z;
-
-    // Применяем трансляцию к матрице вида (умножаем справа)
-    m_cameraMatrix = Orthonormalize(m_cameraMatrix * glm::translate(glm::dmat4(1.0), -deltaWorld));
+    // Смещение в мировых координатах (только XZ)
+    glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
+    m_cameraPos += deltaWorld;
 }
 
 void Window::OnKey(int key, int scancode, int action, int mods)
@@ -94,12 +100,18 @@ void Window::OnMouseMove(double x, double y)
     const glm::dvec2 mousePos{x, y};
     if (m_leftButtonPressed)
     {
-        const auto windowSize = GetFramebufferSize();
+        const glm::dvec2 delta = mousePos - m_mousePos;
 
-        const auto mouseDelta = mousePos - m_mousePos;
-        const double xAngle = mouseDelta.y * M_PI / windowSize.y;
-        const double yAngle = mouseDelta.x * M_PI / windowSize.x;
-        RotateCamera(xAngle, yAngle);
+        // Изменяем углы с учётом чувствительности
+        m_yaw   += delta.x * m_mouseSensitivity;
+        m_pitch -= delta.y * m_mouseSensitivity;
+
+        // Ограничиваем pitch, чтобы не переворачиваться (от -89° до +89°)
+        const double maxPitch = M_PI / 2.0 - 0.01;
+        if (m_pitch > maxPitch) m_pitch = maxPitch;
+        if (m_pitch < -maxPitch) m_pitch = -maxPitch;
+
+        UpdateCameraVectors();
     }
     m_mousePos = mousePos;
 }
@@ -107,20 +119,6 @@ void Window::OnMouseMove(double x, double y)
 // Вращаем камеру вокруг начала координат
 void Window::RotateCamera(double xAngleRadians, double yAngleRadians)
 {
-    // Извлекаем из 1 и 2 строки матрицы камеры направления осей вращения,
-    // совпадающих с экранными осями X и Y.
-    // Строго говоря, для этого надо извлекать столбцы их обратной матрицы камеры, но так как
-    // матрица камеры ортонормированная, достаточно транспонировать её подматрицу 3*3
-    const glm::dvec3 xAxis{
-            m_cameraMatrix[0][0], m_cameraMatrix[1][0], m_cameraMatrix[2][0]
-    };
-    const glm::dvec3 yAxis{
-            m_cameraMatrix[0][1], m_cameraMatrix[1][1], m_cameraMatrix[2][1]
-    };
-    m_cameraMatrix = glm::rotate(m_cameraMatrix, xAngleRadians, xAxis);
-    m_cameraMatrix = glm::rotate(m_cameraMatrix, yAngleRadians, yAxis);
-
-    m_cameraMatrix = Orthonormalize(m_cameraMatrix);
 }
 
 void Window::OnResize(int width, int height)
@@ -196,5 +194,6 @@ void Window::Draw(int width, int height)
 void Window::SetupCameraMatrix()
 {
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(&m_cameraMatrix[0][0]);
+    glm::dmat4 view = glm::lookAt(m_cameraPos, m_cameraPos + m_front, m_up);
+    glLoadMatrixd(&view[0][0]);
 }

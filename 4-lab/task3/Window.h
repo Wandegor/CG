@@ -31,7 +31,17 @@ private:
 
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
-	glm::dmat4x4 m_cameraMatrix;
+
+    glm::dvec3 m_cameraPos;
+    double m_yaw; // угол поворота вокруг вертикали
+    double m_pitch;
+
+    glm::dvec3 m_front;
+    glm::dvec3 m_right;
+    glm::dvec3 m_up;
+
+    void UpdateCameraVectors();
+    const double m_mouseSensitivity = 0.0015;
 
     double m_lastTime = 0.0;
     float m_moveSpeed = 3.0f;
