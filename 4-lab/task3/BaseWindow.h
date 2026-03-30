@@ -16,12 +16,15 @@ public:
 
         glfwSetWindowUserPointer(m_window, this);
 
+        glfwSetKeyCallback(m_window,
+                           [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+                               GetBaseWindow(window)->OnKey(key, scancode, action, mods);
+                           });
         glfwSetWindowSizeCallback(m_window,
                                   [](GLFWwindow* window, int width, int height)
                                   {
                                       GetBaseWindow(window)->OnResize(width, height);
                                   });
-
         glfwSetMouseButtonCallback(m_window,
                                    [](GLFWwindow* window, int button, int action, int mods)
                                    {
@@ -91,7 +94,7 @@ public:
     }
 
 protected:
-    GLFWwindow* GetWindow() const { return m_window; }
+    [[nodiscard]] GLFWwindow* GetWindow() const { return m_window; }
 
 private:
     static BaseWindow* GetBaseWindow(GLFWwindow* window)
@@ -99,6 +102,7 @@ private:
         return static_cast<BaseWindow *>(glfwGetWindowUserPointer(window));
     }
 
+    virtual void OnKey(int key, int scancode, int action, int mods) {}
     virtual void OnResize([[maybe_unused]] int width, [[maybe_unused]] int height) {}
     virtual void OnMouseButton([[maybe_unused]] int button, [[maybe_unused]] int action, [[maybe_unused]] int mods) {}
     virtual void OnMouseMove([[maybe_unused]] double x, [[maybe_unused]] double y) {}

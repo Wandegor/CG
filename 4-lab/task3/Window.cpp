@@ -41,33 +41,44 @@ Window::Window(int w, int h, const char *title)
           m_lastTime(glfwGetTime())
 {}
 
-bool Window::IsKeyPressed(int key) const
-{
-    return glfwGetKey(GetWindow(), key) == GLFW_PRESS;
-}
-
 void Window::UpdateMovement(float deltaTime)
 {
-    glm::dvec3 move(0.0);
     float speed = m_moveSpeed * deltaTime;
+    glm::dvec3 move(0.0);
 
-    if (IsKeyPressed(GLFW_KEY_W)) move.z += speed;
-    if (IsKeyPressed(GLFW_KEY_S)) move.z -= speed;
-    if (IsKeyPressed(GLFW_KEY_A)) move.x -= speed;
-    if (IsKeyPressed(GLFW_KEY_D)) move.x += speed;
+    if (m_keys[GLFW_KEY_W]) move.z -= speed; // тк Z смотрит в обратную
+    if (m_keys[GLFW_KEY_S]) move.z += speed;
+    if (m_keys[GLFW_KEY_A]) move.x -= speed;
+    if (m_keys[GLFW_KEY_D]) move.x += speed;
 
     if (move.x == 0.0 && move.z == 0.0) return;
 
-    // Получаем локальные оси камеры в мировых координатах
-    glm::dvec3 right(m_cameraMatrix[0][0], m_cameraMatrix[1][0], m_cameraMatrix[2][0]);
-    // Камера смотрит в направлении -Z, поэтому вектор "вперёд" берём со знаком минус
-    glm::dvec3 forward(-m_cameraMatrix[0][2], -m_cameraMatrix[1][2], -m_cameraMatrix[2][2]);
+    // Локальные оси камеры в мировых координатах
+    glm::dvec3 right(m_cameraMatrix[0][0], m_cameraMatrix[1][0], m_cameraMatrix[2][0]); // X
+    glm::dvec3 forward(m_cameraMatrix[0][2], m_cameraMatrix[1][2], m_cameraMatrix[2][2]);// Z
 
     // Смещение в мировых координатах
     glm::dvec3 deltaWorld = right * move.x + forward * move.z;
 
     // Применяем трансляцию к матрице вида (умножаем справа)
-    m_cameraMatrix = m_cameraMatrix * glm::translate(glm::dmat4(1.0), -deltaWorld);
+    m_cameraMatrix = Orthonormalize(m_cameraMatrix * glm::translate(glm::dmat4(1.0), -deltaWorld));
+}
+
+void Window::OnKey(int key, int scancode, int action, int mods)
+{
+    if (key >= 0 && key <= GLFW_KEY_LAST)
+    {
+        if (action == GLFW_PRESS)
+            m_keys[key] = true;
+        else if (action == GLFW_RELEASE)
+            m_keys[key] = false;
+    }
+
+    // ESC
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(GetWindow(), GLFW_TRUE);
+    }
 }
 
 void Window::OnMouseButton(int button, int action, int mods)
