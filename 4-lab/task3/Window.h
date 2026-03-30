@@ -8,6 +8,9 @@ public:
 	Window(int w, int h, const char* title);
 
 private:
+    bool IsKeyPressed(int key) const;
+    void UpdateMovement(float deltaTime);
+
 	void OnMouseButton(int button, int action, [[maybe_unused]] int mods) override;
 
 	void OnMouseMove(double x, double y) override;
@@ -29,4 +32,7 @@ private:
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
 	glm::dmat4x4 m_cameraMatrix;
+
+    double m_lastTime = 0.0;
+    float m_moveSpeed = 3.0f;
 };
