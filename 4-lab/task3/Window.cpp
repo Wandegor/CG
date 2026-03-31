@@ -38,10 +38,25 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
     m_wallDisplayList = glGenLists(1);
     glNewList(m_wallDisplayList, GL_COMPILE);
 
+    int width = model.GetWidth();
+    int height = model.GetHeight();
+
+    // Пол
     glBegin(GL_QUADS);
-    for (int x = 0; x < model.GetWidth(); ++x)
+    glColor3f(0.4f, 0.5f, 0.6f);
+
+    glNormal3f(0.0f, 1.0f, 0.0f);
+
+    glVertex3f(0.0f,  0.0f, 0.0f);
+    glVertex3f(0.0f,  0.0f, height);
+    glVertex3f(width, 0.0f, height);
+    glVertex3f(width, 0.0f, 0.0f);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    for (int x = 0; x < width; ++x)
     {
-        for (int z = 0; z < model.GetHeight(); ++z)
+        for (int z = 0; z < height; ++z)
         {
             if (!model.IsWall(x, z)) continue;
 
@@ -49,7 +64,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
             auto fx = static_cast<float>(x);
             auto fz = static_cast<float>(z);
 
-            // 1. ПЕРЕДНЯЯ ГРАНЬ (Z-)
+            // Передняя грань (Z-)
             if (!model.IsWall(x, z - 1)) {
                 glNormal3f(0, 0, -1);
                 glVertex3f(fx,     0, fz);
@@ -58,7 +73,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
                 glVertex3f(fx + 1, 0, fz);
             }
 
-            // 2. ЗАДНЯЯ ГРАНЬ (Z+)
+            // Задняя (Z+)
             if (!model.IsWall(x, z + 1)) {
                 glNormal3f(0, 0, 1);
                 glVertex3f(fx + 1, 0, fz + 1);
@@ -67,7 +82,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
                 glVertex3f(fx,     0, fz + 1);
             }
 
-            // 3. ЛЕВАЯ ГРАНЬ (X-)
+            // Левая (X-)
             if (!model.IsWall(x - 1, z)) {
                 glNormal3f(-1, 0, 0);
                 glVertex3f(fx, 0, fz + 1);
@@ -76,7 +91,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
                 glVertex3f(fx, 0, fz);
             }
 
-            // 4. ПРАВАЯ ГРАНЬ (X+)
+            // Правая (X+)
             if (!model.IsWall(x + 1, z)) {
                 glNormal3f(1, 0, 0);
                 glVertex3f(fx + 1, 0, fz);
@@ -166,7 +181,7 @@ void Window::SetupLighting()
     const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
-    const GLfloat lightAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
+    const GLfloat lightAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
     const GLfloat lightDiffuse[] = {0.60f, 0.60f, 0.60f, 1.0f};
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
