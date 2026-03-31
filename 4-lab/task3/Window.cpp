@@ -43,7 +43,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
     // Пол
     glBegin(GL_QUADS);
-    glColor3f(0.4f, 0.5f, 0.6f);
+    glColor3f(0.8f, 0.6f, 0.8f);
 
     glNormal3f(0.0f, 1.0f, 0.0f);
 
@@ -66,6 +66,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
             // Передняя грань (Z-)
             if (!model.IsWall(x, z - 1)) {
+                glColor3f(0.2f, 0.4f, 0.8f);
                 glNormal3f(0, 0, -1);
                 glVertex3f(fx,     0, fz);
                 glVertex3f(fx,     1, fz);
@@ -75,6 +76,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
             // Задняя (Z+)
             if (!model.IsWall(x, z + 1)) {
+                glColor3f(0.8f, 0.2f, 0.2f);
                 glNormal3f(0, 0, 1);
                 glVertex3f(fx + 1, 0, fz + 1);
                 glVertex3f(fx + 1, 1, fz + 1);
@@ -84,6 +86,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
             // Левая (X-)
             if (!model.IsWall(x - 1, z)) {
+                glColor3f(0.2f, 0.7f, 0.2f);
                 glNormal3f(-1, 0, 0);
                 glVertex3f(fx, 0, fz + 1);
                 glVertex3f(fx, 1, fz + 1);
@@ -93,6 +96,7 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
             // Правая (X+)
             if (!model.IsWall(x + 1, z)) {
+                glColor3f(0.8f, 0.8f, 0.2f);
                 glNormal3f(1, 0, 0);
                 glVertex3f(fx + 1, 0, fz);
                 glVertex3f(fx + 1, 1, fz);
@@ -178,6 +182,10 @@ void Window::SetupLighting()
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
+    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.15f); // Чем больше число, тем быстрее гаснет свет
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.05f);
+
     const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
@@ -201,7 +209,13 @@ void Window::Draw(int width, int height)
 
     SetupCameraMatrix();
 
-    const GLfloat lightPosition[] = {2.0f, 2.0f, 3.0f, 1.0f};
+    glm::dvec3 pos = m_presenter.GetCameraPos();
+    const GLfloat lightPosition[] = {
+        static_cast<GLfloat>(pos.x),
+        static_cast<GLfloat>(pos.y),
+        static_cast<GLfloat>(pos.z),
+        1.0f
+    };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -214,6 +228,7 @@ void Window::Draw(int width, int height)
 void Window::SetupCameraMatrix()
 {
     glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     glm::dvec3 pos = m_presenter.GetCameraPos();
     glm::dvec3 front = m_presenter.GetCameraFront();
