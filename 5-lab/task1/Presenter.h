@@ -18,7 +18,7 @@ private:
     bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {0.0, 0.0};
 
-    const double m_moveSpeed = 3.0;
+    const double m_moveSpeed = 2.0;
     const double m_mouseSensitivity = 0.002;
 
     void UpdateCameraVectors()
@@ -35,21 +35,27 @@ private:
 
     void CheckColiseum(glm::dvec3 deltaWorld)
     {
-        // Коллизии
-        double radius = 0.1;
+        double offset = 0.15;
 
-        // левый и правый край игрока
+        // движение по X
         double nextX = m_cameraPos.x + deltaWorld.x;
-        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
-            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
+
+        if (!m_model.IsWall(int(nextX + offset), int(m_cameraPos.z + offset)) &&
+            !m_model.IsWall(int(nextX + offset), int(m_cameraPos.z - offset)) &&
+            !m_model.IsWall(int(nextX - offset), int(m_cameraPos.z + offset)) &&
+            !m_model.IsWall(int(nextX - offset), int(m_cameraPos.z - offset)))
         {
             m_cameraPos.x = nextX;
         }
 
-        // передний и задний край
+        // движение по Z
         double nextZ = m_cameraPos.z + deltaWorld.z;
-        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
-            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
+
+        // Аналогично: проверяем все 4 угла квадрата в новой позиции по Z
+        if (!m_model.IsWall(int(m_cameraPos.x + offset), int(nextZ + offset)) &&
+            !m_model.IsWall(int(m_cameraPos.x + offset), int(nextZ - offset)) &&
+            !m_model.IsWall(int(m_cameraPos.x - offset), int(nextZ + offset)) &&
+            !m_model.IsWall(int(m_cameraPos.x - offset), int(nextZ - offset)))
         {
             m_cameraPos.z = nextZ;
         }
