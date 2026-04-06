@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(GLAD_INCLUDE_DIR D:/GLAD/include)
 set(GLAD_SOURCE D:/GLAD/src/gl.c)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stbi)
+
 include(FetchContent)
 
 FetchContent_Declare(
