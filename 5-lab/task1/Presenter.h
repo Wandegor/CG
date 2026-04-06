@@ -33,6 +33,28 @@ private:
         m_up = glm::normalize(glm::cross(m_right, m_front));
     }
 
+    void CheckColiseum(glm::dvec3 deltaWorld)
+    {
+        // Коллизии
+        double radius = 0.1;
+
+        // левый и правый край игрока
+        double nextX = m_cameraPos.x + deltaWorld.x;
+        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
+            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
+        {
+            m_cameraPos.x = nextX;
+        }
+
+        // передний и задний край
+        double nextZ = m_cameraPos.z + deltaWorld.z;
+        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
+            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
+        {
+            m_cameraPos.z = nextZ;
+        }
+    }
+
 public:
     Presenter(int mazeW, int mazeH)
         : m_model(mazeW, mazeH),
@@ -59,23 +81,7 @@ public:
         glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
 
         // Коллизии
-        double radius = 0.1;
-
-        // левый и правый край игрока
-        double nextX = m_cameraPos.x + deltaWorld.x;
-        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
-            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
-        {
-            m_cameraPos.x = nextX;
-        }
-
-        // передний и задний край
-        double nextZ = m_cameraPos.z + deltaWorld.z;
-        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
-            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
-        {
-            m_cameraPos.z = nextZ;
-        }
+        CheckColiseum(deltaWorld);
     }
 
     void OnKey(int key, int action)
