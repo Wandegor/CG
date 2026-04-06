@@ -16,6 +16,12 @@ add_executable(${PROJECT_NAME}
         Presenter.h
 )
 
+add_custom_command(TARGET task1 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures"
+        "$<TARGET_FILE_DIR:task1>/Textures"
+)
+
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})
 

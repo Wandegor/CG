@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "Window.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 namespace
 {
@@ -53,6 +55,10 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
     glVertex3f(width, 0.0f, 0.0f);
     glEnd();
 
+    // Включение текстур
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, m_wallTexture);
+
     glBegin(GL_QUADS);
     for (int x = 0; x < width; ++x)
     {
@@ -66,46 +72,43 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
 
             // Передняя грань (Z-)
             if (!model.IsWall(x, z - 1)) {
-                glColor3f(0.2f, 0.4f, 0.8f);
                 glNormal3f(0, 0, -1);
-                glVertex3f(fx,     0, fz);
-                glVertex3f(fx,     1, fz);
-                glVertex3f(fx + 1, 1, fz);
-                glVertex3f(fx + 1, 0, fz);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx,     0, fz); // Лево-низ
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx,     1, fz); // Лево-верх
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz); // Право-верх
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz); // Право-низ
             }
 
             // Задняя (Z+)
             if (!model.IsWall(x, z + 1)) {
-                glColor3f(0.8f, 0.2f, 0.2f);
                 glNormal3f(0, 0, 1);
-                glVertex3f(fx + 1, 0, fz + 1);
-                glVertex3f(fx + 1, 1, fz + 1);
-                glVertex3f(fx,     1, fz + 1);
-                glVertex3f(fx,     0, fz + 1);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Лево-низ
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Лево-верх
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx,     1, fz + 1); // Право-верх
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx,     0, fz + 1); // Право-низ
             }
 
             // Левая (X-)
             if (!model.IsWall(x - 1, z)) {
-                glColor3f(0.2f, 0.7f, 0.2f);
                 glNormal3f(-1, 0, 0);
-                glVertex3f(fx, 0, fz + 1);
-                glVertex3f(fx, 1, fz + 1);
-                glVertex3f(fx, 1, fz);
-                glVertex3f(fx, 0, fz);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx, 0, fz + 1); // Лево-низ
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx, 1, fz + 1); // Лево-верх
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx, 1, fz);     // Право-верх
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx, 0, fz);     // Право-низ
             }
 
             // Правая (X+)
             if (!model.IsWall(x + 1, z)) {
-                glColor3f(0.8f, 0.8f, 0.2f);
                 glNormal3f(1, 0, 0);
-                glVertex3f(fx + 1, 0, fz);
-                glVertex3f(fx + 1, 1, fz);
-                glVertex3f(fx + 1, 1, fz + 1);
-                glVertex3f(fx + 1, 0, fz + 1);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz);     // Лево-низ
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz);     // Лево-верх
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Право-верх
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Право-низ
             }
         }
     }
     glEnd();
+    glDisable(GL_TEXTURE_2D);
     glEndList();
 }
 
@@ -167,6 +170,8 @@ void Window::OnRunStart()
     glEnable(GL_DEPTH_TEST);
 
     SetupLighting();
+
+    m_wallTexture = LoadTexture("Textures/wall2.jpg");
 }
 
 void Window::SetupLighting()
@@ -194,6 +199,39 @@ void Window::SetupLighting()
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+}
+
+GLuint Window::LoadTexture(const char* path)
+{
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Загрузка через stb_image
+    int width, height, channels;
+    // Флипаем текстуру по вертикали, так как в OpenGL координата Y идет снизу вверх
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
+
+    if (data)
+    {
+        // Если картинка без альфа-канала (RGB), используем GL_RGB. Если PNG с прозрачностью - GL_RGBA
+        GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    }
+    else
+    {
+        // Можно выбросить std::runtime_error, чтобы сразу заметить ошибку пути
+        throw std::runtime_error("Failed to load texture!");
+    }
+
+    return textureID;
 }
 
 void Window::Draw(int width, int height)
