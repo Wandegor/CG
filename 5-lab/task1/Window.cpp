@@ -55,59 +55,63 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
     glVertex3f(width, 0.0f, 0.0f);
     glEnd();
 
+    glColor3f(1.f, 1.f, 1.f);
     // Включение текстур
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, m_wallTexture);
 
-    glBegin(GL_QUADS);
     for (int x = 0; x < width; ++x)
     {
         for (int z = 0; z < height; ++z)
         {
             if (!model.IsWall(x, z)) continue;
 
+            int textureIndex = (x * 7 + z * 13) % m_wallTextures.size();
+            glBindTexture(GL_TEXTURE_2D, m_wallTextures[textureIndex]);
+
             // Приводим индексы к float для координат
             auto fx = static_cast<float>(x);
             auto fz = static_cast<float>(z);
 
+            glBegin(GL_QUADS);
+
             // Передняя грань (Z-)
             if (!model.IsWall(x, z - 1)) {
                 glNormal3f(0, 0, -1);
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx,     0, fz); // Лево-низ
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx,     1, fz); // Лево-верх
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz); // Право-верх
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz); // Право-низ
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx,     0, fz); // Лево-низ
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx,     1, fz); // Лево-верх
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz); // Право-верх
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz); // Право-низ
             }
 
             // Задняя (Z+)
             if (!model.IsWall(x, z + 1)) {
                 glNormal3f(0, 0, 1);
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Лево-низ
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Лево-верх
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx,     1, fz + 1); // Право-верх
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx,     0, fz + 1); // Право-низ
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Лево-низ
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Лево-верх
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx,     1, fz + 1); // Право-верх
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx,     0, fz + 1); // Право-низ
             }
 
             // Левая (X-)
             if (!model.IsWall(x - 1, z)) {
                 glNormal3f(-1, 0, 0);
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx, 0, fz + 1); // Лево-низ
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx, 1, fz + 1); // Лево-верх
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx, 1, fz);     // Право-верх
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx, 0, fz);     // Право-низ
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx, 0, fz + 1); // Лево-низ
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx, 1, fz + 1); // Лево-верх
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx, 1, fz);     // Право-верх
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx, 0, fz);     // Право-низ
             }
 
             // Правая (X+)
             if (!model.IsWall(x + 1, z)) {
                 glNormal3f(1, 0, 0);
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz);     // Лево-низ
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz);     // Лево-верх
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Право-верх
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Право-низ
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz);     // Лево-низ
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz);     // Лево-верх
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Право-верх
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Право-низ
             }
+            glEnd();
         }
     }
-    glEnd();
     glDisable(GL_TEXTURE_2D);
     glEndList();
 }
@@ -171,7 +175,12 @@ void Window::OnRunStart()
 
     SetupLighting();
 
-    m_wallTexture = LoadTexture("Textures/wall2.jpg");
+    m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/wall2.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/wall3.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/wall4.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/wall5.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/wall6.jpg"));
 }
 
 void Window::SetupLighting()
@@ -182,14 +191,14 @@ void Window::SetupLighting()
     glEnable(GL_LIGHT0);
 
     // Расчет света для обоих сторон полигона
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.15f); // Чем больше число, тем быстрее гаснет свет
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.05f);
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.3f); // Чем больше число, тем быстрее гаснет свет
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.15f);
 
     const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
@@ -212,9 +221,8 @@ GLuint Window::LoadTexture(const char* path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Загрузка через stb_image
     int width, height, channels;
-    // Флипаем текстуру по вертикали, так как в OpenGL координата Y идет снизу вверх
+    // Флип по вертикали
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
 
@@ -227,7 +235,6 @@ GLuint Window::LoadTexture(const char* path)
     }
     else
     {
-        // Можно выбросить std::runtime_error, чтобы сразу заметить ошибку пути
         throw std::runtime_error("Failed to load texture!");
     }
 
@@ -254,6 +261,7 @@ void Window::Draw(int width, int height)
         static_cast<GLfloat>(pos.z),
         1.0f
     };
+
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

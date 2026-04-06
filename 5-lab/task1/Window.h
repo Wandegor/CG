@@ -33,6 +33,6 @@ private:
     Presenter& m_presenter;
 	double m_lastTime;
 
-	GLuint m_wallTexture = 0;
+	std::vector<GLuint> m_wallTextures;
 	GLuint LoadTexture(const char* path);
 };
