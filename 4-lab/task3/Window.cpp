@@ -60,7 +60,6 @@ void Window::BuildMazeDisplayList(const MazeModel& model)
         {
             if (!model.IsWall(x, z)) continue;
 
-            // Приводим индексы к float для координат
             auto fx = static_cast<float>(x);
             auto fz = static_cast<float>(z);
 
@@ -116,7 +115,6 @@ void Window::RenderMaze(const MazeModel& model)
         BuildMazeDisplayList(model);
     }
 
-    glColor3f(0.6f, 0.2f, 0.6f);
     glCallList(m_wallDisplayList);
 }
 
@@ -177,13 +175,14 @@ void Window::SetupLighting()
     glEnable(GL_LIGHT0);
 
     // Расчет света для обоих сторон полигона
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
+    // TODO: объяснить как работает формула света
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.15f); // Чем больше число, тем быстрее гаснет свет
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.1f); // Чем больше число, тем быстрее гаснет свет
     glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.05f);
 
     const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};

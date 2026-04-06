@@ -33,7 +33,6 @@ public:
 
         for (int z = 0; z < height; ++z) {
             for (int x = 0; x < width; ++x) {
-                // Если в массиве 1 — ставим стену
                 if (map[z][x] == 1) {
                     m_grid[x][z] = true;
                 }

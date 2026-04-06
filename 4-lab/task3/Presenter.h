@@ -1,4 +1,5 @@
 #pragma once
+
 #include "pch.h"
 #include "MazeModel.h"
 
@@ -18,7 +19,7 @@ private:
     bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {0.0, 0.0};
 
-    const double m_moveSpeed = 3.0;
+    const double m_moveSpeed = 2.0;
     const double m_mouseSensitivity = 0.002;
 
     void UpdateCameraVectors()
@@ -33,12 +34,34 @@ private:
         m_up = glm::normalize(glm::cross(m_right, m_front));
     }
 
+    void CheckColiseum(glm::dvec3 deltaWorld)
+    {
+        // Коллизии
+        double radius = 0.1;
+
+        // левый и правый край игрока
+        double nextX = m_cameraPos.x + deltaWorld.x;
+        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
+            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
+        {
+            m_cameraPos.x = nextX;
+        }
+
+        // передний и задний край
+        double nextZ = m_cameraPos.z + deltaWorld.z;
+        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
+            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
+        {
+            m_cameraPos.z = nextZ;
+        }
+    }
+
 public:
     Presenter(int mazeW, int mazeH)
-        : m_model(mazeW, mazeH),
-          m_cameraPos(1.5, 0.5, 1.5),
-          m_yaw(-M_PI / 2.0),
-          m_pitch(0.0)
+            : m_model(mazeW, mazeH),
+              m_cameraPos(1.5, 0.5, 1.5),
+              m_yaw(-M_PI / 2.0),
+              m_pitch(0.0)
     {
         UpdateCameraVectors();
     }
@@ -58,24 +81,7 @@ public:
 
         glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
 
-        // Коллизии
-        double radius = 0.1;
-
-        // левый и правый край игрока
-        double nextX = m_cameraPos.x + deltaWorld.x;
-        if (!m_model.IsWall(int(nextX + radius), int(m_cameraPos.z)) &&
-            !m_model.IsWall(int(nextX - radius), int(m_cameraPos.z)))
-        {
-            m_cameraPos.x = nextX;
-        }
-
-        // передний и задний край
-        double nextZ = m_cameraPos.z + deltaWorld.z;
-        if (!m_model.IsWall(int(m_cameraPos.x), int(nextZ + radius)) &&
-            !m_model.IsWall(int(m_cameraPos.x), int(nextZ - radius)))
-        {
-            m_cameraPos.z = nextZ;
-        }
+        CheckColiseum(deltaWorld);
     }
 
     void OnKey(int key, int action)
