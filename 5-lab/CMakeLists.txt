@@ -32,5 +32,5 @@ FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glm)
 
 add_subdirectory(task1)
-#add_subdirectory(task2)
+add_subdirectory(MemoryTrainer)
 #add_subdirectory(task3)
