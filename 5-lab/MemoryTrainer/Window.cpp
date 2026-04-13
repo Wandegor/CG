@@ -37,115 +37,6 @@ Window::Window(int w, int h, const char* title)
     : BaseWindow(w, h, title),
       m_lastTime(glfwGetTime()) {}
 
-void Window::DrawTile(float width, float depth, float height)
-{
-    float hw = width / 2.0f;
-    float hd = depth / 2.0f;
-
-    glBegin(GL_QUADS);
-
-    // Верхняя грань (Рубашка)
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, height,  hd);
-    glVertex3f( hw, height,  hd);
-    glVertex3f( hw, height, -hd);
-
-    // Передняя
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(-hw, 0.0f,   hd);
-    glVertex3f( hw, 0.0f,   hd);
-    glVertex3f( hw, height, hd);
-    glVertex3f(-hw, height, hd);
-
-    // Задняя
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f( hw, height, -hd);
-    glVertex3f( hw, 0.0f,   -hd);
-    glVertex3f(-hw, 0.0f,   -hd);
-
-    // Правая
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(hw, 0.0f,   -hd);
-    glVertex3f(hw, height, -hd);
-    glVertex3f(hw, height,  hd);
-    glVertex3f(hw, 0.0f,    hd);
-
-    // Левая
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glVertex3f(-hw, 0.0f,    hd);
-    glVertex3f(-hw, height,  hd);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, 0.0f,   -hd);
-
-    glEnd();
-}
-
-void Window::BuildBoardDisplayList(const Model& model)
-{
-    if (m_wallDisplayList != 0)
-    {
-        glDeleteLists(m_wallDisplayList, 1);
-    }
-
-    m_wallDisplayList = glGenLists(1);
-    glNewList(m_wallDisplayList, GL_COMPILE);
-
-    // Настройки сетки
-
-    int rows = model.GetRows();
-    int cols = model.GetCols();
-
-    // Вычисляем смещение, чтобы центр сетки был в координатах 0,0,0
-    float totalWidth = cols * tileSize + (cols - 1) * spacing;
-    float totalDepth = rows * tileSize + (rows - 1) * spacing;
-
-    float startX = -totalWidth / 2.0f + tileSize / 2.0f;
-    float startZ = -totalDepth / 2.0f + tileSize / 2.0f;
-
-    for (int r = 0; r < rows; ++r)
-    {
-        for (int c = 0; c < cols; ++c)
-        {
-            float x = startX + c * (tileSize + spacing);
-            float z = startZ + r * (tileSize + spacing);
-
-            glPushMatrix();
-
-            glTranslatef(x, 0.0f, z);
-
-            if (model.IsCardOpen(r, c))
-            {
-                std::cout << r << " "<< c << std::endl;
-                // поворот и зеленый цвет
-                glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-                glColor3f(0.0f, 0.8f, 0.0f);
-            }
-            else
-            {
-                glColor3f(0.8f, 0.8f, 0.8f);
-            }
-
-            DrawTile(tileSize, tileSize, tileHeight);
-
-            glPopMatrix();
-        }
-    }
-
-    glEndList();
-}
-
-void Window::RenderBoard(const Model& model)
-{
-    if (m_wallDisplayList == 0)
-    {
-        BuildBoardDisplayList(model);
-    }
-
-    glCallList(m_wallDisplayList);
-}
-
 void Window::OnKey(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -278,27 +169,6 @@ GLuint Window::LoadTexture(const char* path)
     return textureID;
 }
 
-void Window::Draw(int width, int height)
-{
-    double currentTime = glfwGetTime();
-    float deltaTime = static_cast<float>(currentTime - m_lastTime);
-    m_lastTime = currentTime;
-
-    // m_presenter->UpdateMovement(deltaTime);
-
-    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    SetupCameraMatrix();
-
-    GLfloat lightPosition[] = { 2.0f, 3.0f, 0.0f, 1.0f };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    RenderBoard(m_presenter->GetModel());
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
 void Window::SetupCameraMatrix()
 {
     glMatrixMode(GL_MODELVIEW);
@@ -310,6 +180,121 @@ void Window::SetupCameraMatrix()
 
     glm::dmat4 view = glm::lookAt(pos, front, up);
     glLoadMatrixd(&view[0][0]);
+}
+
+void Window::Draw(int width, int height)
+{
+    double currentTime = glfwGetTime();
+    float deltaTime = static_cast<float>(currentTime - m_lastTime);
+    m_lastTime = currentTime;
+
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    SetupCameraMatrix();
+
+    GLfloat lightPosition[] = { 2.0f, 3.0f, 0.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    RenderBoard(deltaTime);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void Window::DrawTile(float width, float depth, float height)
+{
+    float hw = width / 2.0f;
+    float hd = depth / 2.0f;
+
+    glBegin(GL_QUADS);
+
+    // Верхняя грань (Рубашка)
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f(-hw, height,  hd);
+    glVertex3f( hw, height,  hd);
+    glVertex3f( hw, height, -hd);
+
+    // Передняя
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(-hw, 0.0f,   hd);
+    glVertex3f( hw, 0.0f,   hd);
+    glVertex3f( hw, height, hd);
+    glVertex3f(-hw, height, hd);
+
+    // Задняя
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f( hw, height, -hd);
+    glVertex3f( hw, 0.0f,   -hd);
+    glVertex3f(-hw, 0.0f,   -hd);
+
+    // Правая
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(hw, 0.0f,   -hd);
+    glVertex3f(hw, height, -hd);
+    glVertex3f(hw, height,  hd);
+    glVertex3f(hw, 0.0f,    hd);
+
+    // Левая
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(-hw, 0.0f,    hd);
+    glVertex3f(-hw, height,  hd);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f(-hw, 0.0f,   -hd);
+
+    glEnd();
+}
+
+void Window::RenderBoard(float dt)
+{
+    const auto& model = m_presenter->GetModel();
+    int rows = model.GetRows();
+    int cols = model.GetCols();
+
+    // Ленивая инициализация углов, если еще не сделали
+    if (m_tileAngles.empty()) {
+        m_tileAngles.assign(rows, std::vector<float>(cols, 0.0f));
+    }
+
+    float totalWidth = cols * tileSize + (cols - 1) * spacing;
+    float totalDepth = rows * tileSize + (rows - 1) * spacing;
+    float startX = -totalWidth / 2.0f + tileSize / 2.0f;
+    float startZ = -totalDepth / 2.0f + tileSize / 2.0f;
+
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (model.IsCardRemoved(r, c)) continue;
+
+            // целевой угол
+            float target = model.IsCardOpen(r, c) ? 180.0f : 0.0f;
+            float& current = m_tileAngles[r][c];
+
+            // меняем текущий угол
+            if (current < target) current = std::min(target, current + m_animationSpeed * dt);
+            if (current > target) current = std::max(target, current - m_animationSpeed * dt);
+
+            float x = startX + c * (tileSize + spacing);
+            float z = startZ + r * (tileSize + spacing);
+
+            glPushMatrix();
+            glTranslatef(x, 0.0f, z);
+
+            glTranslatef(0.0f, tileHeight, 0.0f); // поднял центр вращения
+            glRotatef(current, 0.0f, 0.0f, 1.0f); // повернул
+            glTranslatef(0.0f, -tileHeight, 0.0f);// и опустил
+
+            // Смена цвета в середине поворота
+            if (current > 90.0f) {
+                glColor3f(0.0f, 0.8f, 0.0f); // Лицо (зеленое)
+            } else {
+                glColor3f(0.8f, 0.8f, 0.8f); // Рубашка (серая)
+            }
+
+            DrawTile(tileSize, tileSize, tileHeight);
+            glPopMatrix();
+        }
+    }
 }
 
 // Window.cpp

@@ -14,8 +14,8 @@ public:
 
 private:
 	GLuint m_wallDisplayList = 0;
-	void BuildBoardDisplayList(const Model& model);
-	void RenderBoard(const Model& model);
+	// void BuildBoardDisplayList(const Model& model);
+	void RenderBoard(float dt);
 	void DrawTile(float width, float depth, float height);
 
     void OnKey(int key, int scancode, int action, int mods) override;
@@ -44,4 +44,7 @@ private:
 
 	std::vector<GLuint> m_wallTextures;
 	GLuint LoadTexture(const char* path);
+
+	std::vector<std::vector<float>> m_tileAngles;
+	float m_animationSpeed = 500.0f;
 };

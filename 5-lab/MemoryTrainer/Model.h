@@ -103,7 +103,7 @@ public:
     [[nodiscard]] int GetRows() const { return m_rows; }
     [[nodiscard]] int GetCols() const { return m_cols; }
     [[nodiscard]] bool IsCardOpen(int row, int col) const { return m_grid[row][col].isOpen; }
-    [[nodiscard]] bool IsCardRemoves(int row, int col) const { return m_grid[row][col].isRemoved; }
+    [[nodiscard]] bool IsCardRemoved(int row, int col) const { return m_grid[row][col].isRemoved; }
 
     void AddListener(IModelListener* listener)
     {
