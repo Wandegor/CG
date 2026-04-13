@@ -311,9 +311,6 @@ std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mous
     int width, height;
     glfwGetFramebufferSize(GetWindow(), &width, &height);
 
-    float x_ndc = (2.0f * mouseX) / width - 1.0f;
-    float y_ndc = 1.0f - (2.0f * mouseY) / height;
-
     glm::dmat4 projection;
     glGetDoublev(GL_PROJECTION_MATRIX, glm::value_ptr(projection));
     glm::dmat4 view;
@@ -321,17 +318,17 @@ std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mous
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
 
-    // Точки на плоскостях отсечения
-    glm::dvec3 rayStart_ndc = glm::dvec3(x_ndc, y_ndc, -1.0);
-    glm::dvec3 rayEnd_ndc   = glm::dvec3(x_ndc, y_ndc,  1.0);
+    double openGL_Y = height - mouseY;
+    glm::dvec3 winStart(mouseX, openGL_Y, 0.0);
+    glm::dvec3 winEnd(mouseX, openGL_Y, 1.0);
 
     glm::dvec3 rayStart_world = glm::unProject(
-            rayStart_ndc,
+            winStart,
             view,
             projection,
             glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
     glm::dvec3 rayEnd_world   = glm::unProject(
-            rayEnd_ndc,
+            winEnd,
             view,
             projection,
             glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
