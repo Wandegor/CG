@@ -14,6 +14,8 @@ add_executable(${PROJECT_NAME}
         Vertex.h
         Model.h
         Presenter.h
+        IModelListener.h
+        IView.h
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

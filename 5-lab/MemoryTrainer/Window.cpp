@@ -4,6 +4,8 @@
 #include <stb_image.h>
 #include <iostream>
 
+#include "Presenter.h"
+
 namespace
 {
     // Угол обзора по вертикали
@@ -11,6 +13,10 @@ namespace
 
     constexpr double Z_NEAR = 0.05;
     constexpr double Z_FAR = 50;
+
+    float tileSize = 1.0f;
+    float tileHeight = 0.3f;
+    float spacing = 0.2f;
 
     // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
     glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
@@ -27,8 +33,8 @@ namespace
     }
 } // namespace
 
-Window::Window(int w, int h, const char* title, Presenter& presenter)
-    : BaseWindow(w, h, title), m_presenter(presenter),
+Window::Window(int w, int h, const char* title)
+    : BaseWindow(w, h, title),
       m_lastTime(glfwGetTime()) {}
 
 void Window::DrawTile(float width, float depth, float height)
@@ -92,12 +98,8 @@ void Window::BuildBoardDisplayList(const Model& model)
 
     // Настройки сетки
 
-    int rows = model.GetWidth();
-    int cols = model.GetHeight();
-
-    float tileSize = 1.0f;
-    float tileHeight = 0.3f;
-    float spacing = 0.2f;
+    int rows = model.GetRows();
+    int cols = model.GetCols();
 
     // Вычисляем смещение, чтобы центр сетки был в координатах 0,0,0
     float totalWidth = cols * tileSize + (cols - 1) * spacing;
@@ -144,14 +146,13 @@ void Window::OnKey(int key, int scancode, int action, int mods)
         glfwSetWindowShouldClose(GetWindow(), GLFW_TRUE);
     }
 
-    m_presenter.OnKey(key, action);
+    m_presenter->OnKey(key, action);
 }
 
 void Window::OnMouseButton(int button, int action, int mods)
 {
     int width, height;
     glfwGetFramebufferSize(GetWindow(), &width, &height);
-
     double xpos, ypos;
     glfwGetCursorPos(GetWindow(), &xpos, &ypos);
 
@@ -165,15 +166,13 @@ void Window::OnMouseButton(int button, int action, int mods)
         // мировые (x, 0, z)
         auto hitPoint = rayOrigin + t * rayDir;
         std::cout << hitPoint << std::endl;
-
+        m_presenter->OnWorldClick(hitPoint.x, hitPoint.z, tileSize, spacing);
     }
-
-    m_presenter.OnMouseButton(button, action);
 }
 
 void Window::OnMouseMove(double x, double y)
 {
-    m_presenter.OnMouseMove(x, y);
+    m_presenter->OnMouseMove(x, y);
 }
 
 void Window::OnResize(int width, int height)
@@ -276,7 +275,7 @@ void Window::Draw(int width, int height)
     float deltaTime = static_cast<float>(currentTime - m_lastTime);
     m_lastTime = currentTime;
 
-    // m_presenter.UpdateMovement(deltaTime);
+    // m_presenter->UpdateMovement(deltaTime);
 
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -287,9 +286,7 @@ void Window::Draw(int width, int height)
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    RenderBoard(m_presenter.GetModel());
-
+    RenderBoard(m_presenter->GetModel());
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -335,4 +332,19 @@ std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mous
 
     glm::dvec3 rayDir_world = glm::normalize(rayEnd_world - rayStart_world);
     return {rayStart_world, rayDir_world};
+}
+
+void Window::Redraw()
+{
+    std::cout << "Chinazes" ;
+
+    if (m_wallDisplayList != 0) {
+        glDeleteLists(m_wallDisplayList, 1);
+        m_wallDisplayList = 0;
+    }
+}
+
+void Window::SetPresenter(std::shared_ptr<Presenter> presenter)
+{
+    m_presenter = presenter;
 }

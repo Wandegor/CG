@@ -1,9 +1,16 @@
 ﻿#include "GLFWInitializer.h"
 #include "Window.h"
+#include "Presenter.h"
+
 int main()
 {
 	GLFWInitializer initGLFW;
-	Presenter presenter(4, 6);
-	Window window{ 800, 600, "3D Cube", presenter };
-	window.Run();
+
+	auto window = std::make_shared<Window>(800, 600, "Memory Game");
+
+	auto presenter = std::make_shared<Presenter>(4, 4, *window);
+
+	window->SetPresenter(presenter);
+
+	window->Run();
 }

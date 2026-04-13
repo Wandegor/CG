@@ -1,11 +1,16 @@
 #pragma once
 #include "BaseWindow.h"
-#include "Presenter.h"
+#include "IView.h"
+#include "Model.h"
 
-class Window : public BaseWindow
+class Presenter;
+
+class Window : public BaseWindow, public IView
 {
 public:
-	Window(int w, int h, const char* title, Presenter& presenter);
+	Window(int w, int h, const char* title);
+
+	void SetPresenter(std::shared_ptr<Presenter> presenter);
 
 private:
 	GLuint m_wallDisplayList = 0;
@@ -29,10 +34,12 @@ private:
 
     std::pair<glm::dvec3, glm::dvec3> GetMouseRay(double mouseX, double mouseY);
 
+	void Redraw() override;
+
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
 
-    Presenter& m_presenter;
+	std::shared_ptr<Presenter> m_presenter;
 	double m_lastTime;
 
 	std::vector<GLuint> m_wallTextures;
