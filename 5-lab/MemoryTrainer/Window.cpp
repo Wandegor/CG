@@ -111,6 +111,8 @@ void Window::OnRunStart()
     m_wallTextures.push_back(LoadTexture("Textures/wall4.jpg"));
     m_wallTextures.push_back(LoadTexture("Textures/wall5.jpg"));
     m_wallTextures.push_back(LoadTexture("Textures/wall6.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/sniper.jpg"));
+    m_wallTextures.push_back(LoadTexture("Textures/toxis.jpg"));
 }
 
 void Window::SetupLighting()
@@ -253,10 +255,10 @@ void Window::DrawTile(float width, float depth, float height, GLuint textureID)
     glBegin(GL_QUADS);
 
     glNormal3f(0.0f, -1.0f, 0.0f);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f, -hd);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f, -hd);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f,  hd);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f,  hd);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f, -hd);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f, -hd);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f,  hd);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f,  hd);
 
     glEnd();
 
@@ -352,12 +354,6 @@ std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mous
 void Window::Redraw()
 {
     std::cout << "Chinazes" ;
-
-    if (m_wallDisplayList != 0) {
-        glDeleteLists(m_wallDisplayList, 1);
-        m_wallDisplayList = 0;
-    }
-    // дальше в RenderBoard снова создание m_wallDisplayList по модели
 }
 
 void Window::SetPresenter(std::shared_ptr<Presenter> presenter)
