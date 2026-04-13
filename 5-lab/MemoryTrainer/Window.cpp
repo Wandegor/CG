@@ -45,15 +45,11 @@ void Window::DrawTile(float width, float depth, float height)
     glBegin(GL_QUADS);
 
     // Верхняя грань (Рубашка)
-    glColor3f(0.8f, 0.8f, 0.8f);
     glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3f(-hw, height, -hd);
     glVertex3f(-hw, height,  hd);
     glVertex3f( hw, height,  hd);
     glVertex3f( hw, height, -hd);
-
-    // Боковые грани (для объема)
-    glColor3f(0.6f, 0.6f, 0.6f);
 
     // Передняя
     glNormal3f(0.0f, 0.0f, 1.0f);
@@ -119,6 +115,18 @@ void Window::BuildBoardDisplayList(const Model& model)
 
             glTranslatef(x, 0.0f, z);
 
+            if (model.IsCardOpen(r, c))
+            {
+                std::cout << r << " "<< c << std::endl;
+                // поворот и зеленый цвет
+                glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                glColor3f(0.0f, 0.8f, 0.0f);
+            }
+            else
+            {
+                glColor3f(0.8f, 0.8f, 0.8f);
+            }
+
             DrawTile(tileSize, tileSize, tileHeight);
 
             glPopMatrix();
@@ -135,7 +143,6 @@ void Window::RenderBoard(const Model& model)
         BuildBoardDisplayList(model);
     }
 
-    glColor3f(0.6f, 0.2f, 0.6f);
     glCallList(m_wallDisplayList);
 }
 
@@ -151,6 +158,8 @@ void Window::OnKey(int key, int scancode, int action, int mods)
 
 void Window::OnMouseButton(int button, int action, int mods)
 {
+    if (action != GLFW_PRESS) return;
+
     int width, height;
     glfwGetFramebufferSize(GetWindow(), &width, &height);
     double xpos, ypos;
@@ -342,6 +351,7 @@ void Window::Redraw()
         glDeleteLists(m_wallDisplayList, 1);
         m_wallDisplayList = 0;
     }
+    // дальше в RenderBoard снова создание m_wallDisplayList по модели
 }
 
 void Window::SetPresenter(std::shared_ptr<Presenter> presenter)
