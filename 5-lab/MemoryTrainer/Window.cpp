@@ -243,6 +243,12 @@ void Window::DrawTile(float width, float depth, float height)
     glVertex3f(-hw, height, -hd);
     glVertex3f(-hw, 0.0f,   -hd);
 
+    // Нижняя
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(-hw, 0.0f, -hd);
+    glVertex3f( hw, 0.0f, -hd);
+    glVertex3f( hw, 0.0f,  hd);
+    glVertex3f(-hw, 0.0f,  hd);
     glEnd();
 }
 
@@ -280,9 +286,9 @@ void Window::RenderBoard(float dt)
             glPushMatrix();
             glTranslatef(x, 0.0f, z);
 
-            glTranslatef(0.0f, tileHeight, 0.0f); // поднял центр вращения
+            glTranslatef(0.0f, tileHeight*0.75f, 0.0f); // поднял центр вращения
             glRotatef(current, 0.0f, 0.0f, 1.0f); // повернул
-            glTranslatef(0.0f, -tileHeight, 0.0f);// и опустил
+            glTranslatef(0.0f, -tileHeight*0.75f, 0.0f);// и опустил
 
             // Смена цвета в середине поворота
             if (current > 90.0f) {
