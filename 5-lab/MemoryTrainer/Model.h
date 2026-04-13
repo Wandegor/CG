@@ -58,7 +58,15 @@ public:
     void PressTile(int r, int c)
     {
         if (m_grid[r][c].isRemoved) return; // уже удалена - выход
-        if (m_grid[r][c].isOpen) return; // уже открыта - выход
+        if (m_grid[r][c].isOpen) // уже открыта - закрыть
+        {
+            m_grid[r][c].isOpen = false;
+
+            m_firstRow = -1;
+            m_firstCol = -1;
+            NotifyListeners();
+            return;
+        }
 
         // закрыта - открываем, проверка на пару
         m_grid[r][c].isOpen = true;
