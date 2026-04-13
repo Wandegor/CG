@@ -103,6 +103,8 @@ void Window::OnRunStart()
 
     SetupLighting();
 
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
     m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
     m_wallTextures.push_back(LoadTexture("Textures/wall2.jpg"));
     m_wallTextures.push_back(LoadTexture("Textures/wall3.jpg"));
@@ -201,7 +203,7 @@ void Window::Draw(int width, int height)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Window::DrawTile(float width, float depth, float height)
+void Window::DrawTile(float width, float depth, float height, GLuint textureID)
 {
     float hw = width / 2.0f;
     float hd = depth / 2.0f;
@@ -242,14 +244,24 @@ void Window::DrawTile(float width, float depth, float height)
     glVertex3f(-hw, height,  hd);
     glVertex3f(-hw, height, -hd);
     glVertex3f(-hw, 0.0f,   -hd);
-
-    // Нижняя
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    glVertex3f(-hw, 0.0f, -hd);
-    glVertex3f( hw, 0.0f, -hd);
-    glVertex3f( hw, 0.0f,  hd);
-    glVertex3f(-hw, 0.0f,  hd);
     glEnd();
+
+    // Нижняя (лицо)
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glBegin(GL_QUADS);
+
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f, -hd);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f, -hd);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f,  hd);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f,  hd);
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
 }
 
 void Window::RenderBoard(float dt)
@@ -258,9 +270,8 @@ void Window::RenderBoard(float dt)
     int rows = model.GetRows();
     int cols = model.GetCols();
 
-    // Ленивая инициализация углов, если еще не сделали
     if (m_tileAngles.empty()) {
-        m_tileAngles.assign(rows, std::vector<float>(cols, 0.0f));
+        m_tileAngles.assign(rows, std::vector(cols, 0.0f));
     }
 
     float totalWidth = cols * tileSize + (cols - 1) * spacing;
@@ -283,6 +294,10 @@ void Window::RenderBoard(float dt)
             float x = startX + c * (tileSize + spacing);
             float z = startZ + r * (tileSize + spacing);
 
+            // id для текстуры
+            int tileId = model.GetTileId(r, c);
+            GLuint currentTexture = m_wallTextures[tileId % m_wallTextures.size()];
+
             glPushMatrix();
             glTranslatef(x, 0.0f, z);
 
@@ -292,12 +307,12 @@ void Window::RenderBoard(float dt)
 
             // Смена цвета в середине поворота
             if (current > 90.0f) {
-                glColor3f(0.0f, 0.8f, 0.0f); // Лицо (зеленое)
+                // glColor3f(0.0f, 0.8f, 0.0f); // Лицо (зеленое)
             } else {
                 glColor3f(0.8f, 0.8f, 0.8f); // Рубашка (серая)
             }
 
-            DrawTile(tileSize, tileSize, tileHeight);
+            DrawTile(tileSize, tileSize, tileHeight, currentTexture);
             glPopMatrix();
         }
     }

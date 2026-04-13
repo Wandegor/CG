@@ -104,6 +104,7 @@ public:
     [[nodiscard]] int GetCols() const { return m_cols; }
     [[nodiscard]] bool IsCardOpen(int row, int col) const { return m_grid[row][col].isOpen; }
     [[nodiscard]] bool IsCardRemoved(int row, int col) const { return m_grid[row][col].isRemoved; }
+    [[nodiscard]] int GetTileId(int row, int col) const { return m_grid[row][col].id; }
 
     void AddListener(IModelListener* listener)
     {
