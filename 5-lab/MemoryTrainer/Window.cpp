@@ -103,6 +103,7 @@ void Window::OnRunStart()
 
     SetupLighting();
 
+    // смешивание Цвета с текстурой
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
@@ -132,7 +133,7 @@ void Window::SetupLighting()
     glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.1f); // Чем больше число, тем быстрее гаснет свет
     glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.05f);
 
-    const GLfloat globalAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
+    const GLfloat globalAmbient[] = {0.25f, 0.25f, 0.25f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
     const GLfloat lightAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
