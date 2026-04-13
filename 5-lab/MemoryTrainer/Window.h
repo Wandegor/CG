@@ -9,7 +9,7 @@ public:
 
 private:
 	GLuint m_wallDisplayList = 0;
-	void BuildBoardDisplayList();
+	void BuildBoardDisplayList(const Model& model);
 	void RenderBoard(const Model& model);
 	void DrawTile(float width, float depth, float height);
 
@@ -17,7 +17,6 @@ private:
 	void OnMouseButton(int button, int action, [[maybe_unused]] int mods) override;
 
 	void OnMouseMove(double x, double y) override;
-
 
 	void OnResize(int width, int height) override;
 
@@ -27,6 +26,8 @@ private:
 	void SetupLighting();
 
 	void SetupCameraMatrix();
+
+    std::pair<glm::dvec3, glm::dvec3> GetMouseRay(double mouseX, double mouseY);
 
 	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};

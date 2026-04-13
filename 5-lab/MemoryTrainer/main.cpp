@@ -3,7 +3,7 @@
 int main()
 {
 	GLFWInitializer initGLFW;
-	Presenter presenter(16, 16);
+	Presenter presenter(4, 6);
 	Window window{ 800, 600, "3D Cube", presenter };
 	window.Run();
 }

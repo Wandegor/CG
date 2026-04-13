@@ -2,6 +2,7 @@
 #include "Window.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <iostream>
 
 namespace
 {
@@ -79,7 +80,7 @@ void Window::DrawTile(float width, float depth, float height)
     glEnd();
 }
 
-void Window::BuildBoardDisplayList()
+void Window::BuildBoardDisplayList(const Model& model)
 {
     if (m_wallDisplayList != 0)
     {
@@ -90,8 +91,10 @@ void Window::BuildBoardDisplayList()
     glNewList(m_wallDisplayList, GL_COMPILE);
 
     // Настройки сетки
-    int rows = 4;
-    int cols = 4;
+
+    int rows = model.GetWidth();
+    int cols = model.GetHeight();
+
     float tileSize = 1.0f;
     float tileHeight = 0.3f;
     float spacing = 0.2f;
@@ -103,7 +106,6 @@ void Window::BuildBoardDisplayList()
     float startX = -totalWidth / 2.0f + tileSize / 2.0f;
     float startZ = -totalDepth / 2.0f + tileSize / 2.0f;
 
-    // Отрисовка матрицы 4x4
     for (int r = 0; r < rows; ++r)
     {
         for (int c = 0; c < cols; ++c)
@@ -128,7 +130,7 @@ void Window::RenderBoard(const Model& model)
 {
     if (m_wallDisplayList == 0)
     {
-        BuildBoardDisplayList();
+        BuildBoardDisplayList(model);
     }
 
     glColor3f(0.6f, 0.2f, 0.6f);
@@ -147,6 +149,25 @@ void Window::OnKey(int key, int scancode, int action, int mods)
 
 void Window::OnMouseButton(int button, int action, int mods)
 {
+    int width, height;
+    glfwGetFramebufferSize(GetWindow(), &width, &height);
+
+    double xpos, ypos;
+    glfwGetCursorPos(GetWindow(), &xpos, &ypos);
+
+    auto [rayOrigin, rayDir] = GetMouseRay(xpos, ypos);
+
+    // P = rayStart + t * rayDirection
+    // нужен t при Y = 0
+    double t = -rayOrigin.y / rayDir.y;
+    if (t > 0)
+    {
+        // мировые (x, 0, z)
+        auto hitPoint = rayOrigin + t * rayDir;
+        std::cout << hitPoint << std::endl;
+
+    }
+
     m_presenter.OnMouseButton(button, action);
 }
 
@@ -205,10 +226,10 @@ void Window::SetupLighting()
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.3f); // Чем больше число, тем быстрее гаснет свет
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.15f);
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.1f); // Чем больше число, тем быстрее гаснет свет
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.05f);
 
-    const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
+    const GLfloat globalAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
     const GLfloat lightAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
@@ -262,7 +283,8 @@ void Window::Draw(int width, int height)
 
     SetupCameraMatrix();
 
-    // glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    GLfloat lightPosition[] = { 2.0f, 3.0f, 0.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -282,4 +304,38 @@ void Window::SetupCameraMatrix()
 
     glm::dmat4 view = glm::lookAt(pos, front, up);
     glLoadMatrixd(&view[0][0]);
+}
+
+// Window.cpp
+std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mouseY) {
+    int width, height;
+    glfwGetFramebufferSize(GetWindow(), &width, &height);
+
+    float x_ndc = (2.0f * mouseX) / width - 1.0f;
+    float y_ndc = 1.0f - (2.0f * mouseY) / height;
+
+    glm::dmat4 projection;
+    glGetDoublev(GL_PROJECTION_MATRIX, glm::value_ptr(projection));
+    glm::dmat4 view;
+    glGetDoublev(GL_MODELVIEW_MATRIX, glm::value_ptr(view));
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // Точки на плоскостях отсечения
+    glm::dvec3 rayStart_ndc = glm::dvec3(x_ndc, y_ndc, -1.0);
+    glm::dvec3 rayEnd_ndc   = glm::dvec3(x_ndc, y_ndc,  1.0);
+
+    glm::dvec3 rayStart_world = glm::unProject(
+            rayStart_ndc,
+            view,
+            projection,
+            glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
+    glm::dvec3 rayEnd_world   = glm::unProject(
+            rayEnd_ndc,
+            view,
+            projection,
+            glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
+
+    glm::dvec3 rayDir_world = glm::normalize(rayEnd_world - rayStart_world);
+    return {rayStart_world, rayDir_world};
 }
