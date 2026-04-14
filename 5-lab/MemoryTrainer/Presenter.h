@@ -66,9 +66,10 @@ public:
                 if (m_model.IsCardOpen(row, col))
                 {
                     m_model.SetCardOpen(row, col, false);
+                    m_row1 = -1;
+                    m_col1 = -1;
                     return;
                 }
-
 
                 if (m_row1 == -1)
                 {
