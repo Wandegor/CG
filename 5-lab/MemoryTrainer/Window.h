@@ -13,7 +13,6 @@ public:
 	void SetPresenter(std::shared_ptr<Presenter> presenter);
 
 private:
-	GLuint m_wallDisplayList = 0;
 	void RenderBoard(float dt);
 	void DrawTile(float width, float depth, float height, GLuint textureID);
 
@@ -35,7 +34,6 @@ private:
 
 	void Redraw() override;
 
-	bool m_leftButtonPressed = false;
 	glm::dvec2 m_mousePos = {};
 
 	std::shared_ptr<Presenter> m_presenter;

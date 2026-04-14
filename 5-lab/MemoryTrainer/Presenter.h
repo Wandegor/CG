@@ -12,15 +12,17 @@ private:
     IView& m_view;
 
     bool m_keys[GLFW_KEY_LAST + 1] = {false};
-    bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {0.0, 0.0};
 
-    const double m_moveSpeed = 2.0;
-    const double m_mouseSensitivity = 0.002;
+    float m_waitTimer = 0.0f;
+    bool m_isAnimation = false;
+    int m_row1, m_col1, m_row2, m_col2;
 
 public:
     Presenter(int rows, int cols, IView& view)
-        : m_model(rows, cols), m_view(view)
+        : m_model(rows, cols), m_view(view),
+        m_row1(-1), m_col1(-1),
+        m_row2(-1), m_col2(-1)
     {
         m_model.AddListener(this);
     }
@@ -36,6 +38,8 @@ public:
 
     void OnWorldClick(double x, double z, float tileSize, float spacing)
     {
+        if (m_isAnimation) return;
+
         int rows = m_model.GetRows();
         int cols = m_model.GetCols();
 
@@ -58,7 +62,66 @@ public:
 
             if (localX <= tileSize && localZ <= tileSize)
             {
-                m_model.PressTile(row, col);
+                if (m_model.IsCardRemoved(row, col)) return;
+                if (m_model.IsCardOpen(row, col))
+                {
+                    m_model.SetCardOpen(row, col, false);
+                    return;
+                }
+
+
+                if (m_row1 == -1)
+                {
+                    // Первая карта в паре - открыть
+                    m_row1 = row;
+                    m_col1 = col;
+                    m_model.SetCardOpen(row, col, true);
+                }
+                else
+                {
+                    // Вторая - открыть и запустить таймер
+                    m_model.SetCardOpen(row, col, true);
+
+                    m_row2 = row;
+                    m_col2 = col;
+
+                    // Таймер
+                    m_isAnimation = true;
+                    m_waitTimer = 0.6f;
+                }
+                // m_model.PressTile(row, col);
+            }
+        }
+    }
+
+    void Update(float dt)
+    {
+        if (m_isAnimation)
+        {
+            m_waitTimer -= dt;
+            // Время вышло
+            if (m_waitTimer <= 0)
+            {
+                if (m_model.GetTileId(m_row1, m_col1) ==
+                    m_model.GetTileId(m_row2, m_col2))
+                {
+                    // Совпали
+                    m_model.SetCardRemoved(m_row1, m_col1);
+                    m_model.SetCardRemoved(m_row2, m_col2);
+                }
+                else
+                {
+                    // НЕ совпали
+                    m_model.SetCardOpen(m_row1, m_col1, false);
+                    m_model.SetCardOpen(m_row2, m_col2, false);
+
+                }
+
+                m_isAnimation = false;
+                m_row1 = -1; m_col1 = -1;
+                m_row2 = -1; m_col2 = -1;
+
+                m_view.Redraw();
             }
         }
     }

@@ -55,48 +55,15 @@ public:
         }
     }
 
-    void PressTile(int r, int c)
+    void SetCardOpen(int r, int c, bool open)
     {
-        if (m_grid[r][c].isRemoved) return; // уже удалена - выход
-        if (m_grid[r][c].isOpen) // уже открыта - закрыть
-        {
-            m_grid[r][c].isOpen = false;
+        m_grid[r][c].isOpen = open;
+        NotifyListeners();
+    }
 
-            m_firstRow = -1;
-            m_firstCol = -1;
-            NotifyListeners();
-            return;
-        }
-
-        // закрыта - открываем, проверка на пару
-        m_grid[r][c].isOpen = true;
-
-        if (m_firstRow == -1)
-        {
-            // Это первая открытая карточка
-            m_firstRow = r;
-            m_firstCol = c;
-        }
-        else
-        {
-            // Это вторая. Сравниваю с id первой
-            if (m_grid[r][c].id == m_grid[m_firstRow][m_firstCol].id)
-            {
-                // Совпали - Пока просто остаются открытыми
-                m_grid[r][c].isRemoved = true;
-                m_grid[m_firstRow][m_firstCol].isRemoved = true;
-            }
-            else
-            {
-                // Не совпали - закрыть
-                m_grid[r][c].isOpen = false;
-                m_grid[m_firstRow][m_firstCol].isOpen = false;
-            }
-
-            m_firstRow = -1;
-            m_firstCol = -1;
-        }
-
+    void SetCardRemoved(int r, int c)
+    {
+        m_grid[r][c].isRemoved = true;
         NotifyListeners();
     }
 
