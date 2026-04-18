@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(MemoryTrainer)
+project(ChessAnimation)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,10 +12,11 @@ add_executable(${PROJECT_NAME}
         Window.cpp
         Window.h
         Vertex.h
-        Model.h
+        Model/Model.h
         Presenter.h
         IModelListener.h
         IView.h
+        Model/Peace.h
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

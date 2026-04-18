@@ -31,4 +31,4 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glm)
 
-add_subdirectory(MemoryTrainer)
+add_subdirectory(ChessAnimation)
