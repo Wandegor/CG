@@ -49,25 +49,6 @@ void Window::OnKey(int key, int scancode, int action, int mods)
 
 void Window::OnMouseButton(int button, int action, int mods)
 {
-    if (action != GLFW_PRESS) return;
-
-    int width, height;
-    glfwGetFramebufferSize(GetWindow(), &width, &height);
-    double xpos, ypos;
-    glfwGetCursorPos(GetWindow(), &xpos, &ypos);
-
-    auto [rayOrigin, rayDir] = GetMouseRay(xpos, ypos);
-
-    // P = rayStart + t * rayDirection
-    // нужен t при Y = 0
-    double t = -rayOrigin.y / rayDir.y;
-    if (t > 0)
-    {
-        // мировые (x, 0, z)
-        auto hitPoint = rayOrigin + t * rayDir;
-        std::cout << hitPoint << std::endl;
-        m_presenter->OnWorldClick(hitPoint.x, hitPoint.z, tileSize, spacing);
-    }
 }
 
 void Window::OnMouseMove(double x, double y)
@@ -213,8 +194,13 @@ void Window::Draw(int width, int height)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Window::DrawTile(float width, float depth, float height, GLuint textureID)
+void Window::DrawTile(float width, float depth, float height)
 {
+    if (m_presenter->IsAnimating())
+    {
+        Move move = m_presenter->GetCurrentMove();
+        // Не рисовать статично фигуру которая в анимации
+    }
     float hw = width / 2.0f;
     float hd = depth / 2.0f;
 
@@ -257,106 +243,56 @@ void Window::DrawTile(float width, float depth, float height, GLuint textureID)
     glEnd();
 
     // Нижняя (лицо)
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    // glEnable(GL_TEXTURE_2D);
+    // // glBindTexture(GL_TEXTURE_2D, textureID);
+    //
+    // glBegin(GL_QUADS);
+    //
+    // glNormal3f(0.0f, -1.0f, 0.0f);
+    // glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f, -hd);
+    // glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f, -hd);
+    // glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f,  hd);
+    // glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f,  hd);
+    //
+    // glEnd();
 
-    glBegin(GL_QUADS);
-
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f, -hd);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f, -hd);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f,  hd);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f,  hd);
-
-    glEnd();
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
+    // glBindTexture(GL_TEXTURE_2D, 0);
+    // glDisable(GL_TEXTURE_2D);
 }
 
 void Window::RenderBoard(float dt)
 {
     const auto& model = m_presenter->GetModel();
-    int rows = model.GetRows();
-    int cols = model.GetCols();
 
-    if (m_tileAngles.empty()) {
-        m_tileAngles.assign(rows, std::vector(cols, 0.0f));
-    }
+    int animX = m_presenter->GetAnimX();
+    int animY = m_presenter->GetAnimY();
 
-    float totalWidth = cols * tileSize + (cols - 1) * spacing;
-    float totalDepth = rows * tileSize + (rows - 1) * spacing;
-    float startX = -totalWidth / 2.0f + tileSize / 2.0f;
-    float startZ = -totalDepth / 2.0f + tileSize / 2.0f;
+    int boardSize = 8;
+    float fullSize = boardSize * tileSize;
+    float startX = -fullSize / 2.0f + tileSize / 2.0f;
+    float startZ = -fullSize / 2.0f + tileSize / 2.0f;
 
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            if (model.IsCardRemoved(r, c)) continue;
+    // Доска
+    for (int r = 0; r < boardSize; ++r) {
+        for (int c = 0; c < boardSize; ++c) {
 
-            // целевой угол
-            float target = model.IsCardOpen(r, c) ? 180.0f : 0.0f;
-            float& current = m_tileAngles[r][c];
-
-            // меняем текущий угол
-            if (current < target) current = std::min(target, current + m_animationSpeed * dt);
-            if (current > target) current = std::max(target, current - m_animationSpeed * dt);
-
-            float x = startX + c * (tileSize + spacing);
-            float z = startZ + r * (tileSize + spacing);
+            float x = startX + c * tileSize;
+            float z = startZ + r * tileSize;
 
             // id для текстуры
-            int tileId = model.GetTileId(r, c);
-            GLuint currentTexture = m_wallTextures[tileId % m_wallTextures.size()];
+            // int tileId = model.GetTileId(r, c);
+            // GLuint currentTexture = m_wallTextures[m_wallTextures.size()];
 
             glPushMatrix();
             glTranslatef(x, 0.0f, z);
 
-            glTranslatef(0.0f, tileHeight*0.75f, 0.0f); // поднял центр вращения
-            glRotatef(current, 0.0f, 0.0f, 1.0f); // повернул
-            glTranslatef(0.0f, -tileHeight*0.75f, 0.0f);// и опустил
+            if ((r + c) % 2 == 0) glColor3f(0.3f, 0.3f, 0.3f);
+            else glColor3f(0.8f, 0.8f, 0.8f);
 
-            // Смена цвета в середине поворота
-            if (current > 90.0f) {
-                // glColor3f(0.0f, 0.8f, 0.0f); // Лицо (зеленое)
-            } else {
-                glColor3f(0.8f, 0.8f, 0.8f); // Рубашка (серая)
-            }
-
-            DrawTile(tileSize, tileSize, tileHeight, currentTexture);
+            DrawTile(tileSize, tileSize, tileHeight);
             glPopMatrix();
         }
     }
-}
-
-// Window.cpp
-std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mouseY) {
-    int width, height;
-    glfwGetFramebufferSize(GetWindow(), &width, &height);
-
-    glm::dmat4 projection;
-    glGetDoublev(GL_PROJECTION_MATRIX, glm::value_ptr(projection));
-    glm::dmat4 view;
-    glGetDoublev(GL_MODELVIEW_MATRIX, glm::value_ptr(view));
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    double openGL_Y = height - mouseY;
-    glm::dvec3 winStart(mouseX, openGL_Y, 0.0);
-    glm::dvec3 winEnd(mouseX, openGL_Y, 1.0);
-
-    glm::dvec3 rayStart_world = glm::unProject(
-            winStart,
-            view,
-            projection,
-            glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
-    glm::dvec3 rayEnd_world   = glm::unProject(
-            winEnd,
-            view,
-            projection,
-            glm::dvec4(viewport[0], viewport[1], viewport[2], viewport[3]));
-
-    glm::dvec3 rayDir_world = glm::normalize(rayEnd_world - rayStart_world);
-    return {rayStart_world, rayDir_world};
 }
 
 void Window::Redraw()

@@ -1,6 +1,6 @@
 #pragma once
 #include "IModelListener.h"
-#include "Model.h"
+#include "Model/Model.h"
 #include "pch.h"
 
 class IView;
@@ -16,13 +16,15 @@ private:
 
     float m_waitTimer = 0.0f;
     bool m_isAnimation = false;
-    int m_row1, m_col1, m_row2, m_col2;
+    Move m_curMove;
+
+    // Позиции в момент анимации
+    float m_animX = 0.0f;
+    float m_animY = 0.0f;
 
 public:
-    Presenter(int rows, int cols, IView& view)
-        : m_model(rows, cols), m_view(view),
-        m_row1(-1), m_col1(-1),
-        m_row2(-1), m_col2(-1)
+    Presenter(IView& view)
+        : m_view(view)
     {
         m_model.AddListener(this);
     }
@@ -36,100 +38,46 @@ public:
         }
     }
 
-    void OnWorldClick(double x, double z, float tileSize, float spacing)
-    {
-        if (m_isAnimation) return;
-
-        int rows = m_model.GetRows();
-        int cols = m_model.GetCols();
-
-        // Границы поля
-        float totalWidth = cols * tileSize + (cols - 1) * spacing;
-        float totalDepth = rows * tileSize + (rows - 1) * spacing;
-        float startX = -totalWidth / 2.0f;
-        float startZ = -totalDepth / 2.0f;
-
-        // (x,y,z) -> [col][row]
-        int col = static_cast<int>((x - startX) / (tileSize + spacing));
-        int row = static_cast<int>((z - startZ) / (tileSize + spacing));
-
-        // Проверка на границы матрицы
-        if (row >= 0 && row < rows && col >= 0 && col < cols)
-        {
-            // Попали в зазор (spacing)
-            float localX = fmod(x - startX, tileSize + spacing);
-            float localZ = fmod(z - startZ, tileSize + spacing);
-
-            if (localX <= tileSize && localZ <= tileSize)
-            {
-                if (m_model.IsCardRemoved(row, col)) return;
-                if (m_model.IsCardOpen(row, col))
-                {
-                    m_model.SetCardOpen(row, col, false);
-                    m_row1 = -1;
-                    m_col1 = -1;
-                    return;
-                }
-
-                if (m_row1 == -1)
-                {
-                    // Первая карта в паре - открыть
-                    m_row1 = row;
-                    m_col1 = col;
-                    m_model.SetCardOpen(row, col, true);
-                }
-                else
-                {
-                    // Вторая - открыть и запустить таймер
-                    m_model.SetCardOpen(row, col, true);
-
-                    m_row2 = row;
-                    m_col2 = col;
-
-                    // Таймер
-                    m_isAnimation = true;
-                    m_waitTimer = 0.6f;
-                }
-                // m_model.PressTile(row, col);
-            }
-        }
-    }
+    void OnWorldClick(double x, double z, float tileSize, float spacing) {}
 
     void Update(float dt)
     {
-        if (m_isAnimation)
+        // ничего не анимируется - следующий ход
+        if (!m_isAnimation)
         {
-            m_waitTimer -= dt;
-            // Время вышло
-            if (m_waitTimer <= 0)
-            {
-                if (m_model.GetTileId(m_row1, m_col1) ==
-                    m_model.GetTileId(m_row2, m_col2))
-                {
-                    // Совпали
-                    m_model.SetCardRemoved(m_row1, m_col1);
-                    m_model.SetCardRemoved(m_row2, m_col2);
-                }
-                else
-                {
-                    // НЕ совпали
-                    m_model.SetCardOpen(m_row1, m_col1, false);
-                    m_model.SetCardOpen(m_row2, m_col2, false);
-
-                }
-
-                m_isAnimation = false;
-                m_row1 = -1; m_col1 = -1;
-                m_row2 = -1; m_col2 = -1;
-
-                m_view.Redraw();
-            }
+            m_curMove = m_model.GetNextMove();
+            m_isAnimation = true;
+            m_waitTimer = 0.0f;
         }
+
+        // Сама анимация
+        m_waitTimer += dt;
+        float t = m_waitTimer / 2.0f;
+
+        // Position = Start + (End - Start) * t
+        m_animX = m_curMove.from.row + (m_curMove.to.row - m_curMove.from.row) * t;
+        m_animY = m_curMove.from.col + (m_curMove.to.col - m_curMove.from.col) * t;
+
+        // Время анимации вышло
+        if (m_waitTimer >= 2.0f)
+        {
+            // Изменить модель
+            m_model.ApplyMove(m_curMove);
+
+            m_isAnimation = false;
+        }
+
+        m_view.Redraw();
     }
 
     void OnMouseMove(double x, double y) {}
 
     [[nodiscard]] const Model& GetModel() const { return m_model; }
+
+    float GetAnimX() const { return m_animX; }
+    float GetAnimY() const { return m_animY; }
+    bool IsAnimating() const { return m_isAnimation; }
+    Move GetCurrentMove() const { return m_curMove; }
 
     void OnModelChanged() override
     {

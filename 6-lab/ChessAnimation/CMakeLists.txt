@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME}
         Presenter.h
         IModelListener.h
         IView.h
-        Model/Peace.h
+        Model/Piece.h
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

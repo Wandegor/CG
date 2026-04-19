@@ -1,7 +1,7 @@
 #pragma once
 #include "BaseWindow.h"
 #include "IView.h"
-#include "Model.h"
+#include "Model/Model.h"
 
 class Presenter;
 
@@ -14,7 +14,7 @@ public:
 
 private:
 	void RenderBoard(float dt);
-	void DrawTile(float width, float depth, float height, GLuint textureID);
+	void DrawTile(float width, float depth, float height);
 
     void OnKey(int key, int scancode, int action, int mods) override;
 	void OnMouseButton(int button, int action, [[maybe_unused]] int mods) override;
@@ -29,8 +29,6 @@ private:
 	void SetupLighting();
 
 	void SetupCameraMatrix();
-
-    std::pair<glm::dvec3, glm::dvec3> GetMouseRay(double mouseX, double mouseY);
 
 	void Redraw() override;
 

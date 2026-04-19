@@ -14,12 +14,11 @@ enum class PieceColor
 {
     Black,
     White,
-    None,
 };
 
 struct Piece
 {
     PieceType type = PieceType::Pawn;
-    PieceColor color = PieceColor::None;
+    PieceColor color;
     bool isEmpty = true;
 };

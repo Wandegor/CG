@@ -8,7 +8,7 @@ int main()
 
 	auto window = std::make_shared<Window>(800, 600, "Memory Game");
 
-	auto presenter = std::make_shared<Presenter>(4, 4, *window);
+	auto presenter = std::make_shared<Presenter>(*window);
 
 	window->SetPresenter(presenter);
 

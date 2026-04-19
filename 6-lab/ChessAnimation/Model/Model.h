@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "../IModelListener.h"
-#include "Peace.h"
+#include "Piece.h"
 
 struct Pos
 {
@@ -24,6 +24,7 @@ private:
     std::array<std::array<Piece, 8>, 8> m_grid;
 
     std::array<Move, 8> m_moves;
+    int m_moveIndex;
 
     std::vector<IModelListener *> m_listeners;
 
@@ -39,7 +40,6 @@ public:
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 m_grid[r][c].isEmpty = true;
-                m_grid[r][c].color = PieceColor::None;
             }
         }
 
@@ -62,6 +62,7 @@ public:
 
     void InitMoves()
     {
+        m_moveIndex = 0;
         m_moves = {
             Move{{1, 4}, {3, 4}, false}, // 1. e2-e4 (Белая пешка)
             Move{{6, 4}, {4, 4}, false}, // 1. ... e7-e5 (Черная пешка)
@@ -73,7 +74,21 @@ public:
         };
     }
 
-    // [[nodiscard]] int GetTileId(int row, int col) const { return m_grid[row][col].id; }
+    Move GetNextMove()
+    {
+        return m_moves.at(m_moveIndex++);
+    }
+
+    void ApplyMove(Move move)
+    {
+        // переместить фигуру
+        m_grid[move.to.row][move.to.col] = m_grid[move.from.row][move.from.col];
+
+        // убрать фигуру с клетки
+        m_grid[move.from.row][move.from.col].isEmpty = true;
+
+        NotifyListeners();
+    }
 
     void AddListener(IModelListener* listener)
     {
