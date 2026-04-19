@@ -2,6 +2,7 @@
 #include "IModelListener.h"
 #include "Model/Model.h"
 #include "pch.h"
+#include <iostream>
 
 class IView;
 
@@ -21,6 +22,9 @@ private:
     // Позиции в момент анимации
     float m_animX = 0.0f;
     float m_animZ = 0.0f;
+    float m_animY = 0.0f;
+
+    float jumpMaxH = 1.0f;
 
 public:
     Presenter(IView& view)
@@ -46,24 +50,28 @@ public:
         if (!m_isAnimation)
         {
             m_curMove = m_model.GetNextMove();
+            if (m_curMove.from.row == -1 || m_curMove.from.col == -1) return;
             m_isAnimation = true;
             m_waitTimer = 0.0f;
         }
 
+        constexpr float duration = 1.5f;
         // Сама анимация
         m_waitTimer += dt;
-        float t = m_waitTimer / 1.5f;
+        float t = m_waitTimer / duration;
+        if (t > 1.0f) t = 1.0f;
 
         // Position = Start + (End - Start) * t
         m_animZ = m_curMove.from.row + (m_curMove.to.row - m_curMove.from.row) * t;
         m_animX = m_curMove.from.col + (m_curMove.to.col - m_curMove.from.col) * t;
+
+        m_animY = jumpMaxH * std::sin(t * M_PI);
 
         // Время анимации вышло
         if (m_waitTimer >= 1.5f)
         {
             // Изменить модель
             m_model.ApplyMove(m_curMove);
-
             m_isAnimation = false;
         }
 
@@ -72,13 +80,15 @@ public:
 
     void OnMouseMove(double x, double y)
     {
-        
+
     }
 
     [[nodiscard]] const Model& GetModel() const { return m_model; }
 
     [[nodiscard]] float GetAnimX() const { return m_animX; }
     [[nodiscard]] float GetAnimZ() const { return m_animZ; }
+    [[nodiscard]] float GetAnimY() const { return m_animY; }
+
     [[nodiscard]] bool IsAnimating() const { return m_isAnimation; }
     [[nodiscard]] Move GetCurrentMove() const { return m_curMove; }
 

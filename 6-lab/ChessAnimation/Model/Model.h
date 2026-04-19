@@ -13,8 +13,8 @@ struct Pos
 
 struct Move
 {
-    Pos from;
-    Pos to;
+    Pos from = {-1, -1};
+    Pos to = {-1, -1};
     bool isCapture; // Рубим?
 };
 

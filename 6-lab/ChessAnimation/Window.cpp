@@ -174,7 +174,7 @@ void Window::Draw(int width, int height)
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    RenderBoard(deltaTime);
+    RenderChess(deltaTime);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -224,10 +224,10 @@ void Window::DrawTile(float width, float depth, float height)
     // Нижняя (лицо)
 }
 
-void Window::DrawPiece(float x, float z, Piece piece)
+void Window::DrawPiece(float x, float z, float y, Piece piece)
 {
     glPushMatrix();
-    glTranslatef(x, 0.05f, z);
+    glTranslatef(x, 0.05f + y, z);
 
     piece.color == PieceColor::White
         ? glColor3f(0.9f, 0.9f, 0.8f)
@@ -250,7 +250,7 @@ void Window::DrawBoard(float x, float z, bool isWhite)
     glPopMatrix();
 }
 
-void Window::RenderBoard(float dt)
+void Window::RenderChess(float dt)
 {
     float fullSize = boardSize * pieceSize;
 
@@ -260,7 +260,9 @@ void Window::RenderBoard(float dt)
     const auto& model = m_presenter->GetModel();
 
     bool isAnimating = m_presenter->IsAnimating();
-    Move curMove = isAnimating ? m_presenter->GetCurrentMove() : Move{};
+    Move curMove = isAnimating
+        ? m_presenter->GetCurrentMove()
+        : Move{};
 
     // Доска и фигуры
     for (int r = 0; r < boardSize; ++r)
@@ -277,7 +279,7 @@ void Window::RenderBoard(float dt)
             if (piece.isEmpty) continue;
             if (isAnimating && r == curMove.from.row && c == curMove.from.col) continue;
 
-            DrawPiece(x, z, piece);
+            DrawPiece(x, z, 0, piece);
         }
     }
 
@@ -289,7 +291,7 @@ void Window::RenderBoard(float dt)
         float animX = startX + m_presenter->GetAnimX() * pieceSize;
         float animZ = startZ + m_presenter->GetAnimZ() * pieceSize;
 
-        DrawPiece(animX, animZ, movingPiece);
+        DrawPiece(animX, animZ, m_presenter->GetAnimY(), movingPiece);
     }
 }
 
