@@ -14,9 +14,8 @@ namespace
     constexpr double Z_NEAR = 0.05;
     constexpr double Z_FAR = 50;
 
-    float tileSize = 1.0f;
-    float tileHeight = 0.3f;
-    float spacing = 0.2f;
+    float pieceSize = 1.0f;
+    float pieceHeight = 0.3f;
 
     // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
     glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
@@ -178,7 +177,7 @@ void Window::Draw(int width, int height)
 
     if (m_presenter)
     {
-        // m_presenter->Update(deltaTime);
+        m_presenter->Update(deltaTime);
     }
 
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
@@ -243,21 +242,6 @@ void Window::DrawTile(float width, float depth, float height)
     glEnd();
 
     // Нижняя (лицо)
-    // glEnable(GL_TEXTURE_2D);
-    // // glBindTexture(GL_TEXTURE_2D, textureID);
-    //
-    // glBegin(GL_QUADS);
-    //
-    // glNormal3f(0.0f, -1.0f, 0.0f);
-    // glTexCoord2f(0.0f, 1.0f); glVertex3f(-hw, 0.0f, -hd);
-    // glTexCoord2f(1.0f, 1.0f); glVertex3f( hw, 0.0f, -hd);
-    // glTexCoord2f(1.0f, 0.0f); glVertex3f( hw, 0.0f,  hd);
-    // glTexCoord2f(0.0f, 0.0f); glVertex3f(-hw, 0.0f,  hd);
-    //
-    // glEnd();
-
-    // glBindTexture(GL_TEXTURE_2D, 0);
-    // glDisable(GL_TEXTURE_2D);
 }
 
 void Window::RenderBoard(float dt)
@@ -265,16 +249,16 @@ void Window::RenderBoard(float dt)
     const auto& model = m_presenter->GetModel();
 
     int boardSize = 8;
-    float fullSize = boardSize * tileSize;
-    float startX = -fullSize / 2.0f + tileSize / 2.0f;
-    float startZ = -fullSize / 2.0f + tileSize / 2.0f;
+    float fullSize = boardSize * pieceSize;
+    float startX = -fullSize / 2.0f + pieceSize / 2.0f;
+    float startZ = -fullSize / 2.0f + pieceSize / 2.0f;
 
     // Доска
     for (int r = 0; r < boardSize; ++r) {
         for (int c = 0; c < boardSize; ++c) {
 
-            float x = startX + c * tileSize;
-            float z = startZ + r * tileSize;
+            float x = startX + c * pieceSize;
+            float z = startZ + r * pieceSize;
 
             // id для текстуры
             // int tileId = model.GetTileId(r, c);
@@ -286,7 +270,7 @@ void Window::RenderBoard(float dt)
             if ((r + c) % 2 == 0) glColor3f(0.3f, 0.3f, 0.3f);
             else glColor3f(0.8f, 0.8f, 0.8f);
 
-            DrawTile(tileSize, tileSize, 0.05f);
+            DrawTile(pieceSize, pieceSize, 0.05f);
             glPopMatrix();
         }
     }
@@ -304,8 +288,8 @@ void Window::RenderBoard(float dt)
             //     if (r == move.from.row && c == move.from.col) continue;
             // }
 
-            float x = startX + c * tileSize;
-            float z = startZ + r * tileSize;
+            float x = startX + c * pieceSize;
+            float z = startZ + r * pieceSize;
 
             // id для текстуры
             // int tileId = model.GetTileId(r, c);
@@ -317,7 +301,7 @@ void Window::RenderBoard(float dt)
             if (piece.color == PieceColor::White) glColor3f(1.0f, 1.0f, 0.9f);
             else glColor3f(0.1f, 0.1f, 0.1f);
 
-            DrawTile(tileSize/2, tileSize/2, tileHeight);
+            DrawTile(pieceSize/2, pieceSize/2, pieceHeight);
             glPopMatrix();
         }
     }
@@ -325,7 +309,7 @@ void Window::RenderBoard(float dt)
 
 void Window::Redraw()
 {
-    std::cout << "Chinazes" ;
+    std::cout << "C" ;
 }
 
 void Window::SetPresenter(std::shared_ptr<Presenter> presenter)

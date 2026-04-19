@@ -59,7 +59,7 @@ public:
         m_animY = m_curMove.from.col + (m_curMove.to.col - m_curMove.from.col) * t;
 
         // Время анимации вышло
-        if (m_waitTimer >= 2.0f)
+        if (m_waitTimer >= 1.0f)
         {
             // Изменить модель
             m_model.ApplyMove(m_curMove);

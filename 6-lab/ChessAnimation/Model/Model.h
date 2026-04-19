@@ -76,6 +76,11 @@ public:
 
     Move GetNextMove()
     {
+        if (m_moveIndex >= m_moves.size())
+        {
+            m_moveIndex = 0;
+            Reset();
+        }
         return m_moves.at(m_moveIndex++);
     }
 
