@@ -79,6 +79,11 @@ public:
         return m_moves.at(m_moveIndex++);
     }
 
+    Piece GetPiece(int row, int col) const
+    {
+        return m_grid[row][col];
+    }
+
     void ApplyMove(Move move)
     {
         // переместить фигуру

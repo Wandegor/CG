@@ -178,7 +178,7 @@ void Window::Draw(int width, int height)
 
     if (m_presenter)
     {
-        m_presenter->Update(deltaTime);
+        // m_presenter->Update(deltaTime);
     }
 
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
@@ -264,9 +264,6 @@ void Window::RenderBoard(float dt)
 {
     const auto& model = m_presenter->GetModel();
 
-    int animX = m_presenter->GetAnimX();
-    int animY = m_presenter->GetAnimY();
-
     int boardSize = 8;
     float fullSize = boardSize * tileSize;
     float startX = -fullSize / 2.0f + tileSize / 2.0f;
@@ -289,7 +286,38 @@ void Window::RenderBoard(float dt)
             if ((r + c) % 2 == 0) glColor3f(0.3f, 0.3f, 0.3f);
             else glColor3f(0.8f, 0.8f, 0.8f);
 
-            DrawTile(tileSize, tileSize, tileHeight);
+            DrawTile(tileSize, tileSize, 0.05f);
+            glPopMatrix();
+        }
+    }
+
+    // Фигуры
+    for (int r = 0; r < boardSize; ++r) {
+        for (int c = 0; c < boardSize; ++c) {
+
+            Piece piece = model.GetPiece(r, c);
+            if (piece.isEmpty) continue;
+
+            // Пропуск той что анимируется
+            // if (m_presenter->IsAnimating()) {
+            //     Move move = m_presenter->GetCurrentMove();
+            //     if (r == move.from.row && c == move.from.col) continue;
+            // }
+
+            float x = startX + c * tileSize;
+            float z = startZ + r * tileSize;
+
+            // id для текстуры
+            // int tileId = model.GetTileId(r, c);
+            // GLuint currentTexture = m_wallTextures[m_wallTextures.size()];
+
+            glPushMatrix();
+            glTranslatef(x, 0.05f, z);
+
+            if (piece.color == PieceColor::White) glColor3f(1.0f, 1.0f, 0.9f);
+            else glColor3f(0.1f, 0.1f, 0.1f);
+
+            DrawTile(tileSize/2, tileSize/2, tileHeight);
             glPopMatrix();
         }
     }
