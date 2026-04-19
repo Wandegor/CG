@@ -20,7 +20,7 @@ private:
 
     // Позиции в момент анимации
     float m_animX = 0.0f;
-    float m_animY = 0.0f;
+    float m_animZ = 0.0f;
 
 public:
     Presenter(IView& view)
@@ -52,14 +52,14 @@ public:
 
         // Сама анимация
         m_waitTimer += dt;
-        float t = m_waitTimer / 2.0f;
+        float t = m_waitTimer / 1.5f;
 
         // Position = Start + (End - Start) * t
-        m_animX = m_curMove.from.row + (m_curMove.to.row - m_curMove.from.row) * t;
-        m_animY = m_curMove.from.col + (m_curMove.to.col - m_curMove.from.col) * t;
+        m_animZ = m_curMove.from.row + (m_curMove.to.row - m_curMove.from.row) * t;
+        m_animX = m_curMove.from.col + (m_curMove.to.col - m_curMove.from.col) * t;
 
         // Время анимации вышло
-        if (m_waitTimer >= 1.0f)
+        if (m_waitTimer >= 1.5f)
         {
             // Изменить модель
             m_model.ApplyMove(m_curMove);
@@ -74,10 +74,10 @@ public:
 
     [[nodiscard]] const Model& GetModel() const { return m_model; }
 
-    float GetAnimX() const { return m_animX; }
-    float GetAnimY() const { return m_animY; }
-    bool IsAnimating() const { return m_isAnimation; }
-    Move GetCurrentMove() const { return m_curMove; }
+    [[nodiscard]] float GetAnimX() const { return m_animX; }
+    [[nodiscard]] float GetAnimZ() const { return m_animZ; }
+    [[nodiscard]] bool IsAnimating() const { return m_isAnimation; }
+    [[nodiscard]] Move GetCurrentMove() const { return m_curMove; }
 
     void OnModelChanged() override
     {

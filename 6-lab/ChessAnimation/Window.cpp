@@ -283,10 +283,10 @@ void Window::RenderBoard(float dt)
             if (piece.isEmpty) continue;
 
             // Пропуск той что анимируется
-            // if (m_presenter->IsAnimating()) {
-            //     Move move = m_presenter->GetCurrentMove();
-            //     if (r == move.from.row && c == move.from.col) continue;
-            // }
+            if (m_presenter->IsAnimating()) {
+                Move move = m_presenter->GetCurrentMove();
+                if (r == move.from.row && c == move.from.col) continue;
+            }
 
             float x = startX + c * pieceSize;
             float z = startZ + r * pieceSize;
@@ -305,11 +305,28 @@ void Window::RenderBoard(float dt)
             glPopMatrix();
         }
     }
+
+    glPushMatrix();
+
+    float worldX = startX + m_presenter->GetAnimX() * pieceSize;
+    float worldZ = startZ + m_presenter->GetAnimZ() * pieceSize;
+
+    glTranslatef(worldX, 0.05f, worldZ);
+
+    Move move = m_presenter->GetCurrentMove();
+    Piece piece = model.GetPiece(move.from.row, move.from.col);
+
+    if (piece.color == PieceColor::White) glColor3f(1.0f, 1.0f, 0.9f);
+    else glColor3f(0.1f, 0.1f, 0.1f);
+
+    DrawTile(pieceSize/2, pieceSize/2, pieceHeight);
+    glPopMatrix();
+
 }
 
 void Window::Redraw()
 {
-    std::cout << "C" ;
+    // std::cout << "C" ;
 }
 
 void Window::SetPresenter(std::shared_ptr<Presenter> presenter)
