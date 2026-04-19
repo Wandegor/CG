@@ -16,6 +16,9 @@ private:
 	void RenderBoard(float dt);
 	void DrawTile(float width, float depth, float height);
 
+	void DrawBoard(float x, float z, bool isWhite);
+	void DrawPiece(float x, float z, Piece piece);
+
     void OnKey(int key, int scancode, int action, int mods) override;
 	void OnMouseButton(int button, int action, [[maybe_unused]] int mods) override;
 

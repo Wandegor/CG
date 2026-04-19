@@ -16,20 +16,7 @@ namespace
 
     float pieceSize = 1.0f;
     float pieceHeight = 0.3f;
-
-    // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
-    glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
-    {
-        // Извлекаем подматрицу 3*3 из матрицы m и ортонормируем её
-        const auto normalizedMatrix = glm::orthonormalize(glm::dmat3x3{m});
-        // Заменяем 3 столбца исходной матрицы
-        return {
-            glm::dvec4{normalizedMatrix[0], 0.0},
-            glm::dvec4{normalizedMatrix[1], 0.0},
-            glm::dvec4{normalizedMatrix[2], 0.0},
-            m[3]
-        };
-    }
+    int boardSize = 8;
 } // namespace
 
 Window::Window(int w, int h, const char* title)
@@ -46,9 +33,7 @@ void Window::OnKey(int key, int scancode, int action, int mods)
     m_presenter->OnKey(key, action);
 }
 
-void Window::OnMouseButton(int button, int action, int mods)
-{
-}
+void Window::OnMouseButton(int button, int action, int mods) {}
 
 void Window::OnMouseMove(double x, double y)
 {
@@ -185,7 +170,7 @@ void Window::Draw(int width, int height)
 
     SetupCameraMatrix();
 
-    GLfloat lightPosition[] = { 2.0f, 3.0f, 0.0f, 1.0f };
+    GLfloat lightPosition[] = {2.0f, 3.0f, 0.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -195,11 +180,6 @@ void Window::Draw(int width, int height)
 
 void Window::DrawTile(float width, float depth, float height)
 {
-    if (m_presenter->IsAnimating())
-    {
-        Move move = m_presenter->GetCurrentMove();
-        // Не рисовать статично фигуру которая в анимации
-    }
     float hw = width / 2.0f;
     float hd = depth / 2.0f;
 
@@ -208,120 +188,109 @@ void Window::DrawTile(float width, float depth, float height)
     // Верхняя грань (Рубашка)
     glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, height,  hd);
-    glVertex3f( hw, height,  hd);
-    glVertex3f( hw, height, -hd);
+    glVertex3f(-hw, height, hd);
+    glVertex3f(hw, height, hd);
+    glVertex3f(hw, height, -hd);
 
     // Передняя
     glNormal3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(-hw, 0.0f,   hd);
-    glVertex3f( hw, 0.0f,   hd);
-    glVertex3f( hw, height, hd);
+    glVertex3f(-hw, 0.0f, hd);
+    glVertex3f(hw, 0.0f, hd);
+    glVertex3f(hw, height, hd);
     glVertex3f(-hw, height, hd);
 
     // Задняя
     glNormal3f(0.0f, 0.0f, -1.0f);
     glVertex3f(-hw, height, -hd);
-    glVertex3f( hw, height, -hd);
-    glVertex3f( hw, 0.0f,   -hd);
-    glVertex3f(-hw, 0.0f,   -hd);
+    glVertex3f(hw, height, -hd);
+    glVertex3f(hw, 0.0f, -hd);
+    glVertex3f(-hw, 0.0f, -hd);
 
     // Правая
     glNormal3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(hw, 0.0f,   -hd);
+    glVertex3f(hw, 0.0f, -hd);
     glVertex3f(hw, height, -hd);
-    glVertex3f(hw, height,  hd);
-    glVertex3f(hw, 0.0f,    hd);
+    glVertex3f(hw, height, hd);
+    glVertex3f(hw, 0.0f, hd);
 
     // Левая
     glNormal3f(-1.0f, 0.0f, 0.0f);
-    glVertex3f(-hw, 0.0f,    hd);
-    glVertex3f(-hw, height,  hd);
+    glVertex3f(-hw, 0.0f, hd);
+    glVertex3f(-hw, height, hd);
     glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, 0.0f,   -hd);
+    glVertex3f(-hw, 0.0f, -hd);
     glEnd();
 
     // Нижняя (лицо)
 }
 
+void Window::DrawPiece(float x, float z, Piece piece)
+{
+    glPushMatrix();
+    glTranslatef(x, 0.05f, z);
+
+    piece.color == PieceColor::White
+        ? glColor3f(0.9f, 0.9f, 0.8f)
+        : glColor3f(0.1f, 0.1f, 0.1f);
+
+    DrawTile(pieceSize * 0.5f, pieceSize * 0.5f, pieceHeight);
+    glPopMatrix();
+}
+
+void Window::DrawBoard(float x, float z, bool isWhite)
+{
+    glPushMatrix();
+    glTranslatef(x, 0.0f, z);
+
+    isWhite
+        ? glColor3f(0.3f, 0.3f, 0.3f)
+        : glColor3f(0.8f, 0.8f, 0.8f);
+
+    DrawTile(pieceSize, pieceSize, 0.05f);
+    glPopMatrix();
+}
+
 void Window::RenderBoard(float dt)
 {
-    const auto& model = m_presenter->GetModel();
-
-    int boardSize = 8;
     float fullSize = boardSize * pieceSize;
+
     float startX = -fullSize / 2.0f + pieceSize / 2.0f;
     float startZ = -fullSize / 2.0f + pieceSize / 2.0f;
 
-    // Доска
-    for (int r = 0; r < boardSize; ++r) {
-        for (int c = 0; c < boardSize; ++c) {
+    const auto& model = m_presenter->GetModel();
 
+    bool isAnimating = m_presenter->IsAnimating();
+    Move curMove = isAnimating ? m_presenter->GetCurrentMove() : Move{};
+
+    // Доска и фигуры
+    for (int r = 0; r < boardSize; ++r)
+    {
+        for (int c = 0; c < boardSize; ++c)
+        {
             float x = startX + c * pieceSize;
             float z = startZ + r * pieceSize;
 
-            // id для текстуры
-            // int tileId = model.GetTileId(r, c);
-            // GLuint currentTexture = m_wallTextures[m_wallTextures.size()];
-
-            glPushMatrix();
-            glTranslatef(x, 0.0f, z);
-
-            if ((r + c) % 2 == 0) glColor3f(0.3f, 0.3f, 0.3f);
-            else glColor3f(0.8f, 0.8f, 0.8f);
-
-            DrawTile(pieceSize, pieceSize, 0.05f);
-            glPopMatrix();
-        }
-    }
-
-    // Фигуры
-    for (int r = 0; r < boardSize; ++r) {
-        for (int c = 0; c < boardSize; ++c) {
+            DrawBoard(x, z, (r + c) % 2 == 0);
 
             Piece piece = model.GetPiece(r, c);
+
             if (piece.isEmpty) continue;
+            if (isAnimating && r == curMove.from.row && c == curMove.from.col) continue;
 
-            // Пропуск той что анимируется
-            if (m_presenter->IsAnimating()) {
-                Move move = m_presenter->GetCurrentMove();
-                if (r == move.from.row && c == move.from.col) continue;
-            }
-
-            float x = startX + c * pieceSize;
-            float z = startZ + r * pieceSize;
-
-            // id для текстуры
-            // int tileId = model.GetTileId(r, c);
-            // GLuint currentTexture = m_wallTextures[m_wallTextures.size()];
-
-            glPushMatrix();
-            glTranslatef(x, 0.05f, z);
-
-            if (piece.color == PieceColor::White) glColor3f(1.0f, 1.0f, 0.9f);
-            else glColor3f(0.1f, 0.1f, 0.1f);
-
-            DrawTile(pieceSize/2, pieceSize/2, pieceHeight);
-            glPopMatrix();
+            DrawPiece(x, z, piece);
         }
     }
 
-    glPushMatrix();
+    // Анимация фигуры
+    if (isAnimating)
+    {
+        Piece movingPiece = model.GetPiece(curMove.from.row, curMove.from.col);
 
-    float worldX = startX + m_presenter->GetAnimX() * pieceSize;
-    float worldZ = startZ + m_presenter->GetAnimZ() * pieceSize;
+        float animX = startX + m_presenter->GetAnimX() * pieceSize;
+        float animZ = startZ + m_presenter->GetAnimZ() * pieceSize;
 
-    glTranslatef(worldX, 0.05f, worldZ);
-
-    Move move = m_presenter->GetCurrentMove();
-    Piece piece = model.GetPiece(move.from.row, move.from.col);
-
-    if (piece.color == PieceColor::White) glColor3f(1.0f, 1.0f, 0.9f);
-    else glColor3f(0.1f, 0.1f, 0.1f);
-
-    DrawTile(pieceSize/2, pieceSize/2, pieceHeight);
-    glPopMatrix();
-
+        DrawPiece(animX, animZ, movingPiece);
+    }
 }
 
 void Window::Redraw()

@@ -70,7 +70,10 @@ public:
         m_view.Redraw();
     }
 
-    void OnMouseMove(double x, double y) {}
+    void OnMouseMove(double x, double y)
+    {
+        
+    }
 
     [[nodiscard]] const Model& GetModel() const { return m_model; }
 
