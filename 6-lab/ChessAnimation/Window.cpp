@@ -208,9 +208,9 @@ void Window::DrawPiece(float x, float z, float y, Piece piece)
         std::string meshName;
 
         switch (piece.type) {
-            case PieceType::King:   meshName = "WhiteKnight.001_0"; break;
+            case PieceType::Knight:   meshName = "WhiteKnight.001_0"; break;
             case PieceType::Queen:  meshName = "WhiteQueen_0"; break;
-            case PieceType::Knight: meshName = "WhiteKing_0"; break;
+            case PieceType::King: meshName = "WhiteKing_0"; break;
             case PieceType::Pawn:   meshName = "PrimaryWhitePawn.007_0"; break;
             case PieceType::Rook:   meshName = "Rook.001_0"; break;
             case PieceType::Bishop: meshName = "PrimaryWhiteBishop.001_0"; break;
