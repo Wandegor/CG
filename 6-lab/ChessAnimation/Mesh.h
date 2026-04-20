@@ -22,6 +22,8 @@ public:
         this->indices = indices;
     }
 
+    Mesh() = default;
+
     void Draw()
     {
         glEnableClientState(GL_VERTEX_ARRAY);

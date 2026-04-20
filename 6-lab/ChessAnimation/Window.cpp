@@ -72,7 +72,7 @@ void Window::OnRunStart()
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     // m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
-    m_kingModel = std::make_unique<ModelLoader>("Assets/models/chess_piece_king.glb");
+    m_pieceModels = std::make_unique<ModelLoader>("Assets/models/chess_scaled.glb");
 }
 
 void Window::SetupLighting()
@@ -95,7 +95,7 @@ void Window::SetupLighting()
     const GLfloat globalAmbient[] = {0.25f, 0.25f, 0.25f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
-    const GLfloat lightAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
+    const GLfloat lightAmbient[] = {0.25f, 0.25f, 0.25f, 1.0f};
     const GLfloat lightDiffuse[] = {0.60f, 0.60f, 0.60f, 1.0f};
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
@@ -159,6 +159,7 @@ void Window::Draw(int width, int height)
         m_presenter->Update(deltaTime);
     }
 
+    // цвет мира
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -176,19 +177,28 @@ void Window::DrawPiece(float x, float z, float y, Piece piece)
 {
     glPushMatrix();
     glTranslatef(x, 0.05f + y, z);
+    float scale = 0.16f;
+    glScalef(scale, scale, scale);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 
     piece.color == PieceColor::White
         ? glColor3f(0.9f, 0.9f, 0.8f)
-        : glColor3f(0.1f, 0.1f, 0.1f);
+        : glColor3f(0.2f, 0.2f, 0.2f);
 
-    if (m_kingModel)
+    if (m_pieceModels)
     {
-        glPushMatrix();
-        float scale = 0.004f;
-        glScalef(scale, scale, scale);
-        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+        std::string meshName;
 
-        m_kingModel->Draw();
+        switch (piece.type) {
+            case PieceType::King:   meshName = "WhiteKnight.001_0"; break;
+            case PieceType::Queen:  meshName = "WhiteQueen_0"; break;
+            case PieceType::Knight: meshName = "WhiteKing_0"; break;
+            case PieceType::Pawn:   meshName = "PrimaryWhitePawn.007_0"; break;
+            case PieceType::Rook:   meshName = "Rook.001_0"; break;
+            case PieceType::Bishop: meshName = "PrimaryWhiteBishop.001_0"; break;
+        }
+
+        m_pieceModels->DrawMesh(meshName);
         glPopMatrix();
     }
     else
@@ -255,6 +265,52 @@ void Window::RenderChess(float dt)
 
         DrawPiece(animX, animZ, m_presenter->GetAnimY(), movingPiece);
     }
+}
+
+void Window::DrawTile(float width, float depth, float height)
+{
+    float hw = width / 2.0f;
+    float hd = depth / 2.0f;
+
+    glBegin(GL_QUADS);
+
+    // Верхняя грань (Рубашка)
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f(-hw, height, hd);
+    glVertex3f(hw, height, hd);
+    glVertex3f(hw, height, -hd);
+
+    // Передняя
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(-hw, 0.0f, hd);
+    glVertex3f(hw, 0.0f, hd);
+    glVertex3f(hw, height, hd);
+    glVertex3f(-hw, height, hd);
+
+    // Задняя
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f(hw, height, -hd);
+    glVertex3f(hw, 0.0f, -hd);
+    glVertex3f(-hw, 0.0f, -hd);
+
+    // Правая
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(hw, 0.0f, -hd);
+    glVertex3f(hw, height, -hd);
+    glVertex3f(hw, height, hd);
+    glVertex3f(hw, 0.0f, hd);
+
+    // Левая
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(-hw, 0.0f, hd);
+    glVertex3f(-hw, height, hd);
+    glVertex3f(-hw, height, -hd);
+    glVertex3f(-hw, 0.0f, -hd);
+    glEnd();
+
+    // Нижняя (лицо)
 }
 
 void Window::Redraw()

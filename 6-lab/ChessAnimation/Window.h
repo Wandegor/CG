@@ -47,5 +47,5 @@ private:
 	std::vector<std::vector<float>> m_tileAngles;
 	float m_animationSpeed = 500.0f;
 
-	std::unique_ptr<ModelLoader> m_kingModel;
+	std::unique_ptr<ModelLoader> m_pieceModels;
 };

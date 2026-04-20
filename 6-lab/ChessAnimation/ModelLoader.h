@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <map>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,7 +14,7 @@
 class ModelLoader
 {
 private:
-    std::vector<Mesh> m_meshes;
+    std::map<std::string, Mesh> m_meshes;
 
 public:
 
@@ -22,11 +23,9 @@ public:
         Load(path);
     }
 
-    void Draw()
-    {
-        for (auto& mesh: m_meshes)
-        {
-            mesh.Draw();
+    void DrawMesh(const std::string& name) {
+        if (m_meshes.count(name)) {
+            m_meshes[name].Draw();
         }
     }
 
@@ -58,7 +57,10 @@ private:
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            m_meshes.push_back(ProcessMesh(mesh, scene));
+
+            std::string name = node->mName.C_Str();
+            std::cout << "Model Name: [" << name << "]" << std::endl;
+            m_meshes[name] = ProcessMesh(mesh, scene);
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
