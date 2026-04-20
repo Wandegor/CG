@@ -37,6 +37,7 @@ private:
 	void Redraw() override;
 
 	glm::dvec2 m_mousePos = {};
+	bool m_leftButtonPressed = false;
 
 	std::shared_ptr<Presenter> m_presenter;
 	double m_lastTime;

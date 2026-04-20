@@ -33,7 +33,24 @@ void Window::OnKey(int key, int scancode, int action, int mods)
     m_presenter->OnKey(key, action);
 }
 
-void Window::OnMouseButton(int button, int action, int mods) {}
+void Window::OnMouseButton(int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            // Прячем и захватываем курсор
+            glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            m_presenter->OnMousePressed(true);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            // Возвращаем курсор
+            glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            m_presenter->OnMousePressed(false);
+        }
+    }
+}
 
 void Window::OnMouseMove(double x, double y)
 {
@@ -138,12 +155,13 @@ void Window::SetupCameraMatrix()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glm::dvec3 pos(0.0, 7.0, 7.0);
-    glm::dvec3 front(0.0, 0.0, 0.0);
-    glm::dvec3 up(0.0, 1.0, 0.0);
+    glm::vec3 pos = m_presenter->GetCameraPos();
+    glm::vec3 front = m_presenter->GetCameraFront();
+    glm::vec3 up = m_presenter->GetCameraUp();
 
-    glm::dmat4 view = glm::lookAt(pos, front, up);
-    glLoadMatrixd(&view[0][0]);
+    glm::mat4 view = glm::lookAt(pos, pos + front, up);
+
+    glLoadMatrixf(&view[0][0]);
 }
 
 void Window::Draw(int width, int height)
