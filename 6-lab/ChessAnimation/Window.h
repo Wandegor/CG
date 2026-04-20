@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseWindow.h"
 #include "IView.h"
+#include "ModelLoader.h"
 #include "Model/Model.h"
 
 class Presenter;
@@ -45,4 +46,6 @@ private:
 
 	std::vector<std::vector<float>> m_tileAngles;
 	float m_animationSpeed = 500.0f;
+
+	std::unique_ptr<ModelLoader> m_kingModel;
 };

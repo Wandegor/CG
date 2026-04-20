@@ -71,14 +71,8 @@ void Window::OnRunStart()
     // смешивание Цвета с текстурой
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-    m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall2.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall3.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall4.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall5.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall6.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/sniper.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/toxis.jpg"));
+    // m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
+    m_kingModel = std::make_unique<ModelLoader>("Assets/models/chess_piece_king.glb");
 }
 
 void Window::SetupLighting()
@@ -178,52 +172,6 @@ void Window::Draw(int width, int height)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Window::DrawTile(float width, float depth, float height)
-{
-    float hw = width / 2.0f;
-    float hd = depth / 2.0f;
-
-    glBegin(GL_QUADS);
-
-    // Верхняя грань (Рубашка)
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, height, hd);
-    glVertex3f(hw, height, hd);
-    glVertex3f(hw, height, -hd);
-
-    // Передняя
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(-hw, 0.0f, hd);
-    glVertex3f(hw, 0.0f, hd);
-    glVertex3f(hw, height, hd);
-    glVertex3f(-hw, height, hd);
-
-    // Задняя
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f(hw, height, -hd);
-    glVertex3f(hw, 0.0f, -hd);
-    glVertex3f(-hw, 0.0f, -hd);
-
-    // Правая
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(hw, 0.0f, -hd);
-    glVertex3f(hw, height, -hd);
-    glVertex3f(hw, height, hd);
-    glVertex3f(hw, 0.0f, hd);
-
-    // Левая
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glVertex3f(-hw, 0.0f, hd);
-    glVertex3f(-hw, height, hd);
-    glVertex3f(-hw, height, -hd);
-    glVertex3f(-hw, 0.0f, -hd);
-    glEnd();
-
-    // Нижняя (лицо)
-}
-
 void Window::DrawPiece(float x, float z, float y, Piece piece)
 {
     glPushMatrix();
@@ -233,7 +181,21 @@ void Window::DrawPiece(float x, float z, float y, Piece piece)
         ? glColor3f(0.9f, 0.9f, 0.8f)
         : glColor3f(0.1f, 0.1f, 0.1f);
 
-    DrawTile(pieceSize * 0.5f, pieceSize * 0.5f, pieceHeight);
+    if (m_kingModel)
+    {
+        glPushMatrix();
+        float scale = 0.004f;
+        glScalef(scale, scale, scale);
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+
+        m_kingModel->Draw();
+        glPopMatrix();
+    }
+    else
+    {
+        // запас
+        DrawTile(pieceSize * 0.5f, pieceSize * 0.5f, pieceHeight);
+    }
     glPopMatrix();
 }
 

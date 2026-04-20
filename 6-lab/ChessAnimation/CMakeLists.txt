@@ -17,12 +17,20 @@ add_executable(${PROJECT_NAME}
         IModelListener.h
         IView.h
         Model/Piece.h
+        ModelLoader.h
+        Mesh.h
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/Textures"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Textures"
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Assets"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
