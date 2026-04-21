@@ -199,9 +199,15 @@ void Window::DrawPiece(float x, float z, float y, Piece piece)
     glScalef(scale, scale, scale);
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 
-    piece.color == PieceColor::White
-        ? glColor3f(0.9f, 0.9f, 0.8f)
-        : glColor3f(0.2f, 0.2f, 0.2f);
+    if (piece.color == PieceColor::White)
+    {
+        glColor3f(0.9f, 0.9f, 0.8f);
+        glRotatef(-180.0f, 0.0f, 0.0f, 1.0f);
+    }
+    else
+    {
+        glColor3f(0.2f, 0.2f, 0.2f);
+    }
 
     if (m_pieceModels)
     {
@@ -326,9 +332,15 @@ void Window::DrawTile(float width, float depth, float height)
     glVertex3f(-hw, height, hd);
     glVertex3f(-hw, height, -hd);
     glVertex3f(-hw, 0.0f, -hd);
-    glEnd();
 
-    // Нижняя (лицо)
+    // Нижняя
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(-hw, 0.0f, -hd);
+    glVertex3f(-hw, 0.0f, hd);
+    glVertex3f(hw, 0.0f, hd);
+    glVertex3f(hw, 0.0f, -hd);
+
+    glEnd();
 }
 
 void Window::Redraw()
