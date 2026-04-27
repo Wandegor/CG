@@ -1,24 +1,22 @@
 #pragma once
 #include "pch.h"
-#include "MazeModel.h"
 
 class Presenter
 {
 private:
-    MazeModel m_model;
 
     glm::dvec3 m_cameraPos;
     double m_yaw;
     double m_pitch;
-    glm::dvec3 m_front;
-    glm::dvec3 m_right;
-    glm::dvec3 m_up;
+    glm::dvec3 m_front{};
+    glm::dvec3 m_right{};
+    glm::dvec3 m_up{};
 
     bool m_keys[GLFW_KEY_LAST + 1] = {false};
     bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {0.0, 0.0};
 
-    const double m_moveSpeed = 2.0;
+    const double m_moveSpeed = 1.5;
     const double m_mouseSensitivity = 0.002;
 
     void UpdateCameraVectors()
@@ -34,9 +32,8 @@ private:
     }
 
 public:
-    Presenter(int mazeW, int mazeH)
-        : m_model(mazeW, mazeH),
-          m_cameraPos(0.0, 0.0, 1.5),
+    Presenter()
+        : m_cameraPos(0.0, 0.0, 1.5),
           m_yaw(-M_PI / 2.0),
           m_pitch(0.0)
     {
@@ -94,7 +91,6 @@ public:
         m_mousePos = currentMousePos;
     }
 
-    [[nodiscard]] const MazeModel& GetModel() const { return m_model; }
     [[nodiscard]] glm::dvec3 GetCameraPos() const { return m_cameraPos; }
     [[nodiscard]] glm::dvec3 GetCameraFront() const { return m_front; }
     [[nodiscard]] glm::dvec3 GetCameraUp() const { return m_up; }

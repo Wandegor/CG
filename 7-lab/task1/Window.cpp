@@ -10,7 +10,7 @@ namespace
     // Угол обзора по вертикали
     constexpr float FIELD_OF_VIEW = 60 * M_PI / 180.0;
 
-    constexpr float Z_NEAR = 0.05f;
+    constexpr float Z_NEAR = 0.02f;
     constexpr float Z_FAR = 50.0f;
 
     const char* pVSFileName = "shader.vs";
@@ -20,10 +20,6 @@ namespace
 Window::Window(int w, int h, const char* title, Presenter& presenter)
     : BaseWindow(w, h, title), m_presenter(presenter),
       m_lastTime(glfwGetTime()) {}
-
-void Window::BuildMazeDisplayList(const MazeModel& model) {}
-
-void Window::RenderMaze(const MazeModel& model) {}
 
 void Window::OnKey(int key, int scancode, int action, int mods)
 {
@@ -54,7 +50,8 @@ void Window::OnRunStart()
 {
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
-    m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateTriangle());
+    // m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateTriangle());
+    m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateCanabola(1000));
 }
 
 void Window::SetupLighting() {}
@@ -97,7 +94,7 @@ void Window::Draw(int width, int height)
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    m_triangle->Draw(GL_TRIANGLES);
+    m_triangle->Draw(GL_LINE_LOOP);
 }
 
 void Window::SetupCameraMatrix() {}

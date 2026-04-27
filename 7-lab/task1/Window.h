@@ -10,9 +10,6 @@ public:
     Window(int w, int h, const char* title, Presenter& presenter);
 
 private:
-    void BuildMazeDisplayList(const MazeModel& model);
-    void RenderMaze(const MazeModel& model);
-
     void OnKey(int key, int scancode, int action, int mods) override;
     void OnMouseButton(int button, int action, [[maybe_unused]] int mods) override;
 
