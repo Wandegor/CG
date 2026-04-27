@@ -3,6 +3,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "ShapeFactory.h"
+
 namespace
 {
     // Угол обзора по вертикали
@@ -52,32 +54,12 @@ void Window::OnRunStart()
 {
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
-    glGenVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
-
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
-
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    // Отвязка
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    glEnable(GL_DEPTH_TEST);
+    m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateTriangle());
 }
 
 void Window::SetupLighting() {}
 
-GLuint Window::LoadTexture(const char* path){}
+GLuint Window::LoadTexture(const char* path) {}
 
 void Window::Draw(int width, int height)
 {
@@ -102,21 +84,20 @@ void Window::Draw(int width, int height)
         Z_NEAR,
         Z_FAR);
 
-    glm::vec3 pos   = m_presenter.GetCameraPos();
+    glm::vec3 pos = m_presenter.GetCameraPos();
     glm::vec3 front = m_presenter.GetCameraFront();
-    glm::vec3 up    = m_presenter.GetCameraUp();
+    glm::vec3 up = m_presenter.GetCameraUp();
 
     glm::mat4 view = glm::lookAt(pos, pos + front, up);
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    glBindVertexArray(m_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+    m_triangle->Draw(GL_TRIANGLES);
 }
 
 void Window::SetupCameraMatrix() {}

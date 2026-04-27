@@ -13,6 +13,8 @@ add_executable(${PROJECT_NAME}
         Presenter.h
         Window.h
         Window.cpp
+        RenderObject.h
+        ShapeFactory.h
 )
 
 file(COPY Shaders/shader.vs Shaders/shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
