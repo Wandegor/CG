@@ -50,7 +50,7 @@ void Window::OnRunStart()
 {
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
-    auto sphereData = ShapeFactory::CreateSphere(20);
+    auto sphereData = ShapeFactory::CreateMesh(20);
 
     m_sphere = std::make_unique<RenderObject>(sphereData.vertices, sphereData.indices);
 
@@ -73,6 +73,12 @@ void Window::Draw(int width, int height)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(m_shader->GetProgram());
+
+    float time = static_cast<float>(glfwGetTime());
+    float morphValue = (sin(time) + 1.0f) / 2.0f;
+
+    GLint morphLoc = glGetUniformLocation(m_shader->GetProgram(), "uMorphTime");
+    glUniform1f(morphLoc, morphValue);
 
     float aspect = static_cast<float>(width) / static_cast<float>(height);
 

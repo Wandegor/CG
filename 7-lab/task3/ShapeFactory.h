@@ -10,7 +10,7 @@ struct MeshData {
 class ShapeFactory
 {
 public:
-    static MeshData CreateSphere(int resolution = 50)
+    static MeshData CreateMesh(int resolution = 50)
     {
         MeshData mesh;
 
