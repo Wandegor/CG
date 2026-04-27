@@ -36,7 +36,7 @@ private:
 public:
     Presenter(int mazeW, int mazeH)
         : m_model(mazeW, mazeH),
-          m_cameraPos(1.5, 0.5, 1.5),
+          m_cameraPos(0.0, 0.0, 1.5),
           m_yaw(-M_PI / 2.0),
           m_pitch(0.0)
     {
@@ -48,15 +48,15 @@ public:
         double speed = m_moveSpeed * deltaTime;
         glm::dvec3 move(0.0);
 
-        if (m_keys[GLFW_KEY_W]) move.z += speed;
-        if (m_keys[GLFW_KEY_S]) move.z -= speed;
-        if (m_keys[GLFW_KEY_A]) move.x -= speed;
-        if (m_keys[GLFW_KEY_D]) move.x += speed;
+        if (m_keys[GLFW_KEY_W]) move += m_front * speed;
+        if (m_keys[GLFW_KEY_S]) move -= m_front * speed;
+        if (m_keys[GLFW_KEY_A]) move -= m_right * speed;
+        if (m_keys[GLFW_KEY_D]) move += m_right * speed;
 
-        glm::dvec3 forwardHor = glm::normalize(glm::dvec3(m_front.x, 0.0, m_front.z));
-        glm::dvec3 rightHor = glm::normalize(glm::dvec3(m_right.x, 0.0, m_right.z));
+        if (m_keys[GLFW_KEY_SPACE]) move += glm::dvec3(0.0, 1.0, 0.0) * speed;
+        if (m_keys[GLFW_KEY_LEFT_CONTROL]) move -= glm::dvec3(0.0, 1.0, 0.0) * speed;
 
-        glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
+        m_cameraPos += move;
     }
 
     void OnKey(int key, int action)

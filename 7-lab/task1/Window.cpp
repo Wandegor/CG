@@ -6,10 +6,10 @@
 namespace
 {
     // Угол обзора по вертикали
-    constexpr double FIELD_OF_VIEW = 60 * M_PI / 180.0;
+    constexpr float FIELD_OF_VIEW = 60 * M_PI / 180.0;
 
-    constexpr double Z_NEAR = 0.05;
-    constexpr double Z_FAR = 50;
+    constexpr float Z_NEAR = 0.05f;
+    constexpr float Z_FAR = 50.0f;
 
     const char* pVSFileName = "shader.vs";
     const char* pFSFileName = "shader.fs";
@@ -77,12 +77,16 @@ void Window::OnRunStart()
 
 void Window::SetupLighting() {}
 
-GLuint Window::LoadTexture(const char* path)
-{
-}
+GLuint Window::LoadTexture(const char* path){}
 
 void Window::Draw(int width, int height)
 {
+    double currentTime = glfwGetTime();
+    float deltaTime = static_cast<float>(currentTime - m_lastTime);
+    m_lastTime = currentTime;
+
+    m_presenter.UpdateMovement(deltaTime);
+
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -92,19 +96,23 @@ void Window::Draw(int width, int height)
     // новая позиция света
 
     float aspect = (float)width / (float)height;
-    glm::mat4 projection = glm::ortho(-2.0f * aspect, 2.0f * aspect, -2.0f, 2.0f, -10.0f, 10.0f);
+    glm::mat4 projection = glm::perspective(
+        FIELD_OF_VIEW,
+        aspect,
+        Z_NEAR,
+        Z_FAR);
 
-    // Сбрасываем камеру в "нуль", чтобы она просто смотрела в центр
-    glm::mat4 view = glm::mat4(1.0f);
+    glm::vec3 pos   = m_presenter.GetCameraPos();
+    glm::vec3 front = m_presenter.GetCameraFront();
+    glm::vec3 up    = m_presenter.GetCameraUp();
+
+    glm::mat4 view = glm::lookAt(pos, pos + front, up);
+
     glm::mat4 model = glm::mat4(1.0f);
 
-    GLuint modelLoc = glGetUniformLocation(m_shader->GetProgram(), "model");
-    GLuint viewLoc = glGetUniformLocation(m_shader->GetProgram(), "view");
-    GLuint projLoc = glGetUniformLocation(m_shader->GetProgram(), "projection");
-
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
