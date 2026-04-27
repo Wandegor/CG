@@ -40,7 +40,7 @@ void main()
     vec3 gold = vec3(1.0, 0.85, 0.0);
     vec3 finalColor = red;
 
-    vec2 symbolUV = (TexCoords - vec2(0.05, 0.50)) * 4.0; // Сдвиг и масштаб
+    vec2 symbolUV = (TexCoords - vec2(0.05, 0.60)) * 4.0; // Сдвиг и масштаб
     symbolUV.x = 1.0 - symbolUV.x;
 
     if (symbolUV.x < -0.2 || symbolUV.x > 1.2 || symbolUV.y < -0.2 || symbolUV.y > 1.2) {
