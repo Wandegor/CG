@@ -93,5 +93,10 @@ public:
         CheckProgramLinking(program);
     }
 
+    void SetVec3(const std::string& name, const glm::vec3& value) const
+    {
+        glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+    }
+
     [[nodiscard]] GLuint GetProgram() const { return program; }
 };

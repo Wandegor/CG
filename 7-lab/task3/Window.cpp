@@ -50,14 +50,27 @@ void Window::OnRunStart()
 {
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
-    auto sphereData = ShapeFactory::CreateMesh(20);
+    auto sphereData = ShapeFactory::CreateMesh(30);
 
     m_sphere = std::make_unique<RenderObject>(sphereData.vertices, sphereData.indices);
 
     glEnable(GL_DEPTH_TEST);
 }
 
-void Window::SetupLighting() {}
+void Window::SetupLighting()
+{
+    glUseProgram(m_shader->GetProgram());
+
+    glm::vec3 lightPosition = glm::vec3(2.0f, 3.0f, 5.0f);
+    m_shader->SetVec3("lightPos", lightPosition);
+
+    glm::vec3 color = glm::vec3(0.0f, 1.0f, 0.5f);
+    m_shader->SetVec3("objectColor", color);
+
+    float ambient = 0.05f;
+    GLint ambientLoc = glGetUniformLocation(m_shader->GetProgram(), "ambient");
+    glUniform1f(ambientLoc, ambient);
+}
 
 GLuint Window::LoadTexture(const char* path) {}
 
@@ -80,11 +93,13 @@ void Window::Draw(int width, int height)
     GLint morphLoc = glGetUniformLocation(m_shader->GetProgram(), "uMorphTime");
     glUniform1f(morphLoc, morphValue);
 
+    SetupLighting();
+
     float aspect = static_cast<float>(width) / static_cast<float>(height);
 
     SetupCameraMatrix(aspect);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     m_sphere->Draw(GL_TRIANGLES);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
