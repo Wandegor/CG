@@ -17,8 +17,6 @@ private:
     int m_cols;
     std::vector<std::vector<Tile> > m_grid;
 
-    int m_firstRow = -1, m_firstCol = -1;
-
     std::vector<IModelListener *> m_listeners;
 
 public:

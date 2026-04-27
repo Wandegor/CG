@@ -7,20 +7,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
         main.cpp
         Shaders/Shader.h
+        BaseWindow.h
+        GLFWInitializer.h
+        pch.h
+        Presenter.h
         Window.h
-        Shapes/Rectangle.h
-        Shapes/Drawable.h
-        Shapes/Circle.h
-        Shapes/LineStrip.h
-        Mat3.h
-        SceneRenderer.h
+        Window.cpp
 )
 
-add_custom_command(TARGET task1 POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/Textures"
-        "$<TARGET_FILE_DIR:task1>/Textures"
-)
+file(COPY Shaders/shader.vs Shaders/shader.fs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+#add_custom_command(TARGET task1 POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_directory
+#        "${CMAKE_CURRENT_SOURCE_DIR}/Textures"
+#        "$<TARGET_FILE_DIR:task1>/Textures"
+#)
 
 target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_INCLUDE_DIR})

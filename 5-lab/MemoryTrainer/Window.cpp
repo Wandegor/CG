@@ -328,7 +328,6 @@ void Window::RenderBoard(float dt)
     }
 }
 
-// Window.cpp
 std::pair<glm::dvec3, glm::dvec3> Window::GetMouseRay(double mouseX, double mouseY) {
     int width, height;
     glfwGetFramebufferSize(GetWindow(), &width, &height);

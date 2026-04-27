@@ -6,13 +6,17 @@ class BaseWindow
 public:
     BaseWindow(int w, int h, const char* title)
     {
-        glfwWindowHint(GLFW_DEPTH_BITS, 24);
-        m_window = glfwCreateWindow(w, h, title, nullptr, nullptr);
+        // Запрашиваем OpenGL 3.3 Core Profile
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #endif
 
+        m_window = glfwCreateWindow(w, h, title, nullptr, nullptr);
         if (!m_window)
-        {
             throw std::runtime_error("Failed to create window");
-        }
 
         glfwSetWindowUserPointer(m_window, this);
 
@@ -56,6 +60,8 @@ public:
     void Run()
     {
         glfwMakeContextCurrent(m_window);
+        if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress))
+            throw std::runtime_error("Failed to initialize GLAD");
         glfwSetWindowUserPointer(m_window, this);
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double x, double y)

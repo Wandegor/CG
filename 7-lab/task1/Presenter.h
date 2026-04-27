@@ -33,34 +33,6 @@ private:
         m_up = glm::normalize(glm::cross(m_right, m_front));
     }
 
-    void CheckColiseum(glm::dvec3 deltaWorld)
-    {
-        double offset = 0.15;
-
-        // движение по X
-        double nextX = m_cameraPos.x + deltaWorld.x;
-
-        if (!m_model.IsWall(int(nextX + offset), int(m_cameraPos.z + offset)) &&
-            !m_model.IsWall(int(nextX + offset), int(m_cameraPos.z - offset)) &&
-            !m_model.IsWall(int(nextX - offset), int(m_cameraPos.z + offset)) &&
-            !m_model.IsWall(int(nextX - offset), int(m_cameraPos.z - offset)))
-        {
-            m_cameraPos.x = nextX;
-        }
-
-        // движение по Z
-        double nextZ = m_cameraPos.z + deltaWorld.z;
-
-        // Аналогично: проверяем все 4 угла квадрата в новой позиции по Z
-        if (!m_model.IsWall(int(m_cameraPos.x + offset), int(nextZ + offset)) &&
-            !m_model.IsWall(int(m_cameraPos.x + offset), int(nextZ - offset)) &&
-            !m_model.IsWall(int(m_cameraPos.x - offset), int(nextZ + offset)) &&
-            !m_model.IsWall(int(m_cameraPos.x - offset), int(nextZ - offset)))
-        {
-            m_cameraPos.z = nextZ;
-        }
-    }
-
 public:
     Presenter(int mazeW, int mazeH)
         : m_model(mazeW, mazeH),
@@ -85,9 +57,6 @@ public:
         glm::dvec3 rightHor = glm::normalize(glm::dvec3(m_right.x, 0.0, m_right.z));
 
         glm::dvec3 deltaWorld = rightHor * move.x + forwardHor * move.z;
-
-        // Коллизии
-        CheckColiseum(deltaWorld);
     }
 
     void OnKey(int key, int action)

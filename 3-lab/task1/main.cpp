@@ -28,7 +28,7 @@ int main()
 
     // Шейдеры
     Shader shader(pVSFileName, pFSFileName);
-    GLuint shaderProgram = shader.GetProgram();
+        GLuint shaderProgram = shader.GetProgram();
     // location uniform-переменной
     int colorLocation = glGetUniformLocation(shaderProgram, "uColor");
 

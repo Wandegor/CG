@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseWindow.h"
 #include "Presenter.h"
+#include "Shaders/Shader.h"
 
 class Window : public BaseWindow
 {
@@ -8,7 +9,6 @@ public:
 	Window(int w, int h, const char* title, Presenter& presenter);
 
 private:
-	GLuint m_wallDisplayList = 0;
 	void BuildMazeDisplayList(const MazeModel& model);
 	void RenderMaze(const MazeModel& model);
 
@@ -35,4 +35,7 @@ private:
 
 	std::vector<GLuint> m_wallTextures;
 	GLuint LoadTexture(const char* path);
+
+    std::unique_ptr<Shader> m_shader;
+    GLuint m_vao, m_vbo;
 };

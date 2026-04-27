@@ -11,120 +11,22 @@ namespace
     constexpr double Z_NEAR = 0.05;
     constexpr double Z_FAR = 50;
 
-    // Ортонормируем матрицу 4*4 (это должна быть аффинная матрица)
-    glm::dmat4x4 Orthonormalize(const glm::dmat4x4& m)
-    {
-        // Извлекаем подматрицу 3*3 из матрицы m и ортонормируем её
-        const auto normalizedMatrix = glm::orthonormalize(glm::dmat3x3{m});
-        // Заменяем 3 столбца исходной матрицы
-        return {
-            glm::dvec4{normalizedMatrix[0], 0.0},
-            glm::dvec4{normalizedMatrix[1], 0.0},
-            glm::dvec4{normalizedMatrix[2], 0.0},
-            m[3]
-        };
-    }
+    const char* pVSFileName = "shader.vs";
+    const char* pFSFileName = "shader.fs";
 } // namespace
 
 Window::Window(int w, int h, const char* title, Presenter& presenter)
     : BaseWindow(w, h, title), m_presenter(presenter),
-      m_lastTime(glfwGetTime()) {}
+      m_lastTime(glfwGetTime())
+      {
+      }
 
 void Window::BuildMazeDisplayList(const MazeModel& model)
 {
-    if (m_wallDisplayList != 0)
-    {
-        glDeleteLists(m_wallDisplayList, 1);
-    }
-
-    m_wallDisplayList = glGenLists(1);
-    glNewList(m_wallDisplayList, GL_COMPILE);
-
-    int width = model.GetWidth();
-    int height = model.GetHeight();
-
-    // Пол
-    glBegin(GL_QUADS);
-    glColor3f(0.8f, 0.6f, 0.8f);
-
-    glNormal3f(0.0f, 1.0f, 0.0f);
-
-    glVertex3f(0.0f,  0.0f, 0.0f);
-    glVertex3f(0.0f,  0.0f, height);
-    glVertex3f(width, 0.0f, height);
-    glVertex3f(width, 0.0f, 0.0f);
-    glEnd();
-
-    glColor3f(1.f, 1.f, 1.f);
-    // Включение текстур
-    glEnable(GL_TEXTURE_2D);
-
-    for (int x = 0; x < width; ++x)
-    {
-        for (int z = 0; z < height; ++z)
-        {
-            if (!model.IsWall(x, z)) continue;
-
-            int textureIndex = (x * 7 + z * 13) % m_wallTextures.size();
-            glBindTexture(GL_TEXTURE_2D, m_wallTextures[textureIndex]);
-
-            // Приводим индексы к float для координат
-            auto fx = static_cast<float>(x);
-            auto fz = static_cast<float>(z);
-
-            glBegin(GL_QUADS);
-
-            // Передняя грань (Z-)
-            if (!model.IsWall(x, z - 1)) {
-                glNormal3f(0, 0, -1);
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx,     0, fz); // Лево-низ
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx,     1, fz); // Лево-верх
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz); // Право-верх
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz); // Право-низ
-            }
-
-            // Задняя (Z+)
-            if (!model.IsWall(x, z + 1)) {
-                glNormal3f(0, 0, 1);
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Лево-низ
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Лево-верх
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx,     1, fz + 1); // Право-верх
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx,     0, fz + 1); // Право-низ
-            }
-
-            // Левая (X-)
-            if (!model.IsWall(x - 1, z)) {
-                glNormal3f(-1, 0, 0);
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx, 0, fz + 1); // Лево-низ
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx, 1, fz + 1); // Лево-верх
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx, 1, fz);     // Право-верх
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx, 0, fz);     // Право-низ
-            }
-
-            // Правая (X+)
-            if (!model.IsWall(x + 1, z)) {
-                glNormal3f(1, 0, 0);
-                glTexCoord2f(1.0f, 0.0f); glVertex3f(fx + 1, 0, fz);     // Лево-низ
-                glTexCoord2f(1.0f, 1.0f); glVertex3f(fx + 1, 1, fz);     // Лево-верх
-                glTexCoord2f(0.0f, 1.0f); glVertex3f(fx + 1, 1, fz + 1); // Право-верх
-                glTexCoord2f(0.0f, 0.0f); glVertex3f(fx + 1, 0, fz + 1); // Право-низ
-            }
-            glEnd();
-        }
-    }
-    glDisable(GL_TEXTURE_2D);
-    glEndList();
 }
 
 void Window::RenderMaze(const MazeModel& model)
 {
-    if (m_wallDisplayList == 0)
-    {
-        BuildMazeDisplayList(model);
-    }
-
-    glColor3f(0.6f, 0.2f, 0.6f);
-    glCallList(m_wallDisplayList);
 }
 
 void Window::OnKey(int key, int scancode, int action, int mods)
@@ -150,64 +52,46 @@ void Window::OnMouseMove(double x, double y)
 void Window::OnResize(int width, int height)
 {
     glViewport(0, 0, width, height);
-
-    // Вычисляем соотношение сторон клиентской области окна
-    double aspect = double(width) / double(height);
-
-    glMatrixMode(GL_PROJECTION);
-    const auto proj = glm::perspective(FIELD_OF_VIEW, aspect, Z_NEAR, Z_FAR);
-    glLoadMatrixd(&proj[0][0]);
-    glMatrixMode(GL_MODELVIEW);
 }
 
 void Window::OnRunStart()
 {
+    m_shader= std::make_unique<Shader>(pVSFileName, pFSFileName);
+
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
+
+    float vertices[] = {
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            0.0f,  0.5f, 0.0f
+    };
+
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Отвязка
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
     // Включаем режим отбраковки граней
     // glEnable(GL_CULL_FACE);
     // Отбраковываться будут нелицевые стороны граней
     // glCullFace(GL_BACK);
-    // Сторона примитива считается лицевой, если при ее рисовании
-    // обход верших осуществляется против часовой стрелки
-    glFrontFace(GL_CCW);
+//    glFrontFace(GL_CCW);
 
-    // Включаем тест глубины для удаления невидимых линий и поверхностей
     glEnable(GL_DEPTH_TEST);
 
-    SetupLighting();
+//    SetupLighting();
 
-    m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall2.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall3.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall4.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall5.jpg"));
-    m_wallTextures.push_back(LoadTexture("Textures/wall6.jpg"));
+//    m_wallTextures.push_back(LoadTexture("Textures/wall1.jpg"));
 }
 
 void Window::SetupLighting()
 {
-    glEnable(GL_NORMALIZE);
-
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-
-    // Расчет света для обоих сторон полигона
-    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.3f); // Чем больше число, тем быстрее гаснет свет
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.15f);
-
-    const GLfloat globalAmbient[] = {0.05f, 0.05f, 0.05f, 1.0f};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
-
-    const GLfloat lightAmbient[] = {0.15f, 0.15f, 0.15f, 1.0f};
-    const GLfloat lightDiffuse[] = {0.60f, 0.60f, 0.60f, 1.0f};
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 }
 
 GLuint Window::LoadTexture(const char* path)
@@ -252,34 +136,34 @@ void Window::Draw(int width, int height)
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    SetupCameraMatrix();
+//    SetupCameraMatrix();
 
     glm::dvec3 pos = m_presenter.GetCameraPos();
-    const GLfloat lightPosition[] = {
-        static_cast<GLfloat>(pos.x),
-        static_cast<GLfloat>(pos.y),
-        static_cast<GLfloat>(pos.z),
-        1.0f
-    };
-
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+//    const GLfloat lightPosition[] = {
+//        static_cast<GLfloat>(pos.x),
+//        static_cast<GLfloat>(pos.y),
+//        static_cast<GLfloat>(pos.z),
+//        1.0f
+//    };
+//
+//    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    RenderMaze(m_presenter.GetModel());
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Используем шейдер
+    glUseProgram(m_shader->GetProgram());
+
+    // Рисуем треугольник
+    glBindVertexArray(m_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Window::SetupCameraMatrix()
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glm::dvec3 pos = m_presenter.GetCameraPos();
-    glm::dvec3 front = m_presenter.GetCameraFront();
-    glm::dvec3 up = m_presenter.GetCameraUp();
-
-    glm::dmat4 view = glm::lookAt(pos, pos + front, up);
-    glLoadMatrixd(&view[0][0]);
 }
