@@ -15,17 +15,14 @@ private:
 
     void OnMouseMove(double x, double y) override;
 
-
     void OnResize(int width, int height) override;
 
     void OnRunStart() override;
 
     void Draw(int width, int height) override;
-    void SetupLighting();
 
     void SetupCameraMatrix(float aspect);
 
-    bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {};
 
     Presenter& m_presenter;

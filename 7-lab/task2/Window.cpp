@@ -51,7 +51,6 @@ void Window::OnRunStart()
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
     std::vector<float> flagVertices = {
-        // Позиции (X, Y, Z)  // Текстурные координаты (U, V) - пригодятся для позиционирования
         -1.0f, -0.8f, 0.0f,   0.0f, 0.0f, // Низ-лево
          1.0f, -0.8f, 0.0f,   1.0f, 0.0f, // Низ-право
          1.0f,  0.8f, 0.0f,   1.0f, 1.0f, // Верх-право
@@ -61,16 +60,10 @@ void Window::OnRunStart()
         -1.0f,  0.8f, 0.0f,   0.0f, 1.0f  // Верх-лево
     };
 
-    // Обновим твой RenderObject (или Mesh), чтобы он принимал 5 флоатов на вершину
-    // (см. Шаг 2 ниже)
     m_flag = std::make_unique<RenderObject>(flagVertices, 5);
 
     glEnable(GL_DEPTH_TEST);
 }
-
-void Window::SetupLighting() {}
-
-GLuint Window::LoadTexture(const char* path) {}
 
 void Window::Draw(int width, int height)
 {

@@ -27,7 +27,7 @@ float sdStar(vec2 p, float r)
     p.x = abs(p.x);
 
     // Здесь r — это внешний радиус
-    // 0.45 — это коэффициент "впадины" лучей (внутренний радиус)
+    // внутренний радиус
     p.y -= r;
     vec2 ba = 0.45 * r * vec2(-k1.y, k1.x) - vec2(0, r);
     float h = clamp( dot(p,ba)/dot(ba,ba), 0.0, 1.0 );
@@ -72,7 +72,6 @@ void main()
     sickleShape *= step(symbolUV.x, sickleCenter.x + 0.1);
 
     // Ручка Серпа
-
     float dSickleHandle = sdOrientedBox(symbolUV, vec2(0.5, 0.2), vec2(0.68, 0.03), 0.1);
     float sickleHandle = step(dSickleHandle, 0.0);
 
@@ -83,7 +82,7 @@ void main()
     // Головка молота
     vec2 headPos = symbolUV - vec2(0.73, 0.65);
     // Поворот
-    float angle = 0.7; // ~40 градусов
+    float angle = 0.7;
     mat2 rot = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
     headPos = rot * headPos;
 
