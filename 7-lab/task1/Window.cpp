@@ -51,12 +51,11 @@ void Window::OnRunStart()
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
     // m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateTriangle());
-    m_triangle = std::make_unique<RenderObject>(ShapeFactory::CreateCanabola(1000));
+    m_canabola = std::make_unique<RenderObject>(ShapeFactory::CreateCanabola(1000));
 }
 
 void Window::SetupLighting() {}
 
-GLuint Window::LoadTexture(const char* path) {}
 
 void Window::Draw(int width, int height)
 {
@@ -94,7 +93,5 @@ void Window::Draw(int width, int height)
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(m_shader->GetProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    m_triangle->Draw(GL_LINE_LOOP);
+    m_canabola->Draw(GL_LINE_LOOP);
 }
-
-void Window::SetupCameraMatrix() {}

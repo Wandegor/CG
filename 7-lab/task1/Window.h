@@ -23,19 +23,14 @@ private:
     void Draw(int width, int height) override;
     void SetupLighting();
 
-    void SetupCameraMatrix();
-
-    bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {};
 
     Presenter& m_presenter;
     double m_lastTime;
 
     std::vector<GLuint> m_wallTextures;
-    GLuint LoadTexture(const char* path);
 
     std::unique_ptr<Shader> m_shader;
 
-    std::unique_ptr<RenderObject> m_triangle;
     std::unique_ptr<RenderObject> m_canabola;
 };
