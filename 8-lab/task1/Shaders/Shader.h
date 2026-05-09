@@ -98,5 +98,10 @@ public:
         glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &value[0]);
     }
 
+    void SetFloat(const std::string& name,const float& value) const
+    {
+        glUniform1f(glGetUniformLocation(program, name.c_str()), value);
+    }
+
     [[nodiscard]] GLuint GetProgram() const { return program; }
 };

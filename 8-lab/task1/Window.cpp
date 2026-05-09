@@ -64,12 +64,17 @@ void Window::SetupLighting()
     glm::vec3 lightPosition = glm::vec3(2.0f, 3.0f, 5.0f);
     m_shader->SetVec3("lightPos", lightPosition);
 
-    glm::vec3 color = glm::vec3(1.0f, 1.0f, 0.5f);
+    glm::vec3 color = glm::vec3(1.0f, 0.7f, 0.5f);
     m_shader->SetVec3("objectColor", color);
 
-    float ambient = 0.05f;
-    GLint ambientLoc = glGetUniformLocation(m_shader->GetProgram(), "ambient");
-    glUniform1f(ambientLoc, ambient);
+    m_shader->SetFloat("ambient", 0.05f);
+
+    m_shader->SetVec3("viewPos", m_presenter.GetCameraPos());
+
+    glm::vec3 specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    m_shader->SetVec3("specularColor", specularColor);
+
+    m_shader->SetFloat("shininess",32.0f);
 }
 
 GLuint Window::LoadTexture(const char* path) {}
@@ -82,7 +87,7 @@ void Window::Draw(int width, int height)
 
     m_presenter.UpdateMovement(deltaTime);
 
-    glClearColor(0.2f, 0.2f, 0.15f, 1.0f);
+    glClearColor(0.2f, 0.2f, 0.25f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(m_shader->GetProgram());
