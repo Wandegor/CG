@@ -36,14 +36,27 @@ vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
     return vec2(tNear, tFar);
 }
 
-bool isShadowed(vec3 point, vec3 lightDir, vec3 norm, vec3 boxMin, vec3 boxMax) {
+bool isShadowed(vec3 point, vec3 lightDir, vec3 norm, vec3 b1Min, vec3 b1Max, vec3 b2Min, vec3 b2Max) {
     // Сдвиг вдоль нормали(чтобы не врезаться в тот же объект)
     vec3 shadowRayOrigin = point + norm * 0.001;
 
-    vec2 tHit = intersectAABB(shadowRayOrigin, lightDir, boxMin, boxMax);
+    vec2 t1 = intersectAABB(shadowRayOrigin, lightDir, b1Min, b1Max);
+    if (t1.x < t1.y && t1.x > 0.0) return true;
 
-    // Если есть пересечение и оно перед светом (свет обычно далеко)
-    return (tHit.x < tHit.y && tHit.x > 0.0);
+    vec2 t2 = intersectAABB(shadowRayOrigin, lightDir, b2Min, b2Max);
+    if (t2.x < t2.y && t2.x > 0.0) return true;
+
+    return false;
+}
+
+vec3 getCubeNormal(vec3 p, vec3 bMin, vec3 bMax) {
+    vec3 center = (bMin + bMax) * 0.5;
+    vec3 size = (bMax - bMin) * 0.5;
+    vec3 pc = (p - center) / size;
+    vec3 v = abs(pc);
+    if (v.x > v.y && v.x > v.z) return vec3(sign(pc.x), 0, 0);
+    if (v.y > v.z) return vec3(0, sign(pc.y), 0);
+    return vec3(0, 0, sign(pc.z));
 }
 void main() {
     // координаты пикселя (0..1) -> (-1..1)
@@ -64,31 +77,37 @@ void main() {
     // позиция выпуска луча
     vec3 rayOrigin = viewPos;
 
-    // Куб (Точки на диагонали)
-    vec3 boxMin = vec3(-0.5, -0.5, -0.5);
-    vec3 boxMax = vec3( 0.5,  0.5,  0.5);
+    // Кубы
+    vec3 b1Min = vec3(-0.5, -0.5, -0.5);
+    vec3 b1Max = vec3(0.5, 0.5, 0.5);
+    vec3 b2Min = vec3(0.5, 0.6, 1.0);
+    vec3 b2Max = vec3(1.0, 1.1, 1.5);
 
-    vec2 tHit = intersectAABB(rayOrigin, rayDir, boxMin, boxMax);
+    vec2 tHit1 = intersectAABB(rayOrigin, rayDir, b1Min, b1Max);
+    vec2 tHit2 = intersectAABB(rayOrigin, rayDir, b2Min, b2Max);
+
+    float tResult = -1.0;
+    vec3 currentMin, currentMax;
 
     // x - Near, y - Far, луч вошел в куб если Near < Far
-    // tHit.y <= 0.0 значит куб за спиной
-    if (tHit.x < tHit.y && tHit.y > 0.0) {
+    if (tHit1.x < tHit1.y && tHit1.x > 0.0) {
+        tResult = tHit1.x;
+        currentMin = b1Min; currentMax = b1Max;
+    }
 
-        vec3 hitPos = rayOrigin + tHit.x * rayDir;
+    if (tHit2.x < tHit2.y && tHit2.x > 0.0) {
+        if (tResult < 0.0 || tHit2.x < tResult) {
+            tResult = tHit2.x;
+            currentMin = b2Min; currentMax = b2Max;
+        }
+    }
 
-        // Вычисляем нормаль грани куба
-        // (-0.5; 0.5) -> (-1; 1)
-        vec3 pc = hitPos * 2.0;
-        vec3 norm = vec3(0.0);
-        // там где координата больше по модулю (~1), на той стенке точка
-        // sing вернет -1 или 1 от знака
-        if (abs(pc.x) > abs(pc.y) && abs(pc.x) > abs(pc.z))
-        norm = vec3(sign(pc.x), 0, 0);
-        else if (abs(pc.y) > abs(pc.z))
-        norm = vec3(0, sign(pc.y), 0);
-        else
-        norm = vec3(0, 0, sign(pc.z));
+    // Near <= 0.0 значит куб за спиной
+    if (tResult > 0.0) {
 
+        vec3 hitPos = rayOrigin + tResult * rayDir;
+
+        vec3 norm = getCubeNormal(hitPos, currentMin, currentMax);
 
         // Ambient
         vec3 ambientResult = lightAmbient * (ambient * matAmbient) * objectColor;
@@ -98,7 +117,7 @@ void main() {
         vec3 diffuseResult = vec3(0.0);
         vec3 specularResult = vec3(0.0);
         // Тень
-        bool shadow = isShadowed(hitPos, lightDir, norm, boxMin, boxMax);
+        bool shadow = isShadowed(hitPos, lightDir, norm, b1Min, b1Max, b2Min, b2Max);
         if (!shadow)
         {
             // Диффузное освещение
