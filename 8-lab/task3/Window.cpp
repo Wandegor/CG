@@ -15,6 +15,11 @@ namespace
 
     const char* pVSFileName = "shader.vs";
     const char* pFSFileName = "shader.fs";
+
+    int count = 3;
+    float h[] = { 0.0f, 0.8f, 1.5f };
+    float r[] = { 1.0f, 0.7f, 0.4f };
+    float sH[] = { 0.7f, 0.6f, 0.5f };
 } // namespace
 
 Window::Window(int w, int h, const char* title, Presenter& presenter)
@@ -93,7 +98,13 @@ void Window::Draw(int width, int height)
     glClearColor(0.2f, 0.2f, 0.25f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(m_shader->GetProgram());
+    GLuint shaderID = m_shader->GetProgram();
+    glUseProgram(shaderID);
+
+    glUniform1i(glGetUniformLocation(shaderID, "numObjects"), count);
+    glUniform1fv(glGetUniformLocation(shaderID, "heights"), count, h);
+    glUniform1fv(glGetUniformLocation(shaderID, "rads"), count, r);
+    glUniform1fv(glGetUniformLocation(shaderID, "sizesH"), count, sH);
 
     SetupLighting();
 
