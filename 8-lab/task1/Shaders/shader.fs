@@ -79,7 +79,19 @@ void main() {
         vec3 lightDir = normalize(lightPos - hitPos);
         float diff = max(dot(norm, lightDir), 0.0);
 
-        vec3 result = (ambient + diff) * objectColor;
+        // Блик
+
+        // направление в камеру от объекта
+        vec3 viewDir = normalize(rayOrigin - hitPos);
+
+        // Blinn-Phong, вектор между lightDir и viewDir
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+
+        // значение тем ближе к 1 чем меньше угол между norm и halfwayDir
+        float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
+        vec3 specular = spec * vec3(1.0);
+
+        vec3 result = (ambient + diff + specular) * objectColor;
         FragColor = vec4(result, 1.0);
     } else {
         // Фон
