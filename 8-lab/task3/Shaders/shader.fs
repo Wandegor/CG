@@ -39,33 +39,47 @@ Hit intersectParaboloid(vec3 ro, vec3 rd)
 
     float det = B * B - 4.0 * A * C;
 
-    if (det < 0.0)
+    if (det >= 0.0)
     {
-        return hit;
-    }
+        float sqrtDet = sqrt(det);
+        float t1 = (-B - sqrtDet) / (2.0 * A);
+        float t2 = (-B + sqrtDet) / (2.0 * A);
 
-    float sqrtDet = sqrt(det);
-    float t1 = (-B - sqrtDet) / (2.0 * A);
-    float t2 = (-B + sqrtDet) / (2.0 * A);
-
-    // Проверка корней
-    for (int i = 0; i < 2; i++) {
-        float t = (i == 0) ? t1 : t2;
-        if (t <= 0.0) continue;
-        vec3 p = ro + t * rd;
-        // Ограничение по высоте: z от 0 до 1
-        if (p.z >= 0.0 && p.z <= 1.0) {
-            if (t < hit.t) {
-                hit.t = t;
-                // Нормаль: градиент f(x,y,z) = x^2 + y^2 - z -> (2x, 2y, -1)
-                hit.norm = normalize(vec3(2.0 * p.x, 2.0 * p.y, -1.0));
-                hit.hit = true;
+        // Проверка корней
+        for (int i = 0; i < 2; i++) {
+            float t = (i == 0) ? t1 : t2;
+            if (t <= 0.0) continue;
+            vec3 p = ro + t * rd;
+            // Ограничение по высоте: z от 0 до 1
+            if (p.z >= 0.0 && p.z <= 1.0) {
+                if (t < hit.t) {
+                    hit.t = t;
+                    // Нормаль: градиент f(x,y,z) = x^2 + y^2 - z -> (2x, 2y, -1)
+                    hit.norm = normalize(vec3(2.0 * p.x, 2.0 * p.y, -1.0));
+                    hit.hit = true;
+                }
             }
         }
     }
 
-    // Тут будет крышка
-    // ..Lorem
+    // Крышка (z = 1)
+    // 0*x + 0*y + 1*z = 1
+    // при rd.z = 0 луч параллелен, пересечений нет
+    if (abs(rd.z) > 0.00001) {
+       // 1 = Oz + t*Dz =>
+       float tCap = (1.0 - ro.z) / rd.z;
+       // если tCap<0 - крышка сзади,
+       // tCap < hit.t - крышка ближе стенки
+       if (tCap > 0.001 && tCap < hit.t) {
+           vec3 p = ro + tCap * rd;
+           // Условие x^2 + y^2 <= 1 (при z=1 радиус=1)
+           if (p.x * p.x + p.y * p.y <= 1.0001) {
+               hit.t = tCap;
+               hit.norm = vec3(0.0, 0.0, 1.0);
+               hit.hit = true;
+           }
+       }
+   }
     return hit;
 }
 
