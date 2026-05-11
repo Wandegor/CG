@@ -61,20 +61,23 @@ void Window::SetupLighting()
 {
     glUseProgram(m_shader->GetProgram());
 
-    glm::vec3 lightPosition = glm::vec3(2.0f, 3.0f, 5.0f);
-    m_shader->SetVec3("lightPos", lightPosition);
+    m_shader->SetVec3("lightPos", glm::vec3(2.0f, 3.0f, 5.0f));
+    m_shader->SetVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-    glm::vec3 color = glm::vec3(1.0f, 0.7f, 0.5f);
-    m_shader->SetVec3("objectColor", color);
+    m_shader->SetVec3("objectColor", glm::vec3(1.0f, 0.7f, 0.5f));
 
-    m_shader->SetFloat("ambient", 0.05f);
+    // Фоновые свойства материала
+    m_shader->SetFloat("ambient", 0.45f); // интенсивность
+    m_shader->SetFloat("matAmbient", 1.0f); // Насколько материал "принимает" фон
+
+    // Цвет фонового излучения источника
+    m_shader->SetVec3("lightAmbient", glm::vec3(0.2f, 0.2f, 0.2f));
+
+    // Блик
+    m_shader->SetVec3("specularColor", glm::vec3(0.2f, 0.8f, 0.1f));
+    m_shader->SetFloat("shininess",160.0f);
 
     m_shader->SetVec3("viewPos", m_presenter.GetCameraPos());
-
-    glm::vec3 specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    m_shader->SetVec3("specularColor", specularColor);
-
-    m_shader->SetFloat("shininess",32.0f);
 }
 
 GLuint Window::LoadTexture(const char* path) {}
