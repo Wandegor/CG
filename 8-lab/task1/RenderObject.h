@@ -27,6 +27,13 @@ public:
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void *)0);
         glEnableVertexAttribArray(0);
 
+        if (vertexSize == 5)
+        {
+            // 2 Tex
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void *)(3 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+        }
+
         if (vertexSize == 6)
         {
             // 3 Nor

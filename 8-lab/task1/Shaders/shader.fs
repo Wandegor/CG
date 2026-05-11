@@ -1,30 +1,88 @@
 #version 330 core
-out vec4 FragColor;
 
-in vec3 FragPos;
-in vec3 Normal;
+out vec4 FragColor;
 in vec2 TexCoords;
 
-uniform vec3 lightPos;
+uniform mat4 view;
+uniform mat4 projection;
 uniform vec3 viewPos;
+
+uniform vec3 lightPos;
 uniform vec3 objectColor;
 uniform float ambient;
 uniform float shininess;
 uniform vec3 specularColor;
 
+vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
+    // point = origin + t * dir =>
+    // t = point - origin / dir
+    // tMin и tMax будут хранить расстояния до всех плоскостей куба (xyz)
+    vec3 tMin = (boxMin - rayOrigin) / rayDir;
+    vec3 tMax = (boxMax - rayOrigin) / rayDir;
+    // Для защиты при разворота луча,
+    // пример: при tMin = 5 и tMax = 2 чтобы они поменялись местами
+    // то есть t1 всегда ближняя стена, а t2 дальняя
+    vec3 t1 = min(tMin, tMax);
+    vec3 t2 = max(tMin, tMax);
+    // чтобы влететь в куб нужно пересечь самую дальнюю из его плоскостей
+    float tNear = max(max(t1.x, t1.y), t1.z);
+    // чтобы вылететь ближнюю
+    float tFar = min(min(t2.x, t2.y), t2.z);
+    return vec2(tNear, tFar);
+}
+
 void main() {
-    vec3 ambientResult = ambient * objectColor;
+    // координаты пикселя (0..1) -> (-1..1)
+    vec4 pixCoords = vec4(TexCoords * 2.0 - 1.0, -1.0, 1.0);
 
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuseResult = diff * objectColor;
+    // Инвертированная проекция и вид
+    mat4 invProj = inverse(projection);
+    mat4 invView = inverse(view);
 
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    vec3 specularResult = specularColor * spec;
+    // луч от глаза до пикселя на кваде
+    // invProj определяет тут степень расхождения лучей, как близко глаз к кваду
+    vec4 eyeCoords = invProj * pixCoords;
+    // Луч именно вперед z = -1 и он только поворачивается а не двигается w = 0
+    eyeCoords = vec4(eyeCoords.xy, -1.0, 0.0);
 
-    vec3 result = ambientResult + diffuseResult + specularResult;
-    FragColor = vec4(result, 1.0);
+    // перемножив на invView готовый луч исходит в другую сторону(поворот головы), но не перемещается
+    vec3 rayDir = normalize(vec3(invView * eyeCoords));
+    // позиция выпуска луча
+    vec3 rayOrigin = viewPos;
+
+    // Куб (Точки на диагонали)
+    vec3 boxMin = vec3(-0.5, -0.5, -0.5);
+    vec3 boxMax = vec3( 0.5,  0.5,  0.5);
+
+    vec2 tHit = intersectAABB(rayOrigin, rayDir, boxMin, boxMax);
+
+    // x - Near, y - Far, луч вошел в куб если Near < Far
+    // tHit.y <= 0.0 значит куб за спиной
+    if (tHit.x < tHit.y && tHit.y > 0.0) {
+
+        vec3 hitPos = rayOrigin + tHit.x * rayDir;
+
+        // Вычисляем нормаль грани куба
+        // (-0.5; 0.5) -> (-1; 1)
+        vec3 pc = hitPos * 2.0;
+        vec3 norm = vec3(0.0);
+        // там где координата больше по модулю (~1), на той стенке точка
+        // sing вернет -1 или 1 от знака
+        if (abs(pc.x) > abs(pc.y) && abs(pc.x) > abs(pc.z))
+        norm = vec3(sign(pc.x), 0, 0);
+        else if (abs(pc.y) > abs(pc.z))
+        norm = vec3(0, sign(pc.y), 0);
+        else
+        norm = vec3(0, 0, sign(pc.z));
+
+        // Диффузное освещение
+        vec3 lightDir = normalize(lightPos - hitPos);
+        float diff = max(dot(norm, lightDir), 0.0);
+
+        vec3 result = (ambient + diff) * objectColor;
+        FragColor = vec4(result, 1.0);
+    } else {
+        // Фон
+        FragColor = vec4(0.2, 0.2, 0.25, 1.0);
+    }
 }

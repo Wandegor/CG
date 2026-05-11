@@ -36,5 +36,5 @@ private:
 
     std::unique_ptr<Shader> m_shader;
 
-    std::unique_ptr<RenderObject> m_sphere;
+    std::unique_ptr<RenderObject> m_quad;
 };

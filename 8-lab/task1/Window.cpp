@@ -50,11 +50,11 @@ void Window::OnRunStart()
 {
     m_shader = std::make_unique<Shader>(pVSFileName, pFSFileName);
 
-    auto sphereData = ShapeFactory::CreateMesh();
+    auto quadData = ShapeFactory::CreateMesh();
 
-    m_sphere = std::make_unique<RenderObject>(sphereData.vertices, sphereData.indices, 8);
+    m_quad = std::make_unique<RenderObject>(quadData.vertices, quadData.indices, 5);
 
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 }
 
 void Window::SetupLighting()
@@ -99,7 +99,7 @@ void Window::Draw(int width, int height)
     SetupCameraMatrix(aspect);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    m_sphere->Draw(GL_TRIANGLES);
+    m_quad->Draw(GL_TRIANGLES);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
