@@ -18,7 +18,8 @@ uniform float matAmbient;
 uniform float shininess;
 uniform vec3 specularColor;
 
-vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
+vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax)
+{
     // point = origin + t * dir =>
     // t = point - origin / dir
     // tMin и tMax будут хранить расстояния до всех плоскостей куба (xyz)
@@ -36,17 +37,42 @@ vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
     return vec2(tNear, tFar);
 }
 
-bool isShadowed(vec3 point, vec3 lightDir, vec3 norm, vec3 b1Min, vec3 b1Max, vec3 b2Min, vec3 b2Max) {
-    // Сдвиг вдоль нормали(чтобы не врезаться в тот же объект)
-    vec3 shadowRayOrigin = point + norm * 0.001;
+float random(vec3 seed) {
+    return fract(sin(dot(seed, vec3(12.9898, 78.233, 45.164))) * 43758.5453123);
+}
 
-    vec2 t1 = intersectAABB(shadowRayOrigin, lightDir, b1Min, b1Max);
-    if (t1.x < t1.y && t1.x > 0.0) return true;
+float getShadowFactor(vec3 point, vec3 lightDir, vec3 norm, vec3 b1Min, vec3 b1Max, vec3 b2Min, vec3 b2Max)
+{
+    float lightRadius = 0.04;
+    int samples = 50;
+    int hits = 0;
 
-    vec2 t2 = intersectAABB(shadowRayOrigin, lightDir, b2Min, b2Max);
-    if (t2.x < t2.y && t2.x > 0.0) return true;
+    for (int i = 0; i < samples; i++) {
+        // небольшое случайное смещение для каждой итерации
+        vec3 offset = vec3(
+            random(point + float(i) * 0.1),
+            random(point + float(i) * 0.2),
+            random(point + float(i) * 0.3)
+        ) * 2.0 - 1.0;
 
-    return false;
+        // Направление луча со смещением
+        vec3 sampleLightPos = lightPos + offset * lightRadius;
+        vec3 lightDir = normalize(sampleLightPos - point);
+
+        // Сдвиг вдоль нормали(чтобы не врезаться в тот же объект)
+        vec3 shadowRayOrigin = point + norm * 0.001;
+        vec2 t1 = intersectAABB(shadowRayOrigin, lightDir, b1Min, b1Max);
+        vec2 t2 = intersectAABB(shadowRayOrigin, lightDir, b2Min, b2Max);
+
+        bool shadowed = (t1.x < t1.y && t1.x > 0.0) ||
+                        (t2.x < t2.y && t2.x > 0.0);
+
+        if (!shadowed) {
+            hits++;
+        }
+    }
+    // соотношение дошедших ко всем
+    return float(hits) / float(samples);
 }
 
 vec3 getCubeNormal(vec3 p, vec3 bMin, vec3 bMax) {
@@ -117,23 +143,21 @@ void main() {
         vec3 diffuseResult = vec3(0.0);
         vec3 specularResult = vec3(0.0);
         // Тень
-        bool shadow = isShadowed(hitPos, lightDir, norm, b1Min, b1Max, b2Min, b2Max);
-        if (!shadow)
-        {
-            // Диффузное освещение
-            float diff = max(dot(norm, lightDir), 0.0);
-            diffuseResult = diff * lightColor * objectColor;
+        float shadowFactor = getShadowFactor(hitPos, lightDir, norm, b1Min, b1Max, b2Min, b2Max);
 
-            // Specular
-            // направление в камеру от объекта
-            vec3 viewDir = normalize(rayOrigin - hitPos);
-            // Blinn-Phong, вектор между lightDir и viewDir
-            vec3 halfwayDir = normalize(lightDir + viewDir);
-            // значение spec тем ближе к 1 чем меньше угол между norm и halfwayDir
-            float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
+        // Диффузное освещение
+        float diff = max(dot(norm, lightDir), 0.0);
+        diffuseResult = diff * lightColor * objectColor * shadowFactor;
 
-            specularResult = spec * specularColor;
-        }
+        // Specular
+        // направление в камеру от объекта
+        vec3 viewDir = normalize(rayOrigin - hitPos);
+        // Blinn-Phong, вектор между lightDir и viewDir
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        // значение spec тем ближе к 1 чем меньше угол между norm и halfwayDir
+        float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
+
+        specularResult = spec * specularColor * shadowFactor;
 
         vec3 result = ambientResult + diffuseResult + specularResult;
         FragColor = vec4(result, 1.0);
