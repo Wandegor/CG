@@ -16,23 +16,15 @@ namespace
     const char* pVSFileName = "shader.vs";
     const char* pFSFileName = "shader.fs";
 
-    int numObjects = 5;
-    float torusR[5] = { 2.0f, 1.7f, 1.4f, 1.1f, 0.8f }; // Радиус кольца
-    float torusr[5] = { 0.4f, 0.35f, 0.3f, 0.25f, 0.2f }; // Радиус трубки
-    glm::vec3 torusColors[5] = {
-        {1.0f, 0.0f, 0.0f}, // Красный
-        {1.0f, 0.5f, 0.0f}, // Оранжевый
-        {1.0f, 1.0f, 0.0f}, // Желтый
-        {0.0f, 1.0f, 0.0f}, // Зеленый
-        {0.0f, 0.0f, 1.0f}  // Синий
-    };
-
-    std::vector<glm::mat4> modelMatrices(numObjects);
+    int count = 3;
+    float h[] = { 0.0f, 0.8f, 1.5f };
+    float r[] = { 1.0f, 0.7f, 0.4f };
+    float sH[] = { 0.7f, 0.6f, 0.5f };
 } // namespace
 
 Window::Window(int w, int h, const char* title, Presenter& presenter)
-    : BaseWindow(w, h, title), m_presenter(presenter),
-      m_lastTime(glfwGetTime()) {}
+        : BaseWindow(w, h, title), m_presenter(presenter),
+          m_lastTime(glfwGetTime()) {}
 
 void Window::OnKey(int key, int scancode, int action, int mods)
 {
@@ -109,30 +101,10 @@ void Window::Draw(int width, int height)
     GLuint shaderID = m_shader->GetProgram();
     glUseProgram(shaderID);
 
-    float currentY = 0.0f;
-    for (int i = 0; i < numObjects; i++) {
-        // Создаем матрицу трансформации
-        glm::mat4 model = glm::mat4(1.0f);
-
-        // 1. Поднимаем кольцо на текущую высоту
-        // Добавляем r[i], чтобы низ кольца касался плоскости
-        model = glm::translate(model, glm::vec3(0.0f, currentY + torusr[i], 0.0f));
-
-        // Если тор в шейдере считается лежащим в XY, а "верх" - это Z,
-        // возможно, тебе понадобится поворот:
-        // model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        modelMatrices[i] = model;
-
-        // Высчитываем высоту для следующего кольца:
-        // текущая высота + диаметр текущей трубки
-        currentY += torusr[i] * 2.0f;
-    }
-    glUniform1i(glGetUniformLocation(shaderID, "numObjects"), numObjects);
-    glUniform1fv(glGetUniformLocation(shaderID, "torusR"), numObjects, torusR);
-    glUniform1fv(glGetUniformLocation(shaderID, "torusr"), numObjects, torusr);
-    glUniform3fv(glGetUniformLocation(shaderID, "torusColors"), numObjects, glm::value_ptr(torusColors[0]));
-    glUniformMatrix4fv(glGetUniformLocation(shaderID, "modelMatrices"), numObjects, GL_FALSE, glm::value_ptr(modelMatrices[0]));
+    glUniform1i(glGetUniformLocation(shaderID, "numObjects"), count);
+    glUniform1fv(glGetUniformLocation(shaderID, "heights"), count, h);
+    glUniform1fv(glGetUniformLocation(shaderID, "rads"), count, r);
+    glUniform1fv(glGetUniformLocation(shaderID, "sizesH"), count, sH);
 
     SetupLighting();
 
@@ -148,10 +120,10 @@ void Window::Draw(int width, int height)
 void Window::SetupCameraMatrix(float aspect)
 {
     glm::mat4 projection = glm::perspective(
-        FIELD_OF_VIEW,
-        aspect,
-        Z_NEAR,
-        Z_FAR);
+            FIELD_OF_VIEW,
+            aspect,
+            Z_NEAR,
+            Z_FAR);
 
     glm::vec3 pos = m_presenter.GetCameraPos();
     glm::vec3 front = m_presenter.GetCameraFront();
