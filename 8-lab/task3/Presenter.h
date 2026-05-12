@@ -16,8 +16,8 @@ private:
     bool m_leftButtonPressed = false;
     glm::dvec2 m_mousePos = {0.0, 0.0};
 
-    const double m_moveSpeed = 1.5;
-    const double m_mouseSensitivity = 0.002;
+    const double m_moveSpeed = 1.0;
+    const double m_mouseSensitivity = 0.0016;
 
     void UpdateCameraVectors()
     {
