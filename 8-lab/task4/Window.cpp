@@ -16,10 +16,19 @@ namespace
     const char* pVSFileName = "shader.vs";
     const char* pFSFileName = "shader.fs";
 
-    int count = 3;
-    float h[] = { 0.0f, 0.8f, 1.5f };
-    float r[] = { 1.0f, 0.7f, 0.4f };
-    float sH[] = { 0.7f, 0.6f, 0.5f };
+    int numObjects = 3; // Поменяли с 5 на 3
+    float torusR[] = {1.0f, 0.7f, 0.4f};
+    float torusr[] = {0.35f, 0.3f, 0.25f};
+    float heights[] = {0.0f, 0.8f, 1.5f};
+
+    glm::vec3 torusColors[] = {
+        {1.0f, 0.0f, 0.0f}, // Красный
+        {0.0f, 1.0f, 0.0f}, // Зеленый
+        {0.0f, 0.0f, 1.0f} // Синий
+    };
+
+    std::vector<glm::mat4> modelMatrices(numObjects);
+    std::vector<glm::mat4> invModelMatrices(numObjects);
 } // namespace
 
 Window::Window(int w, int h, const char* title, Presenter& presenter)
@@ -80,7 +89,7 @@ void Window::SetupLighting()
 
     // Блик
     m_shader->SetVec3("specularColor", glm::vec3(0.2f, 0.8f, 0.1f));
-    m_shader->SetFloat("shininess",160.0f);
+    m_shader->SetFloat("shininess", 160.0f);
 
     m_shader->SetVec3("viewPos", m_presenter.GetCameraPos());
 }
@@ -101,10 +110,21 @@ void Window::Draw(int width, int height)
     GLuint shaderID = m_shader->GetProgram();
     glUseProgram(shaderID);
 
-    glUniform1i(glGetUniformLocation(shaderID, "numObjects"), count);
-    glUniform1fv(glGetUniformLocation(shaderID, "heights"), count, h);
-    glUniform1fv(glGetUniformLocation(shaderID, "rads"), count, r);
-    glUniform1fv(glGetUniformLocation(shaderID, "sizesH"), count, sH);
+    for (int i = 0; i < numObjects; i++) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, heights[i], 0.0f));
+        modelMatrices[i] = model;
+        invModelMatrices[i] = glm::inverse(model);
+    }
+
+    glUniform1i(glGetUniformLocation(shaderID, "numObjects"), numObjects);
+    glUniform1fv(glGetUniformLocation(shaderID, "torusR"), numObjects, torusR);
+    glUniform1fv(glGetUniformLocation(shaderID, "torusr"), numObjects, torusr);
+    glUniform3fv(glGetUniformLocation(shaderID, "torusColors"), numObjects, glm::value_ptr(torusColors[0]));
+    glUniformMatrix4fv(glGetUniformLocation(shaderID, "modelMatrices"), numObjects, GL_FALSE,
+                       glm::value_ptr(modelMatrices[0]));
+    glUniformMatrix4fv(glGetUniformLocation(shaderID, "invModelMatrices"), numObjects, GL_FALSE,
+                       glm::value_ptr(invModelMatrices[0]));
 
     SetupLighting();
 

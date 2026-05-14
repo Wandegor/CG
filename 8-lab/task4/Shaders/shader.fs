@@ -23,180 +23,57 @@ uniform float torusR[5];        // Большой радиус
 uniform float torusr[5];        // Радиус трубки
 uniform vec3 torusColors[5];    // Цвет каждого кольца
 uniform mat4 modelMatrices[5];  // Матрицы трансформации
+uniform mat4 invModelMatrices[5];
 
-struct Hit {
-    float t;
-    vec3 norm;
-    bool hit;
-};
 
-int solveQuadratic(float a, float b, float c, float offset, inout float roots[4], inout int count) {
-    float disc = b * b - 4.0 * a * c;
-    if (disc < 0.0) return 0;
+float map(vec3 p, out int hitObjIndex) {
+    float minDist = 1e20; // Бесконечность
+    hitObjIndex = -1;
 
-    float sqrtDisc = sqrt(disc);
-    float inv2a = 0.5 / a;
+    for (int i = 0; i < numObjects; i++) {
+        // Переводим точку из мира в локальную систему координат тора
+        vec3 localP = vec3(invModelMatrices[i] * vec4(p, 1.0));
 
-    roots[count++] = (-b - sqrtDisc) * inv2a + offset;
-    roots[count++] = (-b + sqrtDisc) * inv2a + offset;
-    return 2;
-}
+        // Магия SDF для тора (2 строчки вместо solveQuartic!)
+        vec2 q = vec2(length(localP.xz) - torusR[i], localP.y);
+        float d = length(q) - torusr[i];
 
-float solveCubic(float a, float b, float c) {
-    float p = b - a * a / 3.0;
-    float q = a * (2.0 * a * a - 9.0 * b) / 27.0 + c;
-    float p3 = p * p * p;
-    float d = q * q + 4.0 * p3 / 27.0;
-    if (d >= 0.0) {
-        float z = sqrt(d);
-        float u = (-q + z) / 2.0;
-        float v = (-q - z) / 2.0;
-        return (sign(u) * pow(abs(u), 1.0/3.0) + sign(v) * pow(abs(v), 1.0/3.0)) - a / 3.0;
-    }
-    // Если d < 0, есть 3 вещественных корня, используем тригонометрию
-    float r = sqrt(-p * p * p / 27.0);
-    float phi = acos(-q / (2.0 * r));
-    return 2.0 * pow(r, 1.0/3.0) * cos(phi / 3.0) - a / 3.0;
-}
-
-int solveQuartic(float a, float b, float c, float d, float e, out float roots[4]) {
-    // 1. Нормализация (приводим к виду t^4 + At^3 + Bt^2 + Ct + D = 0)
-    float invA = 1.0 / a;
-    float A = b * invA;
-    float B = c * invA;
-    float C = d * invA;
-    float D = e * invA;
-
-    // 2. Переход к неполному уравнению x^4 + px^2 + qx + r = 0
-    float ASqr = A * A;
-    float p = B - 0.375 * ASqr;
-    float q = C + 0.125 * ASqr * A - 0.5 * A * B;
-    float r = D - 0.01171875 * ASqr * ASqr + 0.0625 * ASqr * B - 0.25 * A * C;
-
-    float offset = -0.25 * A; // Тот самый сдвиг t = x - A/4
-    int count = 0;
-
-    // Спецслучай: если q очень мало, решаем как биквадратное
-    if (abs(q) < 1e-7) {
-        float disc = p * p - 4.0 * r;
-        if (disc >= 0.0) {
-            float s = sqrt(disc);
-            float x1 = (-p - s) * 0.5;
-            float x2 = (-p + s) * 0.5;
-            if (x1 >= 0.0) {
-                float sx1 = sqrt(x1);
-                roots[count++] = -sx1 + offset;
-                roots[count++] = sx1 + offset;
-            }
-            if (x2 >= 0.0) {
-                float sx2 = sqrt(x2);
-                roots[count++] = -sx2 + offset;
-                roots[count++] = sx2 + offset;
-            }
-        }
-    } else {
-        // 3. Резольвентное кубическое уравнение: y^3 - p*y^2 - 4*r*y + (4*p*r - q^2) = 0
-        float y = solveCubic(-p, -4.0 * r, 4.0 * p * r - q * q);
-
-        // 4. Формируем два квадратных уравнения
-        float m = 2.0 * y - p;
-        if (m < 0.0) return 0; // Корни только комплексные
-
-        float sqrtM = sqrt(m);
-
-        // Решаем первое: x^2 + sqrtM*x + (y - q/(2*sqrtM)) = 0
-        solveQuadratic(1.0, sqrtM, y - q / (2.0 * sqrtM), offset, roots, count);
-
-        // Решаем второе: x^2 - sqrtM*x + (y + q/(2*sqrtM)) = 0
-        solveQuadratic(1.0, -sqrtM, y + q / (2.0 * sqrtM), offset, roots, count);
-    }
-
-    return count;
-}
-
-Hit intersectTorus(vec3 ro, vec3 rd, float R, float r) {
-    Hit hit;
-    hit.hit = false;
-    hit.t = 1e20;
-
-    // a, b, c, d, e
-    float G = dot(rd, rd);
-    float H = 2.0 * dot(ro, rd);
-    float K = dot(ro, ro) + R*R - r*r;
-
-    float a = G * G;
-    float b = 2.0 * G * H;
-    float c = 2.0 * G * K + H * H - 4.0 * R * R * (rd.x * rd.x + rd.y * rd.y);
-    float d = 2.0 * H * K - 8.0 * R * R * (ro.x * rd.x + ro.y * rd.y);
-    float e = K * K - 4.0 * R * R * (ro.x * ro.x + ro.y * ro.y);
-
-    float roots[4];
-    int numRoots = solveQuartic(a, b, c, d, e, roots);
-
-    // 3. Выбираем лучший корень
-    for(int i = 0; i < numRoots; i++) {
-        if(roots[i] > 0.001 && roots[i] < hit.t) {
-            hit.t = roots[i];
-            hit.hit = true;
-
-            // Вычисляем нормаль (градиент функции тора в точке p)
-            vec3 p = ro + hit.t * rd;
-            float param = p.x*p.x + p.y*p.y + p.z*p.z + R*R - r*r;
-            hit.norm = normalize(vec3(
-                4.0 * p.x * param - 8.0 * R * R * p.x,
-                4.0 * p.y * param - 8.0 * R * R * p.y,
-                4.0 * p.z * param
-            ));
+        // Запоминаем ближайший
+        if (d < minDist) {
+            minDist = d;
+            hitObjIndex = i;
         }
     }
-    return hit;
+    return minDist;
 }
 
-float random(vec3 seed) {
-    return fract(sin(dot(seed, vec3(12.9898, 78.233, 45.164))) * 43758.5453123);
+vec3 calcNormal(vec3 p) {
+    vec2 e = vec2(0.001, 0.0);
+    int dummy; // Нам не нужен индекс объекта для нормали
+    return normalize(vec3(
+        map(p + e.xyy, dummy) - map(p - e.xyy, dummy),
+        map(p + e.yxy, dummy) - map(p - e.yxy, dummy),
+        map(p + e.yyx, dummy) - map(p - e.yyx, dummy)
+    ));
 }
 
-float getShadowFactor(vec3 point, vec3 norm)
-{
-    float lightRadius = 0.1;
-    int samples = 16;
-    int hits = 0;
+float getSoftShadow(vec3 ro, vec3 rd) {
+    float res = 1.0;
+    float t = 0.02; // Сдвиг от поверхности, чтобы не затенить самих себя
+    float maxDist = length(lightPos - ro); // Дистанция до источника света
+    vec3 nRd = normalize(rd);
 
-    for (int i = 0; i < samples; i++)
-    {
-        // небольшое случайное смещение для каждой итерации
-        vec3 offset = vec3(
-            random(point + float(i) * 0.1),
-            random(point + float(i) * 0.2),
-            random(point + float(i) * 0.3)
-        ) * 2.0 - 1.0;
+    for(int i = 0; i < 64; i++) {
+        int dummy;
+        float h = map(ro + nRd * t, dummy);
+        if(h < 0.001) return 0.0; // Уперлись в объект — полная тень
 
-        vec3 sampleLightPos = lightPos + offset * lightRadius;
-        // Направление луча со смещением
-        vec3 lightDir = normalize(sampleLightPos - point);
-        float distToLight = distance(sampleLightPos, point);
-
-        // Сдвиг вдоль нормали(чтобы не врезаться в тот же объект)
-        vec3 shadowRayOrigin = point + norm * 0.001;
-
-        bool inShadow = false;
-        for (int j = 0; j < numObjects; j++)
-        {
-            mat4 invModel = inverse(modelMatrices[j]);
-            vec3 localRo = vec3(invModel * vec4(shadowRayOrigin, 1.0));
-            vec3 localRd = vec3(invModel * vec4(lightDir, 0.0));
-
-            Hit hTorus = intersectTorus(localRo, localRd, torusR[j], torusr[j]);
-            if (hTorus.hit && hTorus.t < distToLight) {
-                inShadow = true;
-                break;
-            }
-        }
-
-        if (!inShadow) hits++;
+        // Чем ближе луч прошел к объекту (h), тем темнее (res)
+        res = min(res, 8.0 * h / t);
+        t += h; // Шагаем дальше
+        if(t > maxDist) break; // Дошли до света
     }
-    // соотношение дошедших ко всем
-    return float(hits) / float(samples);
+    return clamp(res, 0.0, 1.0);
 }
 
 void main() {
@@ -207,79 +84,62 @@ void main() {
     mat4 invProj = inverse(projection);
     mat4 invView = inverse(view);
 
-    // луч от глаза до пикселя на кваде
     // invProj определяет тут степень расхождения лучей, как близко глаз к кваду
-    vec4 eyeCoords = invProj * pixCoords;
-    // Луч именно вперед z = -1 и он только поворачивается а не двигается w = 0
-    eyeCoords = vec4(eyeCoords.xy, -1.0, 0.0);
+    vec4 viewSpacePos = invProj * pixCoords;
+    vec3 rayDirView = normalize(viewSpacePos.xyz / viewSpacePos.w);
 
     // перемножив на invView готовый луч исходит в другую сторону(поворот головы), но не перемещается
-    vec3 rayDir = normalize(vec3(invView * eyeCoords));
-    // позиция выпуска луча
+    vec3 rayDir = normalize(vec3(invView * vec4(rayDirView, 0.0)));
     vec3 rayOrigin = viewPos;
 
-    // Параболоиды
-    Hit sceneHit;
-    sceneHit.hit = false;
-    sceneHit.t = 1e20;
+    float t = 0.0;
     int hitObjIndex = -1;
+    bool hit = false;
 
-    for (int i = 0; i < numObjects; i++) {
-        // Инвертируем матрицу модели, чтобы перенести луч из мира в локальные координаты тора
-        mat4 invModel = inverse(modelMatrices[i]);
+    for (int i = 0; i < 128; i++) { // Максимум 128 шагов
+        vec3 p = rayOrigin + t * rayDir;
 
-        // Точка начала луча (w=1, так как это позиция)
-        vec3 localRo = vec3(invModel * vec4(rayOrigin, 1.0));
-        // Направление луча (w=0, так как это вектор)
-        vec3 localRd = vec3(invModel * vec4(rayDir, 0.0));
+        int currentObjIndex;
+        float d = map(p, currentObjIndex); // Узнаем дистанцию до мира
 
-        Hit h = intersectTorus(localRo, localRd, torusR[i], torusr[i]);
-
-        if (h.hit && h.t < sceneHit.t) {
-            sceneHit = h;
-            hitObjIndex = i;
-
-            // нормаль тоже нужно вернуть в мировые координаты
-            // Используем обратную транспонированную матрицу для корректного преобразования нормалей
-            mat3 normalMatrix = transpose(inverse(mat3(modelMatrices[i])));
-            sceneHit.norm = normalize(normalMatrix * h.norm);
+        if (d < 0.001) { // Если подошли вплотную - это ХИТ!
+            hit = true;
+            hitObjIndex = currentObjIndex;
+            break;
         }
+
+        t += d; // Шагаем вперед ровно на безопасную дистанцию
+
+        if (t > 100.0) break; // Улетели слишком далеко
     }
 
     // Near <= 0.0 значит куб за спиной
-    if (sceneHit.hit) {
+    if (hit) {
+        vec3 hitPos = rayOrigin + t * rayDir;
+        vec3 norm = calcNormal(hitPos); // Получаем идеальную нормаль
 
-        vec3 hitPos = rayOrigin + sceneHit.t * rayDir;
-
-        vec3 norm = sceneHit.norm;
+        // Двустороннее освещение (если залетели внутрь тора)
         if (dot(rayDir, norm) > 0.0) {
             norm = -norm;
         }
 
-        // Ambient
         vec3 currentColor = torusColors[hitObjIndex];
         vec3 ambientResult = lightAmbient * (ambient * matAmbient) * currentColor;
 
         vec3 lightDir = normalize(lightPos - hitPos);
 
-        vec3 diffuseResult = vec3(0.0);
-        vec3 specularResult = vec3(0.0);
-        // Тень
-        float shadowFactor = getShadowFactor(hitPos, norm);
+        // Получаем тень (теперь красивая и мягкая без тормозов)
+        float shadowFactor = getSoftShadow(hitPos, lightDir);
 
-        // Диффузное освещение
+        // Диффуз
         float diff = max(dot(norm, lightDir), 0.0);
-        diffuseResult = diff * lightColor * currentColor * shadowFactor;
+        vec3 diffuseResult = diff * lightColor * currentColor * shadowFactor;
 
-        // Specular
-        // направление в камеру от объекта
+        // Блик (Specular)
         vec3 viewDir = normalize(rayOrigin - hitPos);
-        // Blinn-Phong, вектор между lightDir и viewDir
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        // значение spec тем ближе к 1 чем меньше угол между norm и halfwayDir
         float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
-
-        specularResult = spec * specularColor * shadowFactor;
+        vec3 specularResult = spec * specularColor * shadowFactor;
 
         vec3 result = ambientResult + diffuseResult + specularResult;
         FragColor = vec4(result, 1.0);
