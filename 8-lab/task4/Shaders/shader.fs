@@ -19,22 +19,23 @@ uniform float shininess;
 uniform vec3 specularColor;
 
 uniform int numObjects;
-uniform float torusR[5];        // Большой радиус
-uniform float torusr[5];        // Радиус трубки
-uniform vec3 torusColors[5];    // Цвет каждого кольца
-uniform mat4 modelMatrices[5];  // Матрицы трансформации
+uniform float torusR[5];
+uniform float torusr[5];
+uniform vec3 torusColors[5];
 uniform mat4 invModelMatrices[5];
 
 
 float map(vec3 p, out int hitObjIndex) {
-    float minDist = 1e20; // Бесконечность
+    float minDist = 1e20;
     hitObjIndex = -1;
 
     for (int i = 0; i < numObjects; i++) {
-        // Переводим точку из мира в локальную систему координат тора
+        // Перенос точки луча из мира в локальную систему координат тора
+        // тор будет в (0, 0, 0)
+        // а луч в координатах тора
         vec3 localP = vec3(invModelMatrices[i] * vec4(p, 1.0));
 
-        // Магия SDF для тора (2 строчки вместо solveQuartic!)
+        // SDF
         vec2 q = vec2(length(localP.xz) - torusR[i], localP.y);
         float d = length(q) - torusr[i];
 
@@ -49,7 +50,8 @@ float map(vec3 p, out int hitObjIndex) {
 
 vec3 calcNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
-    int dummy; // Нам не нужен индекс объекта для нормали
+    int dummy; // заглушка
+    // поиск расстояний после микро смещения по +- X Y Z - вектор нормали
     return normalize(vec3(
         map(p + e.xyy, dummy) - map(p - e.xyy, dummy),
         map(p + e.yxy, dummy) - map(p - e.yxy, dummy),
@@ -59,7 +61,7 @@ vec3 calcNormal(vec3 p) {
 
 float getSoftShadow(vec3 ro, vec3 rd) {
     float res = 1.0;
-    float t = 0.02; // Сдвиг от поверхности, чтобы не затенить самих себя
+    float t = 0.02; // Сдвиг от поверхности, чтобы не упереться в самих себя
     float maxDist = length(lightPos - ro); // Дистанция до источника света
     vec3 nRd = normalize(rd);
 
@@ -68,12 +70,12 @@ float getSoftShadow(vec3 ro, vec3 rd) {
         float h = map(ro + nRd * t, dummy);
         if(h < 0.001) return 0.0; // Уперлись в объект — полная тень
 
-        // Чем ближе луч прошел к объекту (h), тем темнее (res)
-        res = min(res, 8.0 * h / t);
-        t += h; // Шагаем дальше
+        // Чем ближе луч прошел к объекту (h), тем темнее (res) 1.5 - мягкость тени
+        res = min(res, 1.5 * h / t);
+        t += h; // Шаг
         if(t > maxDist) break; // Дошли до света
     }
-    return clamp(res, 0.0, 1.0);
+    return clamp(res, 0.0, 1.0); // вернуть res к диапозону
 }
 
 void main() {
@@ -85,50 +87,47 @@ void main() {
     mat4 invView = inverse(view);
 
     // invProj определяет тут степень расхождения лучей, как близко глаз к кваду
-    vec4 viewSpacePos = invProj * pixCoords;
-    vec3 rayDirView = normalize(viewSpacePos.xyz / viewSpacePos.w);
+    vec4 eyeCoords = invProj * pixCoords;
+    // Луч именно вперед z = -1 и он только поворачивается а не двигается w = 0
+    eyeCoords = vec4(eyeCoords.xy, -1.0, 0.0);
 
     // перемножив на invView готовый луч исходит в другую сторону(поворот головы), но не перемещается
-    vec3 rayDir = normalize(vec3(invView * vec4(rayDirView, 0.0)));
+    vec3 rayDir = normalize(vec3(invView * eyeCoords));
     vec3 rayOrigin = viewPos;
 
     float t = 0.0;
     int hitObjIndex = -1;
     bool hit = false;
 
-    for (int i = 0; i < 128; i++) { // Максимум 128 шагов
+    // RayMarching
+    for (int i = 0; i < 128; i++) { // Максимум шагов луча
         vec3 p = rayOrigin + t * rayDir;
 
         int currentObjIndex;
-        float d = map(p, currentObjIndex); // Узнаем дистанцию до мира
+        // Возвращает дистанцию до ближайшего тора
+        float d = map(p, currentObjIndex);
 
-        if (d < 0.001) { // Если подошли вплотную - это ХИТ!
+        // hit
+        if (d < 0.001) {
             hit = true;
             hitObjIndex = currentObjIndex;
             break;
         }
 
-        t += d; // Шагаем вперед ровно на безопасную дистанцию
+        t += d; // Шаг на безопасную дистанцию
 
         if (t > 100.0) break; // Улетели слишком далеко
     }
 
-    // Near <= 0.0 значит куб за спиной
     if (hit) {
         vec3 hitPos = rayOrigin + t * rayDir;
-        vec3 norm = calcNormal(hitPos); // Получаем идеальную нормаль
-
-        // Двустороннее освещение (если залетели внутрь тора)
-        if (dot(rayDir, norm) > 0.0) {
-            norm = -norm;
-        }
+        vec3 norm = calcNormal(hitPos);
 
         vec3 currentColor = torusColors[hitObjIndex];
         vec3 ambientResult = lightAmbient * (ambient * matAmbient) * currentColor;
 
         vec3 lightDir = normalize(lightPos - hitPos);
 
-        // Получаем тень (теперь красивая и мягкая без тормозов)
         float shadowFactor = getSoftShadow(hitPos, lightDir);
 
         // Диффуз
