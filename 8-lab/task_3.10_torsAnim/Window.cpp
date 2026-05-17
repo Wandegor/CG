@@ -19,7 +19,7 @@ namespace
     int numObjects = 3; // Поменяли с 5 на 3
     float torusR[] = {1.0f, 0.7f, 0.4f};
     float torusr[] = {0.35f, 0.3f, 0.25f};
-    float heights[] = {0.0f, 0.8f, 1.5f};
+    float heights[] = {0.0f, 1.0f, 1.8f};
 
     glm::vec3 torusColors[] = {
         {1.0f, 0.0f, 0.0f}, // Красный
@@ -112,7 +112,7 @@ void Window::Draw(int width, int height)
 
     for (int i = 0; i < numObjects; i++) {
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, heights[i], 0.0f));
+        model = glm::translate(model, glm::vec3(0.3f*i, heights[i] * glm::abs(glm::sin(currentTime*i/3)), 0.0f));
         modelMatrices[i] = model;
         invModelMatrices[i] = glm::inverse(model);
     }

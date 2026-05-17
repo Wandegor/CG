@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(task5)
+project(task_3.10_torsAnim)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

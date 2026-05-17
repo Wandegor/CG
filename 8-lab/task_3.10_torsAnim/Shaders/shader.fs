@@ -55,7 +55,7 @@ float map(vec3 p, out int hitObjIndex) {
 
     float resDist = 1e20;
 
-    // k = 0.3 — это радиус плавления. Чем больше k, тем сильнее капли сливаются
+    // k — это радиус плавления. Чем больше k, тем сильнее капли сливаются
     float k = 0.9;
     for (int i = 0; i < numObjects; i++)
     {
