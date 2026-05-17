@@ -24,19 +24,14 @@ uniform float torusr[5];
 uniform vec3 torusColors[5];
 uniform mat4 invModelMatrices[5];
 
-float smoothMin(float dstA, float dstB, vec3 colorA, vec3 colorB,
-                float k, out vec3 mixedColor) {
-    // при h > 0 объекты сливаются, чем они ближе тем h ближе к 1.0
+float smoothMin(float dstA, float dstB, float k) {
     float h = max(k - abs(dstA - dstB), 0.0) / k;
-
-    // Коэф сжатый в [0, 1]
-    float mixFactor = clamp(0.5 + 0.5 * (dstA - dstB) / k, 0.0, 1.0);
-    mixedColor = mix(colorA, colorB, mixFactor);
-
     return min(dstA, dstB) - h * h * h * k * 1.0 / 6.0;
 }
 
-float map(vec3 p, out vec3 resColor) {
+float map(vec3 p, out int hitObjIndex) {
+    float minDist = 1e20;
+    hitObjIndex = -1;
 
     float distances[5];
 
@@ -51,17 +46,20 @@ float map(vec3 p, out vec3 resColor) {
         float d = length(q) - torusr[i];
 
         distances[i] = d;
+        // Запоминаем ближайший
+        if (d < minDist) {
+            minDist = d;
+            hitObjIndex = i;
+        }
     }
 
     float resDist = 1e20;
-    resColor = torusColors[0];
+
     // k — это радиус плавления. Чем больше k, тем сильнее капли сливаются
     float k = 0.9;
     for (int i = 0; i < numObjects; i++)
     {
-        vec3 nextColor;
-        resDist = smoothMin(resDist, distances[i], resColor, torusColors[i], k, nextColor);
-        resColor = nextColor;
+        resDist = smoothMin(resDist, distances[i], k);
     }
 
     return resDist;
@@ -69,7 +67,7 @@ float map(vec3 p, out vec3 resColor) {
 
 vec3 calcNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
-    vec3 dummy; // заглушка
+    int dummy; // заглушка
     // поиск расстояний после микро смещения по +- X Y Z - вектор нормали
     return normalize(vec3(
         map(p + e.xyy, dummy) - map(p - e.xyy, dummy),
@@ -85,7 +83,7 @@ float getSoftShadow(vec3 ro, vec3 rd) {
     vec3 nRd = normalize(rd);
 
     for(int i = 0; i < 64; i++) {
-        vec3 dummy;
+        int dummy;
         float h = map(ro + nRd * t, dummy);
         if(h < 0.001) return 0.0; // Уперлись в объект — полная тень
 
@@ -115,19 +113,21 @@ void main() {
     vec3 rayOrigin = viewPos;
 
     float t = 0.0;
-    vec3 resSurfaceColor;
+    int hitObjIndex = -1;
     bool hit = false;
 
     // RayMarching
     for (int i = 0; i < 128; i++) { // Максимум шагов луча
         vec3 p = rayOrigin + t * rayDir;
 
+        int currentObjIndex;
         // Возвращает дистанцию до ближайшего тора
-        float d = map(p, resSurfaceColor);
+        float d = map(p, currentObjIndex);
 
         // hit
         if (d < 0.001) {
             hit = true;
+            hitObjIndex = currentObjIndex;
             break;
         }
 
@@ -140,7 +140,7 @@ void main() {
         vec3 hitPos = rayOrigin + t * rayDir;
         vec3 norm = calcNormal(hitPos);
 
-        vec3 currentColor = resSurfaceColor;
+        vec3 currentColor = torusColors[hitObjIndex];
         vec3 ambientResult = lightAmbient * (ambient * matAmbient) * currentColor;
 
         vec3 lightDir = normalize(lightPos - hitPos);
