@@ -24,6 +24,16 @@ uniform float torusr[5];
 uniform vec3 torusColors[5];
 uniform mat4 invModelMatrices[5];
 
+vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
+    vec3 tMin = (boxMin - rayOrigin) / rayDir;
+    vec3 tMax = (boxMax - rayOrigin) / rayDir;
+    vec3 t1 = min(tMin, tMax);
+    vec3 t2 = max(tMin, tMax);
+    float tNear = max(max(t1.x, t1.y), t1.z);
+    float tFar = min(min(t2.x, t2.y), t2.z);
+    return vec2(tNear, tFar); // x - точка входа, y - точка выхода
+}
+
 float smoothMin(float dstA, float dstB, vec3 colorA, vec3 colorB,
                 float k, out vec3 mixedColor) {
     // при h > 0 объекты сливаются, чем они ближе тем h ближе к 1.0
@@ -118,22 +128,39 @@ void main() {
     vec3 resSurfaceColor;
     bool hit = false;
 
-    // RayMarching
-    for (int i = 0; i < 128; i++) { // Максимум шагов луча
-        vec3 p = rayOrigin + t * rayDir;
+    // Границы ограничивающей области
+    vec3 boxMin = vec3(-0.5, -0.5, -0.5);
+    vec3 boxMax = vec3(2.5, 2.5, 2.5);
 
-        // Возвращает дистанцию до ближайшего тора
-        float d = map(p, resSurfaceColor);
+    vec2 boxHit = intersectAABB(rayOrigin, rayDir, boxMin, boxMax);
 
-        // hit
-        if (d < 0.001) {
-            hit = true;
-            break;
+    // x - Near, y - Far
+    // Far > 0.0 не за спиной
+    if (boxHit.x < boxHit.y && boxHit.y > 0.0)
+    {
+        // Если камера внутри (boxHit.x < 0) - t = 0.0.
+        // Иначе начало со стенки
+        t = max(0.0, boxHit.x);
+
+        float tMax = boxHit.y;
+
+        // RayMarching
+        for (int i = 0; i < 128; i++) { // Максимум шагов луча
+            vec3 p = rayOrigin + t * rayDir;
+
+            // Возвращает дистанцию до ближайшего тора
+            float d = map(p, resSurfaceColor);
+
+            // hit
+            if (d < 0.001) {
+                hit = true;
+                break;
+            }
+
+            t += d; // Шаг на безопасную дистанцию
+
+            if (t > tMax) break; // Улетели слишком далеко
         }
-
-        t += d; // Шаг на безопасную дистанцию
-
-        if (t > 100.0) break; // Улетели слишком далеко
     }
 
     if (hit) {
