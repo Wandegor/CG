@@ -24,6 +24,11 @@ uniform float torusr[5];
 uniform vec3 torusColors[5];
 uniform mat4 invModelMatrices[5];
 
+float sdBox(vec3 p, vec3 b) {
+  vec3 q = abs(p) - b;
+  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
 vec2 intersectAABB(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
     vec3 tMin = (boxMin - rayOrigin) / rayDir;
     vec3 tMax = (boxMax - rayOrigin) / rayDir;
@@ -187,7 +192,16 @@ void main() {
         vec3 result = ambientResult + diffuseResult + specularResult;
         FragColor = vec4(result, 1.0);
     } else {
-        // Фон
-        FragColor = vec4(0.2, 0.2, 0.25, 1.0);
+        // ограничивающая коробка
+        vec3 boxCenter = (boxMin + boxMax) * 0.5;
+        vec3 boxSize = (boxMax - boxMin) * 0.5;
+
+        float dBox = sdBox(rayOrigin + t * rayDir - boxCenter, boxSize);
+
+        if (abs(dBox) < 0.01) {
+            FragColor = vec4(0.0, 0.8, 1.0, 1.0); // Голубой
+        } else {
+            FragColor = vec4(0.2, 0.2, 0.25, 1.0); // Фон
+        }
     }
 }
