@@ -1,0 +1,131 @@
+#pragma once
+
+#include "../Listeners/IEventListener.h"
+#include "../Model/ImageModel.h"
+
+#include "../View/ImageViewer.h"
+#include <portable-file-dialogs.h>
+
+class ImagePresenter : public IEventListener
+{
+private:
+    IView &m_view;
+    ImageModel &m_model;
+    EventManager &m_manager;
+
+    bool m_isDragging;
+    sf::Vector2i m_lastMousePosition;
+    sf::Vector2i m_dragStartModelPos;
+
+public:
+
+    ImagePresenter(IView &view, ImageModel &model, EventManager &document)
+            : m_view(view), m_model(model), m_manager(document), m_isDragging(false)
+    {
+        m_manager.Subscribe(EventType::OpenFile, *this);
+        m_manager.Subscribe(EventType::MousePressed, *this);
+        m_manager.Subscribe(EventType::MouseMoved, *this);
+        m_manager.Subscribe(EventType::MouseReleased, *this);
+    }
+
+    virtual ~ImagePresenter()
+    {
+        m_manager.Unsubscribe(EventType::OpenFile, *this);
+        m_manager.Unsubscribe(EventType::MousePressed, *this);
+        m_manager.Unsubscribe(EventType::MouseMoved, *this);
+        m_manager.Unsubscribe(EventType::MouseReleased, *this);
+    }
+
+    void Update(EventType eventType, const std::optional<sf::Event> &event) override
+    {
+        switch (eventType)
+        {
+            case EventType::OpenFile:
+                OnOpenFile();
+            break;
+            case EventType::MousePressed:
+                OnMousePressed(*event);
+            break;
+            case EventType::MouseMoved:
+                OnMouseMoved(*event);
+            break;
+            case EventType::MouseReleased:
+                OnMouseReleased(*event);
+            break;
+            default: ;
+        }
+    }
+
+private:
+    void OnOpenFile()
+    {
+        auto selection = pfd::open_file("Choose an image", ".",
+                                        {"Image Files", "*.jpg *.jpeg"});
+        if (!selection.result().empty())
+        {
+            std::string filename = selection.result()[0];
+            if (m_model.LoadFromFile(filename))
+            {
+                m_view.SetImage(m_model.GetTexture(), m_model.GetPicturePosition());
+            }
+        }
+    }
+
+    void OnMousePressed(const sf::Event& event)
+    {
+        auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>();
+        if (!mousePressed) return;
+        if (mousePressed->button != sf::Mouse::Button::Left) return;
+        if (!m_model.HasImage()) return;
+
+        sf::Vector2i picturePos = m_model.GetPicturePosition();
+        sf::Vector2i onImagePos(
+            mousePressed->position.x - picturePos.x,
+            mousePressed->position.y - picturePos.y
+        );
+
+        // Проверка на попадание по картинке
+        if (onImagePos.x >= 0 && onImagePos.y >= 0
+            && onImagePos.x < m_model.GetTexture().getSize().x
+            && onImagePos.y < m_model.GetTexture().getSize().y)
+        {
+            m_isDragging = true;
+            m_lastMousePosition = mousePressed->position;
+            m_dragStartModelPos = m_model.GetPicturePosition();
+        }
+    }
+
+    void OnMouseMoved(const sf::Event& event)
+    {
+        auto mouseMoved = event.getIf<sf::Event::MouseMoved>();
+        if (!mouseMoved) return;
+
+        if (!m_isDragging) return;
+
+        sf::Vector2i currentPos(mouseMoved->position.x,
+                            mouseMoved->position.y);
+        sf::Vector2i delta = currentPos - m_lastMousePosition;
+
+        m_view.MoveImage(delta);
+
+        m_lastMousePosition = currentPos;
+                
+    }
+
+    void OnMouseReleased(const sf::Event& event)
+    {
+        auto mouseReleased = event.getIf<sf::Event::MouseButtonReleased>();
+        if (!mouseReleased || mouseReleased->button != sf::Mouse::Button::Left) return;
+
+        if (m_isDragging)
+        {
+            auto spritePos = m_view.GetSpritePosition();
+            if (spritePos.has_value())
+            {
+                m_model.SetPosition(sf::Vector2i(static_cast<int>(spritePos->x),
+                                                 static_cast<int>(spritePos->y)));
+            }
+            m_isDragging = false;
+        }
+    }
+};
